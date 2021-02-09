@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 1920048977343419219}
   - component: {fileID: 1920048977343419216}
   - component: {fileID: 79235716399488613}
-  m_Layer: 0
-  m_Name: Floor
+  m_Layer: 8
+  m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26,7 +26,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920048977343419217}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.18088089, y: -5.0269823, z: 5.583797}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
