@@ -2,20 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Collider2D))]
-public class ButtonController : ActivatableBehaviour
+public class TimeMachineController : MonoBehaviour
 {
-    public GameObject PressedArt;
-    public GameObject NormalArt;
-
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
 
-    public override bool IsActivated => triggeringObjects.Count > 0;
-
-    public void UpdateArt()
+    public bool IsTouching(GameObject other)
     {
-        PressedArt.SetActive(IsActivated);
-        NormalArt.SetActive(!IsActivated);
+        return triggeringObjects.Contains(other);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -24,7 +17,6 @@ public class ButtonController : ActivatableBehaviour
         {
             triggeringObjects.Add(collision.gameObject);
         }
-        UpdateArt();
     }
     void OnTriggerExit2D(Collider2D collision)
     {
@@ -32,6 +24,5 @@ public class ButtonController : ActivatableBehaviour
         {
             triggeringObjects.Remove(collision.gameObject);
         }
-        UpdateArt();
     }
 }

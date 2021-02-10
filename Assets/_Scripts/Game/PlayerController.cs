@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
 
+    GameController gameController;
+
     //apply in fixed update
     float verticalInput, horizontalInput;
     private bool jump;
@@ -22,17 +25,20 @@ public class PlayerController : MonoBehaviour
         capsuleCollider = GetComponent<CapsuleCollider2D>();
     }
 
-    private void Update()
+    private void OnMove(InputValue movementValue)
     {
-        verticalInput = Input.GetAxis("Vertical");
-        horizontalInput = Input.GetAxis("Horizontal");
+        Vector2 movementVector = movementValue.Get<Vector2>();
 
-        jump |= Input.GetButtonDown("Jump") && isGrounded;
-
-        if (verticalInput < 0.5)
-        {
-            // TODO: crouch?!
-        }
+        horizontalInput = movementVector.x;
+        verticalInput = movementVector.y;
+    }
+    private void OnJump(InputValue inputValue)
+    {
+        jump |= inputValue.isPressed && isGrounded;
+    }
+    private void OnActivate(InputValue inputValue)
+    {
+        
     }
 
     void FixedUpdate()

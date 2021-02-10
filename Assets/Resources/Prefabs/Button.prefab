@@ -216,6 +216,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bc906fc6f8272841b8ec711ac7e585c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PressedArt: {fileID: 978344200368935894}
+  NormalArt: {fileID: 978344198901258342}
 --- !u!1 &978344200753596272
 GameObject:
   m_ObjectHideFlags: 0
