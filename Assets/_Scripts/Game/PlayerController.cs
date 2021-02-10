@@ -13,11 +13,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
 
-    GameController gameController;
+    private GameController gameController;
 
     //apply in fixed update
-    float verticalInput, horizontalInput;
+    private float verticalInput, horizontalInput;
     private bool jump;
+    private bool isActivating;
+
+    public bool IsActivating => isActivating;
+    public void SetGameController(GameController gameController) => this.gameController = gameController;
 
     void Start()
     {
@@ -38,7 +42,7 @@ public class PlayerController : MonoBehaviour
     }
     private void OnActivate(InputValue inputValue)
     {
-        
+        isActivating = inputValue.isPressed;
     }
 
     void FixedUpdate()

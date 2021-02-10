@@ -11,11 +11,21 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        
+        //TODO: assert player not null
+        player.SetGameController(this);
     }
 
     void Update()
     {
-        //if()
+        if (player.IsActivating)
+        {
+            foreach (var timeMachine in timeMachines)
+            {
+                if (timeMachine.IsTouching(player.gameObject))
+                {
+                    //TODO: time travel
+                }
+            }
+        }
     }
 }

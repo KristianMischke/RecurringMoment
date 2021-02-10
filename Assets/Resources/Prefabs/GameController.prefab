@@ -43,3 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e9746765b04940448b6ce10e7c23a93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeMachines:
+  - {fileID: 0}
+  player: {fileID: 0}
+  pastPlayers: []
