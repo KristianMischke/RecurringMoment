@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, ITimeTracker
 {
     private Rigidbody2D rigidbody;
     private CapsuleCollider2D capsuleCollider;
+    private PlayerInput playerInput;
+
+    public PlayerInput PlayerInput
+    {
+        get
+        {
+            if (playerInput == null)
+            {
+                playerInput = GetComponent<PlayerInput>();
+            }
+            return playerInput;
+        }
+    }
 
     [SerializeField] private float maxHorizontalSpeed;
     [SerializeField] private float jumpMultiplier;
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
-
-    private GameController gameController;
 
     //apply in fixed update
     private float verticalInput, horizontalInput;
@@ -21,7 +32,9 @@ public class PlayerController : MonoBehaviour
     private bool isActivating;
 
     public bool IsActivating => isActivating;
-    public void SetGameController(GameController gameController) => this.gameController = gameController;
+
+    private GameController gameController;
+    public int ID { get; private set; }
 
     void Start()
     {
@@ -29,6 +42,7 @@ public class PlayerController : MonoBehaviour
         capsuleCollider = GetComponent<CapsuleCollider2D>();
     }
 
+    //---PlayerInputs---
     private void OnMove(InputValue movementValue)
     {
         Vector2 movementVector = movementValue.Get<Vector2>();
@@ -43,6 +57,12 @@ public class PlayerController : MonoBehaviour
     private void OnActivate(InputValue inputValue)
     {
         isActivating = inputValue.isPressed;
+    }
+    //------
+
+    public void ClearActivate()
+    {
+        isActivating = false;
     }
 
     void FixedUpdate()
@@ -73,5 +93,28 @@ public class PlayerController : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public void Init(GameController gameController, int id)
+    {
+        this.gameController = gameController;
+        ID = id;
+    }
+
+    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    {
+        snapshotDictionary[nameof(rigidbody.position)] = rigidbody.position;
+        snapshotDictionary[nameof(rigidbody.velocity)] = rigidbody.velocity;
+        snapshotDictionary[nameof(rigidbody.rotation)] = rigidbody.rotation;
+        snapshotDictionary[nameof(isActivating)] = isActivating;
+    }
+
+    // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
+    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    {
+        rigidbody.position = (Vector2)snapshotDictionary[nameof(rigidbody.position)];
+        rigidbody.velocity = (Vector2)snapshotDictionary[nameof(rigidbody.velocity)];
+        rigidbody.rotation = (float)snapshotDictionary[nameof(rigidbody.rotation)];
+        isActivating = (bool)snapshotDictionary[nameof(isActivating)];
     }
 }
