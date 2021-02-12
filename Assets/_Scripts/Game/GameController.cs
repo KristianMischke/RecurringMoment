@@ -76,7 +76,7 @@ public class GameController : MonoBehaviour
                 int startTimeStep = historyStartById[timeTracker.ID];
                 int relativeSnapshotIndex = timeStep - startTimeStep;
 
-                if (relativeSnapshotIndex < history.Count)
+                if (relativeSnapshotIndex > 0 && relativeSnapshotIndex < history.Count)
                 {
                     timeTracker.LoadSnapshot(history[relativeSnapshotIndex]);
                 }
@@ -104,9 +104,14 @@ public class GameController : MonoBehaviour
                 historyStartById[timeTracker.ID] = timeStep;
             }
 
-            var frame = new Dictionary<string, object>();
-            timeTracker.SaveSnapshot(frame);
-            history.Add(frame);
+            int startTimeStep = historyStartById[timeTracker.ID];
+            int relativeSnapshotIndex = timeStep - startTimeStep;
+            if (relativeSnapshotIndex >= history.Count)
+            {
+                var frame = new Dictionary<string, object>();
+                timeTracker.SaveSnapshot(frame);
+                history.Add(frame);
+            }
         }
 
         timeStep++;
