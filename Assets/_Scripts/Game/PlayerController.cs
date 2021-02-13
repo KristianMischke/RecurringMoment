@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private GameController gameController;
     public int ID { get; private set; }
+    public bool FlagDestroy { get; set; }
 
     void Start()
     {
@@ -99,6 +100,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
+        name = "Player " + id;
     }
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -107,6 +109,10 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary[nameof(rigidbody.velocity)] = rigidbody.velocity;
         snapshotDictionary[nameof(rigidbody.rotation)] = rigidbody.rotation;
         snapshotDictionary[nameof(isActivating)] = isActivating;
+        if(FlagDestroy)
+        {
+            snapshotDictionary[GameController.FLAG_DESTROY] = true;
+        }
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!

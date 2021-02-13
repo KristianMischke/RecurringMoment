@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+    public const string FLAG_DESTROY = "FLAG_DESTROY";
+    public const string FLAG_INSTANTIATE = "FLAG_INSTANTIATE";
+
     private int nextID = 0; // TODO: mutex lock?!
 
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
+    public PlayerController playerPrefab;
 
+    private Pool<PlayerController> playerObjectPool;
     public List<PlayerController> pastPlayers = new List<PlayerController>();
 
     private List<ITimeTracker> timeTrackerObjects = new List<ITimeTracker>();
@@ -28,6 +33,8 @@ public class GameController : MonoBehaviour
             timeMachine.Init(this, nextID++);
             timeTrackerObjects.Add(timeMachine);
         }
+
+        playerObjectPool = new Pool<PlayerController>(() => Instantiate(player), x => x.gameObject.SetActive(true), x => x.gameObject.SetActive(false));
     }
 
     void Update()
@@ -40,6 +47,7 @@ public class GameController : MonoBehaviour
         LoadSnapshot();
 
         bool doTimeTravel = false;
+        bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
         if (player.IsActivating)
         {
@@ -48,14 +56,18 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    timeMachine.Activate(timeStep, player, out doTimeTravel);
+                    didActivate = timeMachine.Activate(timeStep, player, out doTimeTravel);
+                    if (doTimeTravel)
+                    {
+                        player.FlagDestroy = true;
+                    }
                     break;
                 }
             }
         }
 
-        SaveSnapshot();
-        //ValidatePastPlayers();
+        SaveSnapshot(didActivate);
+        ValidateTimeAnomolies();
         player.ClearActivate();
 
         if (doTimeTravel)
@@ -69,32 +81,52 @@ public class GameController : MonoBehaviour
         if (NumActiveTimeMachines() == 0) return;
         //if (timeStep <= furthestTimeStep) return;
 
-        foreach (ITimeTracker timeTracker in timeTrackerObjects)
+        for(int i = timeTrackerObjects.Count-1; i >= 0; i--)
         {
+            ITimeTracker timeTracker = timeTrackerObjects[i];
+
             if (snapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
             {
                 int startTimeStep = historyStartById[timeTracker.ID];
                 int relativeSnapshotIndex = timeStep - startTimeStep;
 
-                if (relativeSnapshotIndex > 0 && relativeSnapshotIndex < history.Count)
+                if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
                 {
-                    timeTracker.LoadSnapshot(history[relativeSnapshotIndex]);
+                    if (history[relativeSnapshotIndex].TryGetValue(FLAG_DESTROY, out object flagDestroy) && (bool)flagDestroy)
+                    {
+                        PoolObject(timeTracker);
+                        timeTrackerObjects.RemoveAt(i);
+                    }
+                    else
+                    {
+                        timeTracker.LoadSnapshot(history[relativeSnapshotIndex]);
+                    }
                 }
                 else
                 {
-                    //TODO: pool or deactivate object
+                    //PoolObject(timeTracker);
+                    //timeTrackerObjects.RemoveAt(i);
                 }
             }
             else
             {
-                //TODO: pool or deactivate object
+                //PoolObject(timeTracker);
+                //timeTrackerObjects.RemoveAt(i);
             }
         }
     }
 
-    void SaveSnapshot()
+    private void PoolObject(ITimeTracker timeTracker)
     {
-        if (NumActiveTimeMachines() == 0) return;
+        if (timeTracker is PlayerController)
+        {
+            playerObjectPool.Release(timeTracker as PlayerController);
+        }
+    }
+
+    void SaveSnapshot(bool force)
+    {
+        if (!force && NumActiveTimeMachines() == 0) return;
 
         foreach (ITimeTracker timeTracker in timeTrackerObjects)
         {
@@ -110,11 +142,36 @@ public class GameController : MonoBehaviour
             {
                 var frame = new Dictionary<string, object>();
                 timeTracker.SaveSnapshot(frame);
+                if (startTimeStep == timeStep)
+                {
+                    frame[FLAG_INSTANTIATE] = true;
+                }
                 history.Add(frame);
+            }
+            else if (relativeSnapshotIndex >= 0 && timeTracker is TimeMachineController)
+            {
+                // time machines can re-write their past state if they are used
+                var frame = history[relativeSnapshotIndex];
+                frame.Clear();
+                timeTracker.SaveSnapshot(frame);
             }
         }
 
         timeStep++;
+    }
+
+    private void ValidateTimeAnomolies()
+    {
+        // ensure that past player's paths of motion are uninterrupted
+
+        // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
+        foreach (TimeMachineController timeMachine in timeMachines)
+        {
+            if (timeMachine.CurrentlyActivated && timeMachine.HistoryActivated)
+            {
+                Debug.LogError("Time anamoly, restart from previous spawn point or retry level!");
+            }
+        }
     }
 
     public int NumActiveTimeMachines()
@@ -122,7 +179,7 @@ public class GameController : MonoBehaviour
         int result = 0;
         foreach (var timeMachine in timeMachines)
         {
-            if (timeMachine.IsActivated || timeMachine.Occupied)
+            if (timeMachine.IsActivatedOrOccupied)
                 result++;
         }
         return result;
@@ -133,11 +190,14 @@ public class GameController : MonoBehaviour
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
 
         furthestTimeStep = Mathf.Max(timeStep, furthestTimeStep);
-        timeStep = timeMachine.ActivatedTimeStep;
+        timeStep = timeMachine.CurrentActivatedTimeStep;
+        timeMachine.CurrentlyOccupied = true;
+        timeMachine.CurrentActivatedTimeStep = -1;
 
         player.PlayerInput.enabled = false;
+        player.FlagDestroy = false;
 
-        PlayerController newPlayer = Instantiate(player);
+        PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, nextID++);
         timeTrackerObjects.Add(newPlayer);

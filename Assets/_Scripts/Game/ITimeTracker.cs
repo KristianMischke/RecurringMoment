@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 interface ITimeTracker
 {
     int ID { get; }
+    bool FlagDestroy { get; set; }
     void Init(GameController gameController, int id);
 
     void SaveSnapshot(Dictionary<string, object> snapshotDictionary);
