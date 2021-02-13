@@ -5,7 +5,6 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     public const string FLAG_DESTROY = "FLAG_DESTROY";
-    public const string FLAG_INSTANTIATE = "FLAG_INSTANTIATE";
 
     private int nextID = 0; // TODO: mutex lock?!
 
@@ -81,6 +80,26 @@ public class GameController : MonoBehaviour
         if (NumActiveTimeMachines() == 0) return;
         //if (timeStep <= furthestTimeStep) return;
 
+        // instantiate objects not present
+        foreach (var kvp in snapshotHistoryById)
+        {
+            int id = kvp.Key;
+            var history = kvp.Value;
+
+            if (player.ID == id || timeTrackerObjects.Exists(x => x.ID == id)) continue; // exists not most efficient, need better structure to store all time-tracking objects (prolly a dict)
+
+            int startTimeStep = historyStartById[id];
+            int relativeSnapshotIndex = timeStep - startTimeStep;
+            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            {
+                // TODO: better structure to determine type of object and instantiate from appropriate pool (instead of just players)
+                PlayerController newPlayer = playerObjectPool.Aquire();
+                newPlayer.Init(this, id);
+                newPlayer.PlayerInput.enabled = false;
+                timeTrackerObjects.Add(newPlayer);
+            }
+        }
+
         for(int i = timeTrackerObjects.Count-1; i >= 0; i--)
         {
             ITimeTracker timeTracker = timeTrackerObjects[i];
@@ -92,7 +111,7 @@ public class GameController : MonoBehaviour
 
                 if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
                 {
-                    if (history[relativeSnapshotIndex].TryGetValue(FLAG_DESTROY, out object flagDestroy) && (bool)flagDestroy)
+                    if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY))
                     {
                         PoolObject(timeTracker);
                         timeTrackerObjects.RemoveAt(i);
@@ -142,10 +161,6 @@ public class GameController : MonoBehaviour
             {
                 var frame = new Dictionary<string, object>();
                 timeTracker.SaveSnapshot(frame);
-                if (startTimeStep == timeStep)
-                {
-                    frame[FLAG_INSTANTIATE] = true;
-                }
                 history.Add(frame);
             }
             else if (relativeSnapshotIndex >= 0 && timeTracker is TimeMachineController)
