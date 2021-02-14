@@ -76,6 +76,10 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         isActivating = inputValue.isPressed;
     }
+    private void OnSkipTime(InputValue inputValue)
+    {
+        gameController.SkipTime();
+    }
     //------
 
     public void ClearActivate()

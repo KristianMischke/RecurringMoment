@@ -91,6 +91,19 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public void SkipTime()
+    {
+        if (!isPresent)
+        {
+            timeStep += 100;
+            timeStep = Mathf.Min(timeStep, furthestTimeStep);
+        }
+        else
+        {
+            // TODO: time skipping when not in past
+        }
+    }
+
     void LoadSnapshot()
     {
         if (NumActiveTimeMachines() == 0) return;
