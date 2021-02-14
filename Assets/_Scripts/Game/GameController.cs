@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class GameController : MonoBehaviour
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
     public PlayerController playerPrefab;
+    // visuals
+    public TMP_Text timerText;
 
     private Pool<PlayerController> playerObjectPool;
     public List<PlayerController> pastPlayers = new List<PlayerController>();
@@ -20,6 +23,9 @@ public class GameController : MonoBehaviour
     private Dictionary<int, int> historyStartById = new Dictionary<int, int>();
     private int timeStep = 0;
     private int furthestTimeStep = 0;
+    private bool isPresent = true;
+
+    public int TimeStep => timeStep;
 
     void Start()
     {
@@ -38,14 +44,24 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
-        
+        timerText.text = $"Debug Timer:\n{timeStep}";
     }
 
     private void FixedUpdate()
     {
         LoadSnapshot();
 
-        bool doTimeTravel = false;
+        // restore history to current state if back to present
+        if (timeStep == furthestTimeStep && !isPresent)
+        {
+            foreach (var timeMachine in timeMachines)
+            {
+                timeMachine.BackToPresent();
+            }
+            isPresent = true;
+        }
+
+        int timeTravelStep = -1;
         bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
         if (player.IsActivating)
@@ -55,8 +71,8 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    didActivate = timeMachine.Activate(timeStep, player, out doTimeTravel);
-                    if (doTimeTravel)
+                    didActivate = timeMachine.Activate(timeStep, player, out timeTravelStep);
+                    if (timeTravelStep >= 0)
                     {
                         player.FlagDestroy = true;
                     }
@@ -69,9 +85,9 @@ public class GameController : MonoBehaviour
         ValidateTimeAnomolies();
         player.ClearActivate();
 
-        if (doTimeTravel)
+        if (timeTravelStep >= 0)
         {
-            DoTimeTravel(targetTimeMachine, player);
+            DoTimeTravel(timeTravelStep, targetTimeMachine, player);
         }
     }
 
@@ -200,14 +216,14 @@ public class GameController : MonoBehaviour
         return result;
     }
 
-    public void DoTimeTravel(TimeMachineController timeMachine, PlayerController player)
+    public void DoTimeTravel(int timeTravelStep, TimeMachineController timeMachine, PlayerController player)
     {
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
+        isPresent = false;
 
         furthestTimeStep = Mathf.Max(timeStep, furthestTimeStep);
-        timeStep = timeMachine.CurrentActivatedTimeStep;
+        timeStep = timeTravelStep;
         timeMachine.CurrentlyOccupied = true;
-        timeMachine.CurrentActivatedTimeStep = -1;
 
         player.PlayerInput.enabled = false;
         player.FlagDestroy = false;
@@ -219,5 +235,10 @@ public class GameController : MonoBehaviour
 
         this.player = newPlayer;
         pastPlayers.Add(player);
+
+        foreach (TimeMachineController otherMachine in timeMachines)
+        {
+            otherMachine.DoTimeTravel(otherMachine == timeMachine);
+        }
     }
 }

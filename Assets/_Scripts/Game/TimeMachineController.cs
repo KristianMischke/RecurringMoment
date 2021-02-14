@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class TimeMachineController : MonoBehaviour, ITimeTracker
 {
@@ -9,6 +10,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     // art related
     public SpriteRenderer renderer;
+    public TMP_Text timeText;
 
     public bool HistoryActivated = false;
     public bool HistoryOccupied = false;
@@ -22,17 +24,18 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public int ID { get; private set; }
     public bool FlagDestroy { get; set; }
 
-    public bool Activate(int currentTimeStep, PlayerController player, out bool doTimeTravel)
+    public bool Activate(int currentTimeStep, PlayerController player, out int timeTravelDestStep)
     {
-        doTimeTravel = false;
+        timeTravelDestStep = -1;
 
         if (CurrentlyOccupied || HistoryOccupied) // time machine is occupied, cannot use it
             return false;
 
-        if (CurrentlyActivated || HistoryActivated) // time machine was active, so deactivate and do timetravel
+        if (CurrentlyActivated || HistoryActivated) // time machine is active, so deactivate and do timetravel
         {
+            timeTravelDestStep = CurrentlyActivated ? CurrentActivatedTimeStep : HistoryActivatedTimeStep;
+            CurrentActivatedTimeStep = -1;
             CurrentlyActivated = false;
-            doTimeTravel = true;
         }
         else
         {
@@ -41,6 +44,28 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
 
         return true;
+    }
+
+    public void DoTimeTravel(bool isTravellingMachine)
+    {
+        CurrentlyActivated = false;
+        CurrentActivatedTimeStep = -1;
+
+        if (!isTravellingMachine)
+        {
+            CurrentlyOccupied = false;
+        }
+    }
+
+    public void BackToPresent()
+    {
+        CurrentlyActivated = HistoryActivated;
+        CurrentlyOccupied = HistoryOccupied;
+        CurrentActivatedTimeStep = HistoryActivatedTimeStep;
+
+        HistoryActivated = false;
+        HistoryOccupied = false;
+        HistoryActivatedTimeStep = -1;
     }
 
     public bool IsTouching(GameObject other)
@@ -67,6 +92,16 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             renderer.color = new Color(1f, 1f, 1f);
         }
+
+        int displayStartStep = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
+        if (displayStartStep >= 0)
+        {
+            timeText.text = (gameController.TimeStep - displayStartStep).ToString();
+        }
+        else
+        {
+            timeText.text = "";
+        }
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -92,9 +127,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        snapshotDictionary[nameof(CurrentlyActivated)] = CurrentlyActivated;
-        snapshotDictionary[nameof(CurrentlyOccupied)] = CurrentlyOccupied;
-        snapshotDictionary[nameof(CurrentActivatedTimeStep)] = CurrentActivatedTimeStep;
+        snapshotDictionary[nameof(CurrentlyActivated)] = CurrentlyActivated || HistoryActivated;
+        snapshotDictionary[nameof(CurrentlyOccupied)] = CurrentlyOccupied || HistoryOccupied;
+        snapshotDictionary[nameof(CurrentActivatedTimeStep)] = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
+        
         if (FlagDestroy)
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
@@ -107,6 +143,6 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         HistoryOccupied = (bool)snapshotDictionary[nameof(CurrentlyOccupied)];
         HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(CurrentActivatedTimeStep)];
 
-        CurrentlyOccupied &= HistoryActivated || HistoryOccupied;
+        CurrentlyOccupied &= HistoryActivated;
     }
 }
