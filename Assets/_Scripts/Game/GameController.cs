@@ -6,6 +6,7 @@ using TMPro;
 public class GameController : MonoBehaviour
 {
     public const string FLAG_DESTROY = "FLAG_DESTROY";
+    public const int TIME_STEP_SKIP_AMOUNT = 100;
 
     private int nextID = 0; // TODO: mutex lock?!
 
@@ -24,6 +25,7 @@ public class GameController : MonoBehaviour
     private int timeStep = 0;
     private int furthestTimeStep = 0;
     private bool isPresent = true;
+    private bool doTimeSkip = false;
 
     public int TimeStep => timeStep;
 
@@ -48,6 +50,25 @@ public class GameController : MonoBehaviour
     }
 
     private void FixedUpdate()
+    {
+        DoTimeStep();
+
+        if (doTimeSkip)
+        {
+            doTimeSkip = false;
+
+            Physics2D.simulationMode = SimulationMode2D.Script;
+            for (int i = 0; i < TIME_STEP_SKIP_AMOUNT; i++)
+            {
+                Debug.Log(Time.fixedDeltaTime);
+                Physics2D.Simulate(Time.fixedDeltaTime);
+                DoTimeStep();
+            }
+            Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+        }
+    }
+
+    public void DoTimeStep()
     {
         LoadSnapshot();
 
@@ -82,6 +103,7 @@ public class GameController : MonoBehaviour
         }
 
         SaveSnapshot(didActivate);
+        timeStep++;
         ValidateTimeAnomolies();
         player.ClearActivate();
 
@@ -93,15 +115,7 @@ public class GameController : MonoBehaviour
 
     public void SkipTime()
     {
-        if (!isPresent)
-        {
-            timeStep += 100;
-            timeStep = Mathf.Min(timeStep, furthestTimeStep);
-        }
-        else
-        {
-            // TODO: time skipping when not in past
-        }
+        doTimeSkip = true;
     }
 
     void LoadSnapshot()
@@ -200,8 +214,6 @@ public class GameController : MonoBehaviour
                 timeTracker.SaveSnapshot(frame);
             }
         }
-
-        timeStep++;
     }
 
     private void ValidateTimeAnomolies()
