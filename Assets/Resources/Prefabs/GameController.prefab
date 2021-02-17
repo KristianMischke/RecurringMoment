@@ -46,4 +46,6 @@ MonoBehaviour:
   timeMachines:
   - {fileID: 0}
   player: {fileID: 0}
+  playerPrefab: {fileID: 204538365, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
+  timerText: {fileID: 0}
   pastPlayers: []

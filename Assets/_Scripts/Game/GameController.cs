@@ -41,7 +41,13 @@ public class GameController : MonoBehaviour
             timeTrackerObjects.Add(timeMachine);
         }
 
-        playerObjectPool = new Pool<PlayerController>(() => Instantiate(player), x => x.gameObject.SetActive(true), x => x.gameObject.SetActive(false));
+        playerObjectPool = new Pool<PlayerController>(
+            () => Instantiate(player),
+            x => x.gameObject.SetActive(true),
+            x => {
+                x.gameObject.SetActive(false);
+                x.ClearActivate();
+                });
     }
 
     void Update()
