@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.IO;
 
 public class GameController : MonoBehaviour
 {
@@ -43,7 +44,11 @@ public class GameController : MonoBehaviour
 
         playerObjectPool = new Pool<PlayerController>(
             () => Instantiate(player),
-            x => x.gameObject.SetActive(true),
+            x =>
+            {
+                x.gameObject.SetActive(true);
+                x.PlayerInput.enabled = false;
+            },
             x => {
                 x.gameObject.SetActive(false);
                 x.ClearActivate();
@@ -110,6 +115,7 @@ public class GameController : MonoBehaviour
 
         SaveSnapshot(didActivate);
         timeStep++;
+        furthestTimeStep = Mathf.Max(timeStep, furthestTimeStep);
         ValidateTimeAnomolies();
         player.ClearActivate();
 
@@ -126,7 +132,7 @@ public class GameController : MonoBehaviour
 
     void LoadSnapshot()
     {
-        if (NumActiveTimeMachines() == 0) return;
+        //if (NumActiveTimeMachines() == 0) return;
         //if (timeStep <= furthestTimeStep) return;
 
         // instantiate objects not present
@@ -194,7 +200,7 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshot(bool force)
     {
-        if (!force && NumActiveTimeMachines() == 0) return;
+        //if (!force && NumActiveTimeMachines() == 0) return;
 
         foreach (ITimeTracker timeTracker in timeTrackerObjects)
         {
@@ -218,6 +224,76 @@ public class GameController : MonoBehaviour
                 var frame = history[relativeSnapshotIndex];
                 frame.Clear();
                 timeTracker.SaveSnapshot(frame);
+            }
+        }
+    }
+
+    public void ExportHistory()
+    {
+        string debugDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+        debugDirectory = Path.Combine(debugDirectory, "My Games/Recurring Moment/Debug/");
+        Directory.CreateDirectory(debugDirectory);
+
+        string filename = $"HistoryExport_{System.DateTime.Now:MM-dd-yy H_mm_ss}.tsv";
+        string path = Path.Combine(debugDirectory, filename);
+
+        using (StreamWriter sw = File.CreateText(path))
+        {
+            List<string> columns = new List<string>();
+
+            columns.Add("timeStep");
+            for (int id = 0; id < nextID; id++)
+            {
+                var history = snapshotHistoryById[id];
+
+                if (history.Count > 0)
+                {
+                    columns.Add($"{id}.{FLAG_DESTROY}");
+
+                    //NOTE: this would need to be adjusted for a sparse data structure
+                    // grab columns from first history entry
+                    foreach (var kvp in history[0])
+                    {
+                        columns.Add($"{id}.{kvp.Key}");
+                    }
+                }
+            }
+
+            // header
+            sw.WriteLine(string.Join("\t", columns));
+
+            // content
+            for (int i = 0; i < furthestTimeStep; i++)
+            {
+                List<string> row = new List<string>();
+                foreach (string column in columns)
+                {
+                    if (column == "timeStep")
+                    {
+                        row.Add(i.ToString());
+                    }
+                    else
+                    {
+                        string[] split = column.Split('.');
+                        int id = int.Parse(split[0]);
+                        string field = split[1];
+
+                        var history = snapshotHistoryById[id];
+
+                        int startTimeStep = historyStartById[id];
+                        int relativeSnapshotIndex = i - startTimeStep;
+                        if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(field, out object value))
+                        {
+                            row.Add(value.ToString());
+                        }
+                        else
+                        {
+                            row.Add("");
+                        }
+                    }
+                }
+
+                sw.WriteLine(string.Join("\t", row));
             }
         }
     }
@@ -252,7 +328,6 @@ public class GameController : MonoBehaviour
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
         isPresent = false;
 
-        furthestTimeStep = Mathf.Max(timeStep, furthestTimeStep);
         timeStep = timeTravelStep;
         timeMachine.CurrentlyOccupied = true;
 
@@ -262,6 +337,9 @@ public class GameController : MonoBehaviour
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, nextID++);
+        newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
+        newPlayer.Rigidbody.position = player.Rigidbody.position;
+        newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
         timeTrackerObjects.Add(newPlayer);
 
         this.player = newPlayer;

@@ -44,6 +44,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Press"
+                },
+                {
+                    "name": "SaveDebugHistory",
+                    "type": "Button",
+                    "id": "91c798c6-fbe6-4c98-81af-376584981330",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press"
                 }
             ],
             "bindings": [
@@ -275,6 +283,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "SkipTime",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3deb83ba-5e17-4a04-b00b-ec75c0d0da23",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SaveDebugHistory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "428aa398-057b-41f1-bd02-0b5fadee47ac",
+                    "path": "<XInputController>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SaveDebugHistory",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

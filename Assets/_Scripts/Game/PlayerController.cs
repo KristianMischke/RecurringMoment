@@ -51,9 +51,10 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     //apply in fixed update
     private float verticalInput, horizontalInput;
     private bool jump;
-    private bool isActivating;
+    private bool isActivating, historyActivating;
 
     public bool IsActivating => isActivating;
+    public bool HistoryActivating => historyActivating;
 
     private GameController gameController;
     public int ID { get; private set; }
@@ -79,6 +80,10 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private void OnSkipTime(InputValue inputValue)
     {
         gameController.SkipTime();
+    }
+    private void OnSaveDebugHistory(InputValue inputValue)
+    {
+        gameController.ExportHistory();
     }
     //------
 
@@ -142,6 +147,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.position = (Vector2)snapshotDictionary[nameof(Rigidbody.position)];
         Rigidbody.velocity = (Vector2)snapshotDictionary[nameof(Rigidbody.velocity)];
         Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
-        isActivating = (bool)snapshotDictionary[nameof(isActivating)];
+        historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
     }
 }
