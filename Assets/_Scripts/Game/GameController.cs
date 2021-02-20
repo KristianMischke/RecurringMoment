@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour
         }
 
         playerObjectPool = new Pool<PlayerController>(
-            () => Instantiate(player),
+            InstantiatePlayer,
             x =>
             {
                 x.gameObject.SetActive(true);
@@ -60,9 +60,14 @@ public class GameController : MonoBehaviour
                 });
     }
 
+    private PlayerController InstantiatePlayer()
+    {
+        return Instantiate(player);
+    }
+
     void Update()
     {
-        timerText.text = $"Debug Timer:\n{timeStep}";
+        timerText.text = $"Debug Timer:\n{timeStep.ToString()}";
     }
 
     private void FixedUpdate()
@@ -76,7 +81,6 @@ public class GameController : MonoBehaviour
             Physics2D.simulationMode = SimulationMode2D.Script;
             for (int i = 0; i < TIME_STEP_SKIP_AMOUNT; i++)
             {
-                Debug.Log(Time.fixedDeltaTime);
                 Physics2D.Simulate(Time.fixedDeltaTime);
                 DoTimeStep();
             }
