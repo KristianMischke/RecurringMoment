@@ -64,6 +64,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     //---PlayerInputs---
     private void OnMove(InputValue movementValue)
     {
+        if (gameController.player != this) return;
+
         Vector2 movementVector = movementValue.Get<Vector2>();
 
         horizontalInput = movementVector.x;
@@ -71,18 +73,26 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
     private void OnJump(InputValue inputValue)
     {
+        if (gameController.player != this) return;
+
         jump |= inputValue.isPressed && isGrounded;
     }
     private void OnActivate(InputValue inputValue)
     {
+        if (gameController.player != this) return;
+
         isActivating = inputValue.isPressed;
     }
     private void OnSkipTime(InputValue inputValue)
     {
+        if (gameController.player != this) return;
+
         gameController.SkipTime();
     }
     private void OnSaveDebugHistory(InputValue inputValue)
     {
+        if (gameController.player != this) return;
+
         gameController.ExportHistory();
     }
     //------

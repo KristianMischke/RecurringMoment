@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
 using System.IO;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameController : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class GameController : MonoBehaviour
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
     public PlayerController playerPrefab;
+    public BoxCollider2D levelEndObject;
+    public string nextLevel;
     // visuals
     public TMP_Text timerText;
 
@@ -27,11 +30,13 @@ public class GameController : MonoBehaviour
     private int furthestTimeStep = 0;
     private bool isPresent = true;
     private bool doTimeSkip = false;
+    private bool activatedLastFrame = false;
 
     public int TimeStep => timeStep;
 
     void Start()
     {
+        //TODO: assert nextLevel is a valid level
         //TODO: assert player not null
         player.Init(this, nextID++);
         timeTrackerObjects.Add(player);
@@ -93,17 +98,28 @@ public class GameController : MonoBehaviour
             isPresent = true;
         }
 
+        if (levelEndObject.IsTouching(player.CapsuleCollider))
+        {
+            //NOTE: in the future, we may want past players to be able to have some slight assymetry by being able to progress to the next level
+            SceneManager.LoadScene(nextLevel);
+        }
+
+        foreach (var timeMachine in timeMachines)
+        {
+            timeMachine.GameUpdate();
+        }
+
         int timeTravelStep = -1;
         bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
-        if (player.IsActivating)
+        if (player.IsActivating && !activatedLastFrame)
         {
             foreach (var timeMachine in timeMachines)
             {
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    didActivate = timeMachine.Activate(timeStep, player, out timeTravelStep);
+                    didActivate = timeMachine.Activate(out timeTravelStep);
                     if (timeTravelStep >= 0)
                     {
                         player.FlagDestroy = true;
@@ -112,6 +128,7 @@ public class GameController : MonoBehaviour
                 }
             }
         }
+        activatedLastFrame = player.IsActivating;
 
         SaveSnapshot(didActivate);
         timeStep++;
@@ -152,6 +169,7 @@ public class GameController : MonoBehaviour
                 newPlayer.Init(this, id);
                 newPlayer.PlayerInput.enabled = false;
                 timeTrackerObjects.Add(newPlayer);
+                pastPlayers.Add(newPlayer);
             }
         }
 
@@ -331,9 +349,6 @@ public class GameController : MonoBehaviour
         timeStep = timeTravelStep;
         timeMachine.CurrentlyOccupied = true;
 
-        player.PlayerInput.enabled = false;
-        player.FlagDestroy = false;
-
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, nextID++);
@@ -343,7 +358,9 @@ public class GameController : MonoBehaviour
         timeTrackerObjects.Add(newPlayer);
 
         this.player = newPlayer;
-        pastPlayers.Add(player);
+
+        PoolObject(player);
+        timeTrackerObjects.Remove(player);
 
         foreach (TimeMachineController otherMachine in timeMachines)
         {
