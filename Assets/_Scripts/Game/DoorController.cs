@@ -31,7 +31,7 @@ public class DoorController : MonoBehaviour
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
 
-        transform.position = Vector3.Lerp(originalPos, originalPos + Vector2.up * offset * (slideUp ? 1 : -1), timer/slideTime);
+        transform.position = Vector3.Lerp(originalPos, originalPos + Vector2.up * (offset * (slideUp ? 1 : -1)), timer/slideTime);
     }
 
     private bool AllActivated()

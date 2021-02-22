@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -9,6 +10,8 @@ public class GameController : MonoBehaviour
 {
     public const string FLAG_DESTROY = "FLAG_DESTROY";
     public const int TIME_STEP_SKIP_AMOUNT = 100;
+    public const int TIME_SKIP_ANIMATE_FPS = 10;
+    public const int TIME_TRAVEL_REWIND_MULT = 10;
 
     private int nextID = 0; // TODO: mutex lock?!
 
@@ -28,9 +31,15 @@ public class GameController : MonoBehaviour
     private Dictionary<int, int> historyStartById = new Dictionary<int, int>();
     private int timeStep = 0;
     private int furthestTimeStep = 0;
+    private int skipTimeStep = -1;
     private bool isPresent = true;
     private bool doTimeSkip = false;
     private bool activatedLastFrame = false;
+    
+    // for animation logic
+    private bool animateRewind = false;
+    private int animateFrame = -1;
+    private TimeMachineController occupiedTimeMachine = null;
 
     public int TimeStep => timeStep;
 
@@ -56,13 +65,13 @@ public class GameController : MonoBehaviour
             },
             x => {
                 x.gameObject.SetActive(false);
-                x.ClearActivate();
+                x.ClearState();
                 });
     }
 
     private PlayerController InstantiatePlayer()
     {
-        return Instantiate(player);
+        return Instantiate(playerPrefab);
     }
 
     void Update()
@@ -72,25 +81,53 @@ public class GameController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        DoTimeStep();
-
-        if (doTimeSkip)
+        if (animateRewind)
         {
-            doTimeSkip = false;
+            player.gameObject.SetActive(false);
+            animateFrame -= TIME_TRAVEL_REWIND_MULT;
+            animateFrame = Math.Max(animateFrame, timeStep);  
+            LoadSnapshot(animateFrame, true);
 
-            Physics2D.simulationMode = SimulationMode2D.Script;
-            for (int i = 0; i < TIME_STEP_SKIP_AMOUNT; i++)
+            if (animateFrame == timeStep)
             {
-                Physics2D.Simulate(Time.fixedDeltaTime);
-                DoTimeStep();
+                animateFrame = -1;
+                animateRewind = false;
+                
+                player.gameObject.SetActive(true);
+                timeTrackerObjects.Add(player);
+                occupiedTimeMachine.CurrentlyOccupied = true;
+                occupiedTimeMachine = null;
             }
-            Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+        }
+        else
+        {
+            DoTimeStep();
+
+            if (doTimeSkip)
+            {
+                doTimeSkip = false;
+                skipTimeStep = timeStep + TIME_STEP_SKIP_AMOUNT;
+            }
+            if (timeStep < skipTimeStep && skipTimeStep != -1)
+            {
+                Physics2D.simulationMode = SimulationMode2D.Script;
+                for (int i = 0; i < TIME_SKIP_ANIMATE_FPS-1; i++)
+                {
+                    Physics2D.Simulate(Time.fixedDeltaTime);
+                    DoTimeStep();
+                }
+                Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+            }
+            if (timeStep >= skipTimeStep)
+            {
+                skipTimeStep = -1;
+            }
         }
     }
 
     public void DoTimeStep()
     {
-        LoadSnapshot();
+        LoadSnapshot(timeStep, false);
 
         // restore history to current state if back to present
         if (timeStep == furthestTimeStep && !isPresent)
@@ -151,10 +188,9 @@ public class GameController : MonoBehaviour
         doTimeSkip = true;
     }
 
-    void LoadSnapshot()
+    void LoadSnapshot(int timeStep, bool rewind)
     {
-        //if (NumActiveTimeMachines() == 0) return;
-        //if (timeStep <= furthestTimeStep) return;
+        if (timeStep == furthestTimeStep) return;
 
         // instantiate objects not present
         foreach (var kvp in snapshotHistoryById)
@@ -180,7 +216,8 @@ public class GameController : MonoBehaviour
         for(int i = timeTrackerObjects.Count-1; i >= 0; i--)
         {
             ITimeTracker timeTracker = timeTrackerObjects[i];
-
+            bool delete = false;
+            
             if (snapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
             {
                 int startTimeStep = historyStartById[timeTracker.ID];
@@ -188,10 +225,9 @@ public class GameController : MonoBehaviour
 
                 if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
                 {
-                    if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY))
+                    if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY) && !rewind)
                     {
-                        PoolObject(timeTracker);
-                        timeTrackerObjects.RemoveAt(i);
+                        delete = true;
                     }
                     else
                     {
@@ -200,14 +236,18 @@ public class GameController : MonoBehaviour
                 }
                 else
                 {
-                    //PoolObject(timeTracker);
-                    //timeTrackerObjects.RemoveAt(i);
+                    delete = true;
                 }
             }
             else
             {
-                //PoolObject(timeTracker);
-                //timeTrackerObjects.RemoveAt(i);
+                delete = true;
+            }
+
+            if (delete && timeTracker.ID != player.ID)
+            {
+                PoolObject(timeTracker);
+                timeTrackerObjects.RemoveAt(i);
             }
         }
     }
@@ -222,8 +262,6 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshot(bool force)
     {
-        //if (!force && NumActiveTimeMachines() == 0) return;
-
         foreach (ITimeTracker timeTracker in timeTrackerObjects)
         {
             if (!snapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
@@ -350,8 +388,10 @@ public class GameController : MonoBehaviour
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
         isPresent = false;
 
+        animateRewind = true;
+        animateFrame = timeStep;
         timeStep = timeTravelStep;
-        timeMachine.CurrentlyOccupied = true;
+        occupiedTimeMachine = timeMachine;
 
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
@@ -359,12 +399,8 @@ public class GameController : MonoBehaviour
         newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
         newPlayer.Rigidbody.position = player.Rigidbody.position;
         newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
-        timeTrackerObjects.Add(newPlayer);
 
         this.player = newPlayer;
-
-        PoolObject(player);
-        timeTrackerObjects.Remove(player);
 
         foreach (TimeMachineController otherMachine in timeMachines)
         {

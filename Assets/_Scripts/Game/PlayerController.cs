@@ -102,6 +102,19 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         isActivating = false;
     }
 
+    public void ClearState()
+    {
+        gameController = null;
+        ID = -1;
+        FlagDestroy = false;
+        
+        verticalInput = 0;
+        horizontalInput = 0;
+        jump = false;
+        isActivating = false;
+        historyActivating = false;
+    }
+
     void FixedUpdate()
     {
         UpdateIsGrounded();
