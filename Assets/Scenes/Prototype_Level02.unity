@@ -259,7 +259,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -514,7 +514,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_RootOrder
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -578,7 +578,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1722,7 +1722,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4713130455757959754, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4713130455757959754, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1742,103 +1742,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
---- !u!1 &4713130455962366904 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4713130455757959755, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
-  m_PrefabInstance: {fileID: 4713130455962366903}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &4713130455962366905
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4713130455962366904}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 25dcf6f2a319eed4c8427c21f3f858ab, type: 3}
-  m_NotificationBehavior: 0
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 631f1f02-8cea-41b8-8d3e-cb70f1eb4542
-    m_ActionName: Player/Move[/XInputControllerWindows/leftStick,/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: cff2a5b7-4c41-4b2b-a7ec-7a62e31ec4d9
-    m_ActionName: Player/Look[/XInputControllerWindows/rightStick,/Mouse/delta,/Pen/delta]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: ebc09281-9515-4280-8f26-fa23b8e7a01c
-    m_ActionName: Player/Jump[/Keyboard/w,/XInputControllerWindows/buttonNorth]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 3f53a50a-c963-47cd-bc0b-5b7038c80e57
-    m_ActionName: Player/Activate[/Keyboard/space,/XInputControllerWindows/buttonEast]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: fe09e971-3832-4dbc-b4e5-b837408735f8
-    m_ActionName: UI/Navigate[/XInputControllerWindows/leftStick/up,/XInputControllerWindows/rightStick/up,/XInputControllerWindows/leftStick/down,/XInputControllerWindows/rightStick/down,/XInputControllerWindows/leftStick/left,/XInputControllerWindows/rightStick/left,/XInputControllerWindows/leftStick/right,/XInputControllerWindows/rightStick/right,/XInputControllerWindows/dpad,/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: a654d739-d67e-40f5-b2e8-0814f0a55530
-    m_ActionName: UI/Submit[/Keyboard/enter,/XInputControllerWindows/buttonSouth]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 61e79cb5-63f8-4548-af7f-b123366a3185
-    m_ActionName: UI/Cancel[/Keyboard/escape,/XInputControllerWindows/buttonEast]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 432591fe-7a35-4e0a-9614-015baee43777
-    m_ActionName: UI/Point[/Mouse/position,/Pen/position]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 93ce2483-c10d-487d-8f09-7a293af6a243
-    m_ActionName: UI/Click[/Mouse/leftButton,/Pen/tip]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 8a99087e-1ec4-4034-acea-4a79bfd2fb4f
-    m_ActionName: UI/ScrollWheel[/Mouse/scroll]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 7a6ceccc-274d-4e5b-8a58-753b74d980c5
-    m_ActionName: UI/MiddleClick[/Mouse/middleButton]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 502c5002-ff68-4f89-a68a-b29540437a0e
-    m_ActionName: UI/RightClick[/Mouse/rightButton]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 2f0f7deb-9c44-4258-aad7-94c4c025c249
-    m_ActionName: UI/TrackedDevicePosition
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 5f542686-50d7-4638-a666-a231b79fa712
-    m_ActionName: UI/TrackedDeviceOrientation
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: Player
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
 --- !u!114 &4713130455962366906 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 204538365, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
   m_PrefabInstance: {fileID: 4713130455962366903}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4713130455962366904}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c6b2e7a06c3c4b4fa8fa6f90a246aca, type: 3}
@@ -1889,7 +1798,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8877231957090316387, guid: a7cbac99e9206fb4589c18b8b8d213ba, type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 8877231957090316387, guid: a7cbac99e9206fb4589c18b8b8d213ba, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

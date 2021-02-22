@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4290965190
-  m_fontColor: {r: 0.7774129, g: 0.9339623, b: 0.76214844, a: 1}
+    rgba: 4280587566
+  m_fontColor: {r: 0.18109, g: 0.5849056, b: 0.14070842, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -191,8 +191,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4711500497092203541}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -1.27, y: 2.16, z: 0}
+  m_LocalScale: {x: 0.27, y: 0.27, z: 1}
   m_Children: []
   m_Father: {fileID: 4711500496456351492}
   m_RootOrder: 0
@@ -237,7 +237,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: b6981509085e3c64c885f4c0ea18ace3, type: 3}
+  m_Sprite: {fileID: -8431639571245983304, guid: 05ff6a6316c2c9c48bfb7e5f6b12137f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -325,9 +325,11 @@ MonoBehaviour:
   HistoryActivated: 0
   HistoryOccupied: 0
   HistoryActivatedTimeStep: -1
+  HistoryCountdown: -1
   CurrentlyActivated: 0
   CurrentlyOccupied: 0
   CurrentActivatedTimeStep: -1
+  CurrentCountdown: -1
 --- !u!114 &2188584014909302519
 MonoBehaviour:
   m_ObjectHideFlags: 0

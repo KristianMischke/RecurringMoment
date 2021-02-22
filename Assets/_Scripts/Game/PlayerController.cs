@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,6 +10,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private CapsuleCollider2D _capsuleCollider;
     private Collider2D _grabCollider;
     private PlayerInput _playerInput;
+    private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
 
     public Rigidbody2D Rigidbody
     {
@@ -52,6 +55,28 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 _playerInput = GetComponent<PlayerInput>();
             }
             return _playerInput;
+        }
+    }
+    public Animator Animator
+    {
+        get
+        {
+            if (_animator == null)
+            {
+                _animator = GetComponent<Animator>();
+            }
+            return _animator;
+        }
+    }
+    public SpriteRenderer SpriteRenderer //TODO: tidy up art related code
+    {
+        get
+        {
+            if (_spriteRenderer == null)
+            {
+                _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            }
+            return _spriteRenderer;
         }
     }
 
@@ -175,6 +200,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         jump = false;
         isActivating = false;
         historyActivating = false;
+    }
+
+    private void Update()
+    { 
+        Animator.SetBool("Walking", _rigidbody.velocity != Vector2.zero);
+        if (_rigidbody.velocity != Vector2.zero)
+        {
+            SpriteRenderer.flipX = _rigidbody.velocity.x > 0;
+        }
     }
 
     void FixedUpdate()
