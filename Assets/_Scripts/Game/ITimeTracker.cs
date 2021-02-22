@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 interface ITimeTracker
 {
     int ID { get; }
+    bool ItemForm { get; set; }
+    UnityEngine.Vector2 Position { get; set; }
     bool FlagDestroy { get; set; }
     void Init(GameController gameController, int id);
 

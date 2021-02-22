@@ -16,6 +16,7 @@ public class GameController : MonoBehaviour
     private int nextID = 0; // TODO: mutex lock?!
 
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
+    public List<BasicTimeTracker> basicTimeTrackers = new List<BasicTimeTracker>();
     public PlayerController player;
     public PlayerController playerPrefab;
     public BoxCollider2D levelEndObject;
@@ -43,8 +44,12 @@ public class GameController : MonoBehaviour
 
     public int TimeStep => timeStep;
 
+    public bool IsPresent => isPresent;
+
     void Start()
     {
+        //TODO: find all ITimeTracker objects here?!
+        
         //TODO: assert nextLevel is a valid level
         //TODO: assert player not null
         player.Init(this, nextID++);
@@ -54,6 +59,12 @@ public class GameController : MonoBehaviour
         {
             timeMachine.Init(this, nextID++);
             timeTrackerObjects.Add(timeMachine);
+        }
+
+        foreach (var basicTimeTracker in basicTimeTrackers)
+        {
+            basicTimeTracker.Init(this, nextID++);
+            timeTrackerObjects.Add(basicTimeTracker);
         }
 
         playerObjectPool = new Pool<PlayerController>(
@@ -257,6 +268,19 @@ public class GameController : MonoBehaviour
         if (timeTracker is PlayerController)
         {
             playerObjectPool.Release(timeTracker as PlayerController);
+        }
+    }
+
+    public void DropItem(int id)
+    {
+        foreach (var timeTracker in timeTrackerObjects)
+        {
+            if (timeTracker.ID == id)
+            {
+                timeTracker.Position = player.Position;
+                timeTracker.ItemForm = false;
+                break;
+            }
         }
     }
 

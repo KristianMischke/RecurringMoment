@@ -25,7 +25,30 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public int CurrentCountdown = -1;
 
     public bool IsActivatedOrOccupied => HistoryActivated || CurrentlyActivated || HistoryOccupied || CurrentlyOccupied;
+
     public int ID { get; private set; }
+    public Vector2 Position
+    {
+        get => transform.position;
+        set => transform.position = value;
+    }
+    private bool _itemForm = false;
+
+    public bool ItemForm
+    {
+        get => _itemForm;
+        set
+        {
+            if(!value)
+                if (CurrentlyActivated || HistoryActivated || CurrentlyOccupied || HistoryOccupied || CurrentCountdown >= 0 || HistoryCountdown >= 0) // time machine is occupied or activated, cannot move it
+                    return;
+
+            _itemForm = value;
+            gameObject.SetActive(!_itemForm);
+        }
+
+    }
+
     public bool FlagDestroy { get; set; }
 
     public bool Activate(out int timeTravelDestStep)
@@ -162,6 +185,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
         }
+
+        snapshotDictionary[nameof(ItemForm)] = ItemForm;
+        snapshotDictionary[nameof(Position)] = Position;
     }
 
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -170,6 +196,12 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         HistoryOccupied = (bool)snapshotDictionary[nameof(CurrentlyOccupied)];
         HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(CurrentActivatedTimeStep)];
         HistoryCountdown = (int)snapshotDictionary[nameof(CurrentCountdown)];
+
+        if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
+        {
+            ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
+            Position = (Vector2) snapshotDictionary[nameof(Position)];
+        }
 
         CurrentlyOccupied &= HistoryActivated;
     }

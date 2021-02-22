@@ -5,41 +5,53 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour, ITimeTracker
 {
-    private Rigidbody2D rigidbody;
-    private CapsuleCollider2D capsuleCollider;
-    private PlayerInput playerInput;
+    private Rigidbody2D _rigidbody;
+    private CapsuleCollider2D _capsuleCollider;
+    private Collider2D _grabCollider;
+    private PlayerInput _playerInput;
 
     public Rigidbody2D Rigidbody
     {
         get
         {
-            if (rigidbody == null)
+            if (_rigidbody == null)
             {
-                rigidbody = GetComponent<Rigidbody2D>();
+                _rigidbody = GetComponent<Rigidbody2D>();
             }
-            return rigidbody;
+            return _rigidbody;
         }
     }
     public CapsuleCollider2D CapsuleCollider
     {
         get
         {
-            if (capsuleCollider == null)
+            if (_capsuleCollider == null)
             {
-                capsuleCollider = GetComponent<CapsuleCollider2D>();
+                _capsuleCollider = GetComponent<CapsuleCollider2D>();
             }
-            return capsuleCollider;
+            return _capsuleCollider;
+        }
+    }
+    public Collider2D GrabCollider
+    {
+        get
+        {
+            if (_grabCollider == null)
+            {
+                _grabCollider = GetComponentInChildren<Collider2D>();
+            }
+            return _grabCollider;
         }
     }
     public PlayerInput PlayerInput
     {
         get
         {
-            if (playerInput == null)
+            if (_playerInput == null)
             {
-                playerInput = GetComponent<PlayerInput>();
+                _playerInput = GetComponent<PlayerInput>();
             }
-            return playerInput;
+            return _playerInput;
         }
     }
 
@@ -48,6 +60,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
 
+    private int itemID = -1;
+    
     //apply in fixed update
     private float verticalInput, horizontalInput;
     private bool jump;
@@ -58,6 +72,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private GameController gameController;
     public int ID { get; private set; }
+    public Vector2 Position
+    {
+        get => transform.position;
+        set => transform.position = value;
+    }
+    public bool ItemForm { get => false; set { } }
     public bool FlagDestroy { get; set; }
 
 
@@ -101,6 +121,41 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (gameController.player != this) return;
 
         gameController.RetryLevel();
+    }
+
+    private void OnGrab(InputValue inputValue)
+    {
+        if (itemID != -1)
+        {
+            gameController.DropItem(itemID);
+            itemID = -1;
+        }
+        else
+        {
+            List<Collider2D> contacts = new List<Collider2D>();
+            GrabCollider.GetContacts(contacts);
+            foreach (var contact in contacts)
+            {
+                TimeMachineController timeMachine = null;
+                
+                bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
+                if (validObj && contact.gameObject != gameObject)
+                {
+                    if (timeMachine != null)
+                    {
+                        timeMachine.ItemForm = true;
+                        if (timeMachine.ItemForm)
+                            itemID = timeMachine.ID;
+                    }
+                    else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
+                    {
+                        basicTimeTracker.ItemForm = true;
+                        if (basicTimeTracker.ItemForm)
+                            itemID = basicTimeTracker.ID;
+                    }
+                }
+            }
+        }
     }
     //------
 
@@ -156,7 +211,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
-        name = "Player " + id;
+        name = $"Player {id.ToString()}";
     }
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -169,6 +224,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
         }
+        //NOTE: players should never be in item form, so don't save/load that info here
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
