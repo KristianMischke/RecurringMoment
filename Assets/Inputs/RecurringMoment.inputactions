@@ -52,6 +52,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Press"
+                },
+                {
+                    "name": "Retry",
+                    "type": "Button",
+                    "id": "d46ef3fa-e761-4140-9961-22c3ee566206",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press"
                 }
             ],
             "bindings": [
@@ -305,6 +313,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "SaveDebugHistory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "aef7d922-a6b6-428c-b05e-f43a7f0feebe",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Retry",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "57e7ab2a-dec2-49c9-afe3-d67d8155485c",
+                    "path": "<XInputController>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Retry",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

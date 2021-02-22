@@ -76,7 +76,7 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
-        timerText.text = $"Debug Timer:\n{timeStep.ToString()}";
+        timerText.text = $"Debug Timer:\n{timeStep.ToString()}\n{(timeStep * Time.fixedDeltaTime):0.0}s";
     }
 
     private void FixedUpdate()
@@ -286,6 +286,11 @@ public class GameController : MonoBehaviour
                 timeTracker.SaveSnapshot(frame);
             }
         }
+    }
+
+    public void RetryLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void ExportHistory()

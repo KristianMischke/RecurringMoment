@@ -5,7 +5,7 @@ using TMPro;
 
 public class TimeMachineController : MonoBehaviour, ITimeTracker
 {
-    public const int TIME_MACHINE_COUNTDOWN = 500;
+    public const int TIME_MACHINE_COUNTDOWN = 200;
 
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
     private GameController gameController;
@@ -118,11 +118,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         int displayCountdown = CurrentCountdown == -1 ? HistoryCountdown : CurrentCountdown;
         if (displayCountdown >= 0)
         {
-            timeText.text = displayCountdown.ToString();
+            timeText.text = (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
         }
         else if (displayStartStep >= 0)
         {
-            timeText.text = (gameController.TimeStep - displayStartStep).ToString();
+            timeText.text = ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
         }
         else
         {

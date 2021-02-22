@@ -95,6 +95,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         gameController.ExportHistory();
     }
+
+    private void OnRetry(InputValue inputValue)
+    {
+        if (gameController.player != this) return;
+
+        gameController.RetryLevel();
+    }
     //------
 
     public void ClearActivate()
