@@ -1326,6 +1326,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 171346486477498572, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_SpriteShape
+      value: 
+      objectReference: {fileID: 11400000, guid: 49c3d9aaa9a085249a15e919ba94f25d, type: 2}
     - target: {fileID: 171346486477498574, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.81
@@ -1371,12 +1375,48 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_Sprites.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_ShapeTexture
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_DynamicOccludee
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Center.y
+      value: 0.039871275
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Extent.x
+      value: 0.8000003
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Extent.y
+      value: 0.78987134
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Center.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_Sprites.Array.data[0]
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Center.z
+      value: -0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_LocalAABB.m_Extent.z
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_Sprites.Array.data[1]
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 171346486477498579, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_Name
