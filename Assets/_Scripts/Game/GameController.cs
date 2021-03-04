@@ -87,7 +87,7 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
-        timerText.text = $"Debug Timer:\n{timeStep.ToString()}\n{(timeStep * Time.fixedDeltaTime):0.0}s";
+        timerText.text = $"Test Timer:\n{timeStep.ToString()}\n{(timeStep * Time.fixedDeltaTime):0.0}s";
     }
 
     private void FixedUpdate()
