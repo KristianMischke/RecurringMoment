@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-interface ITimeTracker
+public interface ITimeTracker
 {
     int ID { get; }
     bool ItemForm { get; set; }

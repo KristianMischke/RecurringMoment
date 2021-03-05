@@ -5,6 +5,19 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Serialization;
+
+public class TimeAnomalyException : Exception
+{
+    public TimeAnomalyException()
+    {
+        
+    }
+    public TimeAnomalyException(string reason) : base($"Time Anomaly: {reason}")
+    {
+        
+    }
+}
 
 public class GameController : MonoBehaviour
 {
@@ -12,8 +25,6 @@ public class GameController : MonoBehaviour
     public const int TIME_STEP_SKIP_AMOUNT = 100;
     public const int TIME_SKIP_ANIMATE_FPS = 10;
     public const int TIME_TRAVEL_REWIND_MULT = 10;
-
-    private int nextID = 0; // TODO: mutex lock?!
 
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public List<BasicTimeTracker> basicTimeTrackers = new List<BasicTimeTracker>();
@@ -27,24 +38,128 @@ public class GameController : MonoBehaviour
     private Pool<PlayerController> playerObjectPool;
     public List<PlayerController> pastPlayers = new List<PlayerController>();
 
-    private List<ITimeTracker> timeTrackerObjects = new List<ITimeTracker>();
-    private Dictionary<int, List<Dictionary<string, object>>> snapshotHistoryById = new Dictionary<int, List<Dictionary<string, object>>>();
-    private Dictionary<int, int> historyStartById = new Dictionary<int, int>();
-    private int timeStep = 0;
-    private int furthestTimeStep = 0;
-    private int skipTimeStep = -1;
-    private bool isPresent = true;
-    private bool doTimeSkip = false;
-    private bool activatedLastFrame = false;
+    private class GameState
+    {
+        public int nextID = 0; // TODO: mutex lock?!
     
+        public List<ITimeTracker> timeTrackerObjects = new List<ITimeTracker>();
+        public Dictionary<int, List<Dictionary<string, object>>> snapshotHistoryById = new Dictionary<int, List<Dictionary<string, object>>>();
+        public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
+        public int timeStep = 0;
+        public int furthestTimeStep = 0;
+        public int skipTimeStep = -1;
+        public bool isPresent = true;
+        public bool doTimeSkip = false;
+        public bool activatedLastFrame = false;
+    
+        // for animation logic
+        public bool animateRewind = false;
+        public int animateFrame = -1;
+        public TimeMachineController occupiedTimeMachine = null;
+
+        public void DeepCopy(GameState other)
+        {
+            nextID = other.nextID;
+            
+            timeTrackerObjects.Clear();
+            foreach (var x in other.timeTrackerObjects)
+            {
+                timeTrackerObjects.Add(x);
+            }
+
+            snapshotHistoryById.Clear();
+            foreach (var kvp in other.snapshotHistoryById)
+            {
+                var history = snapshotHistoryById[kvp.Key] = new List<Dictionary<string, object>>();
+                foreach (var y in kvp.Value)
+                {
+                    history.Add(new Dictionary<string, object>(y));
+                }
+            }
+
+            historyStartById = new Dictionary<int, int>(other.historyStartById);
+
+            timeStep = other.timeStep;
+            furthestTimeStep = other.furthestTimeStep;
+            skipTimeStep = other.skipTimeStep;
+            isPresent = other.isPresent;
+            doTimeSkip = other.doTimeSkip;
+            activatedLastFrame = other.activatedLastFrame;
+
+            animateRewind = other.animateRewind;
+            animateFrame = other.animateFrame;
+            occupiedTimeMachine = other.occupiedTimeMachine;//TODO: this might need to be stored by ID not reference to object
+        }
+    }
+
+    private GameState spawnState = null;
+    private GameState currentState = new GameState();
+    
+    // ---Easy accessors for current state---
+    public int NextID
+    {
+        get => currentState.nextID;
+        private set => currentState.nextID = value;
+    }
+
+    private List<ITimeTracker> TimeTrackerObjects => currentState.timeTrackerObjects;
+    private Dictionary<int, List<Dictionary<string, object>>> SnapshotHistoryById => currentState.snapshotHistoryById;
+    private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
+    public int TimeStep
+    {
+        get => currentState.timeStep;
+        private set => currentState.timeStep = value;
+    }
+
+    public int FurthestTimeStep
+    {
+        get => currentState.furthestTimeStep;
+        private set => currentState.furthestTimeStep = value;
+    }
+
+    public int SkipTimeStep
+    {
+        get => currentState.skipTimeStep;
+        private set => currentState.skipTimeStep = value;
+    }
+
+    public bool IsPresent
+    {
+        get => currentState.isPresent;
+        private set => currentState.isPresent = value;
+    }
+
+    public bool DoTimeSkip
+    {
+        get => currentState.doTimeSkip;
+        private set => currentState.doTimeSkip = value;
+    }
+
+    public bool ActivatedLastFrame
+    {
+        get => currentState.activatedLastFrame;
+        private set => currentState.activatedLastFrame = value;
+    }
+
     // for animation logic
-    private bool animateRewind = false;
-    private int animateFrame = -1;
-    private TimeMachineController occupiedTimeMachine = null;
+    public bool AnimateRewind
+    {
+        get => currentState.animateRewind;
+        private set => currentState.animateRewind = value;
+    }
 
-    public int TimeStep => timeStep;
+    public int AnimateFrame
+    {
+        get => currentState.animateFrame;
+        private set => currentState.animateFrame = value;
+    }
 
-    public bool IsPresent => isPresent;
+    public TimeMachineController OccupiedTimeMachine
+    {
+        get => currentState.occupiedTimeMachine;
+        private set => currentState.occupiedTimeMachine = value;
+    }
+    // ---End Easy accessors of current state---
 
     void Start()
     {
@@ -52,19 +167,19 @@ public class GameController : MonoBehaviour
         
         //TODO: assert nextLevel is a valid level
         //TODO: assert player not null
-        player.Init(this, nextID++);
-        timeTrackerObjects.Add(player);
+        player.Init(this, NextID++);
+        TimeTrackerObjects.Add(player);
 
         foreach (var timeMachine in timeMachines)
         {
-            timeMachine.Init(this, nextID++);
-            timeTrackerObjects.Add(timeMachine);
+            timeMachine.Init(this, NextID++);
+            TimeTrackerObjects.Add(timeMachine);
         }
 
         foreach (var basicTimeTracker in basicTimeTrackers)
         {
-            basicTimeTracker.Init(this, nextID++);
-            timeTrackerObjects.Add(basicTimeTracker);
+            basicTimeTracker.Init(this, NextID++);
+            TimeTrackerObjects.Add(basicTimeTracker);
         }
 
         playerObjectPool = new Pool<PlayerController>(
@@ -87,39 +202,39 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
-        timerText.text = $"Test Timer:\n{timeStep.ToString()}\n{(timeStep * Time.fixedDeltaTime):0.0}s";
+        timerText.text = $"Test Timer:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
     }
 
     private void FixedUpdate()
     {
-        if (animateRewind)
+        if (AnimateRewind)
         {
             player.gameObject.SetActive(false);
-            animateFrame -= TIME_TRAVEL_REWIND_MULT;
-            animateFrame = Math.Max(animateFrame, timeStep);  
-            LoadSnapshot(animateFrame, true);
+            AnimateFrame -= TIME_TRAVEL_REWIND_MULT;
+            AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
+            LoadSnapshot(AnimateFrame, true);
 
-            if (animateFrame == timeStep)
+            if (AnimateFrame == TimeStep)
             {
-                animateFrame = -1;
-                animateRewind = false;
+                AnimateFrame = -1;
+                AnimateRewind = false;
                 
                 player.gameObject.SetActive(true);
-                timeTrackerObjects.Add(player);
-                occupiedTimeMachine.CurrentlyOccupied = true;
-                occupiedTimeMachine = null;
+                TimeTrackerObjects.Add(player);
+                OccupiedTimeMachine.CurrentlyOccupied = true;
+                OccupiedTimeMachine = null;
             }
         }
         else
         {
             DoTimeStep();
 
-            if (doTimeSkip)
+            if (DoTimeSkip)
             {
-                doTimeSkip = false;
-                skipTimeStep = timeStep + TIME_STEP_SKIP_AMOUNT;
+                DoTimeSkip = false;
+                SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT;
             }
-            if (timeStep < skipTimeStep && skipTimeStep != -1)
+            if (TimeStep < SkipTimeStep && SkipTimeStep != -1)
             {
                 Physics2D.simulationMode = SimulationMode2D.Script;
                 for (int i = 0; i < TIME_SKIP_ANIMATE_FPS-1; i++)
@@ -129,25 +244,25 @@ public class GameController : MonoBehaviour
                 }
                 Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
             }
-            if (timeStep >= skipTimeStep)
+            if (TimeStep >= SkipTimeStep)
             {
-                skipTimeStep = -1;
+                SkipTimeStep = -1;
             }
         }
     }
 
     public void DoTimeStep()
     {
-        LoadSnapshot(timeStep, false);
+        LoadSnapshot(TimeStep, false);
 
         // restore history to current state if back to present
-        if (timeStep == furthestTimeStep && !isPresent)
+        if (TimeStep == FurthestTimeStep && !IsPresent)
         {
             foreach (var timeMachine in timeMachines)
             {
                 timeMachine.BackToPresent();
             }
-            isPresent = true;
+            IsPresent = true;
         }
 
         if (levelEndObject.IsTouching(player.CapsuleCollider))
@@ -164,7 +279,7 @@ public class GameController : MonoBehaviour
         int timeTravelStep = -1;
         bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
-        if (player.IsActivating && !activatedLastFrame)
+        if (player.IsActivating && !ActivatedLastFrame)
         {
             foreach (var timeMachine in timeMachines)
             {
@@ -180,38 +295,41 @@ public class GameController : MonoBehaviour
                 }
             }
         }
-        activatedLastFrame = player.IsActivating;
+        ActivatedLastFrame = player.IsActivating;
 
         SaveSnapshot(didActivate);
-        timeStep++;
-        furthestTimeStep = Mathf.Max(timeStep, furthestTimeStep);
-        ValidateTimeAnomolies();
+        TimeStep++;
+        FurthestTimeStep = Mathf.Max(TimeStep, FurthestTimeStep);
+        ValidateTimeAnomalies();
         player.ClearActivate();
 
         if (timeTravelStep >= 0)
         {
             DoTimeTravel(timeTravelStep, targetTimeMachine, player);
+            
+            if (spawnState == null) spawnState = new GameState();
+            spawnState.DeepCopy(currentState);
         }
     }
 
     public void SkipTime()
     {
-        doTimeSkip = true;
+        DoTimeSkip = true;
     }
 
     void LoadSnapshot(int timeStep, bool rewind)
     {
-        if (timeStep == furthestTimeStep) return;
+        if (timeStep == FurthestTimeStep) return;
 
         // instantiate objects not present
-        foreach (var kvp in snapshotHistoryById)
+        foreach (var kvp in SnapshotHistoryById)
         {
             int id = kvp.Key;
             var history = kvp.Value;
 
-            if (player.ID == id || timeTrackerObjects.Exists(x => x.ID == id)) continue; // exists not most efficient, need better structure to store all time-tracking objects (prolly a dict)
+            if (player.ID == id || TimeTrackerObjects.Exists(x => x.ID == id)) continue; // exists not most efficient, need better structure to store all time-tracking objects (prolly a dict)
 
-            int startTimeStep = historyStartById[id];
+            int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
             if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
             {
@@ -219,19 +337,19 @@ public class GameController : MonoBehaviour
                 PlayerController newPlayer = playerObjectPool.Aquire();
                 newPlayer.Init(this, id);
                 newPlayer.PlayerInput.enabled = false;
-                timeTrackerObjects.Add(newPlayer);
+                TimeTrackerObjects.Add(newPlayer);
                 pastPlayers.Add(newPlayer);
             }
         }
 
-        for(int i = timeTrackerObjects.Count-1; i >= 0; i--)
+        for(int i = TimeTrackerObjects.Count-1; i >= 0; i--)
         {
-            ITimeTracker timeTracker = timeTrackerObjects[i];
+            ITimeTracker timeTracker = TimeTrackerObjects[i];
             bool delete = false;
             
-            if (snapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
+            if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
             {
-                int startTimeStep = historyStartById[timeTracker.ID];
+                int startTimeStep = HistoryStartById[timeTracker.ID];
                 int relativeSnapshotIndex = timeStep - startTimeStep;
 
                 if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
@@ -258,7 +376,7 @@ public class GameController : MonoBehaviour
             if (delete && timeTracker.ID != player.ID)
             {
                 PoolObject(timeTracker);
-                timeTrackerObjects.RemoveAt(i);
+                TimeTrackerObjects.RemoveAt(i);
             }
         }
     }
@@ -273,7 +391,7 @@ public class GameController : MonoBehaviour
 
     public void DropItem(int id)
     {
-        foreach (var timeTracker in timeTrackerObjects)
+        foreach (var timeTracker in TimeTrackerObjects)
         {
             if (timeTracker.ID == id)
             {
@@ -286,16 +404,16 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshot(bool force)
     {
-        foreach (ITimeTracker timeTracker in timeTrackerObjects)
+        foreach (ITimeTracker timeTracker in TimeTrackerObjects)
         {
-            if (!snapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
+            if (!SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
             {
-                history = snapshotHistoryById[timeTracker.ID] = new List<Dictionary<string, object>>();
-                historyStartById[timeTracker.ID] = timeStep;
+                history = SnapshotHistoryById[timeTracker.ID] = new List<Dictionary<string, object>>();
+                HistoryStartById[timeTracker.ID] = TimeStep;
             }
 
-            int startTimeStep = historyStartById[timeTracker.ID];
-            int relativeSnapshotIndex = timeStep - startTimeStep;
+            int startTimeStep = HistoryStartById[timeTracker.ID];
+            int relativeSnapshotIndex = TimeStep - startTimeStep;
             if (relativeSnapshotIndex >= history.Count)
             {
                 var frame = new Dictionary<string, object>();
@@ -317,6 +435,16 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
+    public void RespawnLatest() // TODO: this next
+    {
+        if (spawnState == null)
+        {
+            RetryLevel();
+            return;
+        }
+        currentState.DeepCopy(spawnState);
+    }
+
     public void ExportHistory()
     {
         string debugDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
@@ -331,9 +459,9 @@ public class GameController : MonoBehaviour
             List<string> columns = new List<string>();
 
             columns.Add("timeStep");
-            for (int id = 0; id < nextID; id++)
+            for (int id = 0; id < NextID; id++)
             {
-                var history = snapshotHistoryById[id];
+                var history = SnapshotHistoryById[id];
 
                 if (history.Count > 0)
                 {
@@ -352,7 +480,7 @@ public class GameController : MonoBehaviour
             sw.WriteLine(string.Join("\t", columns));
 
             // content
-            for (int i = 0; i < furthestTimeStep; i++)
+            for (int i = 0; i < FurthestTimeStep; i++)
             {
                 List<string> row = new List<string>();
                 foreach (string column in columns)
@@ -367,9 +495,9 @@ public class GameController : MonoBehaviour
                         int id = int.Parse(split[0]);
                         string field = split[1];
 
-                        var history = snapshotHistoryById[id];
+                        var history = SnapshotHistoryById[id];
 
-                        int startTimeStep = historyStartById[id];
+                        int startTimeStep = HistoryStartById[id];
                         int relativeSnapshotIndex = i - startTimeStep;
                         if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(field, out object value))
                         {
@@ -387,16 +515,17 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void ValidateTimeAnomolies()
+    private void ValidateTimeAnomalies()
     {
         // ensure that past player's paths of motion are uninterrupted
 
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
         {
-            if (timeMachine.CurrentlyActivated && timeMachine.HistoryActivated)
+            if (timeMachine.CurrentlyActivated && (timeMachine.HistoryActivated))
             {
-                Debug.LogError("Time anamoly, restart from previous spawn point or retry level!");
+                throw new TimeAnomalyException("");
+                Debug.LogError("Time anomaly, restart from previous spawn point or retry level!");
             }
         }
     }
@@ -415,16 +544,16 @@ public class GameController : MonoBehaviour
     public void DoTimeTravel(int timeTravelStep, TimeMachineController timeMachine, PlayerController player)
     {
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
-        isPresent = false;
+        IsPresent = false;
 
-        animateRewind = true;
-        animateFrame = timeStep;
-        timeStep = timeTravelStep;
-        occupiedTimeMachine = timeMachine;
+        AnimateRewind = true;
+        AnimateFrame = TimeStep;
+        TimeStep = timeTravelStep;
+        OccupiedTimeMachine = timeMachine;
 
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
-        newPlayer.Init(this, nextID++);
+        newPlayer.Init(this, NextID++);
         newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
         newPlayer.Rigidbody.position = player.Rigidbody.position;
         newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
