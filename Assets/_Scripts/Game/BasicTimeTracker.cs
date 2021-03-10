@@ -83,4 +83,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
             Position = (Vector2) snapshotDictionary[nameof(Position)];
         }
     }
+
+    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
 }

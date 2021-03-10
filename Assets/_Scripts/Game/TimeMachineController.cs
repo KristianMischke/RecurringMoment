@@ -76,6 +76,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         CurrentlyActivated = false;
         CurrentActivatedTimeStep = -1;
+        CurrentCountdown = -1;
 
         if (!isTravellingMachine)
         {
@@ -176,10 +177,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        snapshotDictionary[nameof(CurrentlyActivated)] = CurrentlyActivated || HistoryActivated;
-        snapshotDictionary[nameof(CurrentlyOccupied)] = CurrentlyOccupied || HistoryOccupied;
-        snapshotDictionary[nameof(CurrentActivatedTimeStep)] = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
-        snapshotDictionary[nameof(CurrentCountdown)] = CurrentActivatedTimeStep == -1 ? CurrentCountdown : HistoryCountdown;
+        snapshotDictionary[nameof(CurrentlyActivated)] = CurrentlyActivated;
+        snapshotDictionary[nameof(CurrentlyOccupied)] = CurrentlyOccupied;
+        snapshotDictionary[nameof(CurrentActivatedTimeStep)] = CurrentActivatedTimeStep;
+        snapshotDictionary[nameof(CurrentCountdown)] = CurrentCountdown;
+        
+        snapshotDictionary[nameof(HistoryActivated)] = HistoryActivated || CurrentlyActivated;
+        snapshotDictionary[nameof(HistoryOccupied)] = HistoryOccupied || CurrentlyOccupied;
+        snapshotDictionary[nameof(HistoryActivatedTimeStep)] = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
+        snapshotDictionary[nameof(HistoryCountdown)] = CurrentActivatedTimeStep == -1 ? CurrentCountdown : HistoryCountdown;
 
         if (FlagDestroy)
         {
@@ -192,17 +198,33 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        HistoryActivated = (bool)snapshotDictionary[nameof(CurrentlyActivated)];
-        HistoryOccupied = (bool)snapshotDictionary[nameof(CurrentlyOccupied)];
-        HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(CurrentActivatedTimeStep)];
-        HistoryCountdown = (int)snapshotDictionary[nameof(CurrentCountdown)];
+        HistoryActivated = (bool)snapshotDictionary[nameof(HistoryActivated)];
+        HistoryOccupied = (bool)snapshotDictionary[nameof(HistoryOccupied)];
+        HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(HistoryActivatedTimeStep)];
+        HistoryCountdown = (int)snapshotDictionary[nameof(HistoryCountdown)];
 
         if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
         {
-            ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-            Position = (Vector2) snapshotDictionary[nameof(Position)];
+            ItemForm = (bool)snapshotDictionary[nameof(ItemForm)];
+            Position = (Vector2)snapshotDictionary[nameof(Position)];
         }
 
         CurrentlyOccupied &= HistoryActivated;
+    }
+
+    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    {
+        CurrentlyActivated = (bool)snapshotDictionary[nameof(CurrentlyActivated)];
+        CurrentlyOccupied = (bool)snapshotDictionary[nameof(CurrentlyOccupied)];
+        CurrentActivatedTimeStep = (int)snapshotDictionary[nameof(CurrentActivatedTimeStep)];
+        CurrentCountdown = (int)snapshotDictionary[nameof(CurrentCountdown)];
+        
+        HistoryActivated = (bool)snapshotDictionary[nameof(HistoryActivated)];
+        HistoryOccupied = (bool)snapshotDictionary[nameof(HistoryOccupied)];
+        HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(HistoryActivatedTimeStep)];
+        HistoryCountdown = (int)snapshotDictionary[nameof(HistoryCountdown)];
+
+        ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
+        Position = (Vector2) snapshotDictionary[nameof(Position)];
     }
 }

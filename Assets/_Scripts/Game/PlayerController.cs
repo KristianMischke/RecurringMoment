@@ -269,4 +269,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
         historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
     }
+    
+    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
 }

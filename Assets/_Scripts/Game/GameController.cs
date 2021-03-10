@@ -34,7 +34,9 @@ public class GameController : MonoBehaviour
     public string nextLevel;
     // visuals
     public TMP_Text timerText;
-
+    public RetryPopup retryPopupPrefab;
+    public Canvas mainUICanvas;
+    
     private Pool<PlayerController> playerObjectPool;
     public List<PlayerController> pastPlayers = new List<PlayerController>();
 
@@ -94,6 +96,7 @@ public class GameController : MonoBehaviour
 
     private GameState spawnState = null;
     private GameState currentState = new GameState();
+    private bool paused = false;
     
     // ---Easy accessors for current state---
     public int NextID
@@ -207,6 +210,11 @@ public class GameController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (paused)
+        {
+            return;
+        }
+
         if (AnimateRewind)
         {
             player.gameObject.SetActive(false);
@@ -214,7 +222,7 @@ public class GameController : MonoBehaviour
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
             LoadSnapshot(AnimateFrame, true);
 
-            if (AnimateFrame == TimeStep)
+            if (AnimateFrame == TimeStep) // we are done rewinding
             {
                 AnimateFrame = -1;
                 AnimateRewind = false;
@@ -223,32 +231,58 @@ public class GameController : MonoBehaviour
                 TimeTrackerObjects.Add(player);
                 OccupiedTimeMachine.CurrentlyOccupied = true;
                 OccupiedTimeMachine = null;
+                
+                // set the spawn state to this point
+                if (spawnState == null) spawnState = new GameState();
+                spawnState.DeepCopy(currentState);
             }
         }
         else
         {
-            DoTimeStep();
+            try
+            {
+                DoTimeStep();
 
-            if (DoTimeSkip)
-            {
-                DoTimeSkip = false;
-                SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT;
-            }
-            if (TimeStep < SkipTimeStep && SkipTimeStep != -1)
-            {
-                Physics2D.simulationMode = SimulationMode2D.Script;
-                for (int i = 0; i < TIME_SKIP_ANIMATE_FPS-1; i++)
+                if (DoTimeSkip)
                 {
-                    Physics2D.Simulate(Time.fixedDeltaTime);
-                    DoTimeStep();
+                    DoTimeSkip = false;
+                    SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT;
                 }
-                Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+                if (TimeStep < SkipTimeStep && SkipTimeStep != -1)
+                {
+                    Physics2D.simulationMode = SimulationMode2D.Script;
+                    for (int i = 0; i < TIME_SKIP_ANIMATE_FPS-1; i++)
+                    {
+                        Physics2D.Simulate(Time.fixedDeltaTime);
+                        DoTimeStep();
+                    }
+                    Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+                }
+                if (TimeStep >= SkipTimeStep)
+                {
+                    SkipTimeStep = -1;
+                }
             }
-            if (TimeStep >= SkipTimeStep)
+            catch (TimeAnomalyException e)
             {
-                SkipTimeStep = -1;
+                SetPause(true);
+                ShowRetryPopup(e);
             }
         }
+    }
+
+    private void SetPause(bool newPaused)
+    {
+        if (paused && !newPaused)
+        {
+            Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
+        }
+        if (!paused && newPaused)
+        {
+            Physics2D.simulationMode = SimulationMode2D.Script;
+        }
+            
+        paused = newPaused;
     }
 
     public void DoTimeStep()
@@ -306,9 +340,6 @@ public class GameController : MonoBehaviour
         if (timeTravelStep >= 0)
         {
             DoTimeTravel(timeTravelStep, targetTimeMachine, player);
-            
-            if (spawnState == null) spawnState = new GameState();
-            spawnState.DeepCopy(currentState);
         }
     }
 
@@ -317,7 +348,7 @@ public class GameController : MonoBehaviour
         DoTimeSkip = true;
     }
 
-    void LoadSnapshot(int timeStep, bool rewind)
+    void LoadSnapshot(int timeStep, bool rewind, bool forceLoad = false)
     {
         if (timeStep == FurthestTimeStep) return;
 
@@ -357,6 +388,10 @@ public class GameController : MonoBehaviour
                     if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY) && !rewind)
                     {
                         delete = true;
+                    }
+                    else if (forceLoad)
+                    {
+                        timeTracker.ForceLoadSnapshot(history[relativeSnapshotIndex]);
                     }
                     else
                     {
@@ -442,7 +477,20 @@ public class GameController : MonoBehaviour
             RetryLevel();
             return;
         }
+
+        // load player snapshot from current state (at the timestep of the spawnState)
+        int playerStartFrame = currentState.historyStartById[player.ID];
+        player.ForceLoadSnapshot(currentState.snapshotHistoryById[player.ID][spawnState.timeStep - playerStartFrame]);
+            
         currentState.DeepCopy(spawnState);
+        LoadSnapshot(TimeStep, false, true);
+        SetPause(false);
+    }
+
+    public void ShowRetryPopup(TimeAnomalyException e)
+    {
+        var popup = Instantiate(retryPopupPrefab, mainUICanvas.transform);
+        popup.Init("Symmetry Broken!", e.Message, RetryLevel, RespawnLatest);
     }
 
     public void ExportHistory()
@@ -522,10 +570,13 @@ public class GameController : MonoBehaviour
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
         {
-            if (timeMachine.CurrentlyActivated && (timeMachine.HistoryActivated))
+            if (timeMachine.CurrentlyActivated && timeMachine.HistoryCountdown != -1)
             {
-                throw new TimeAnomalyException("");
-                Debug.LogError("Time anomaly, restart from previous spawn point or retry level!");
+                throw new TimeAnomalyException("Doppelganger tried activating an already active Time Machine!");
+            }
+            if (timeMachine.HistoryCountdown != -1 && timeMachine.CurrentCountdown != -1 && timeMachine.CurrentCountdown != timeMachine.HistoryCountdown)
+            {
+                throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
             }
         }
     }
