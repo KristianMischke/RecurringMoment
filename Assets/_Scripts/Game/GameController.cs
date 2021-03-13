@@ -25,6 +25,7 @@ public class GameController : MonoBehaviour
     public const int TIME_STEP_SKIP_AMOUNT = 100;
     public const int TIME_SKIP_ANIMATE_FPS = 10;
     public const int TIME_TRAVEL_REWIND_MULT = 10;
+    public const float POSITION_ANOMALY_ERROR = 0.75f;
 
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public List<BasicTimeTracker> basicTimeTrackers = new List<BasicTimeTracker>();
@@ -38,7 +39,35 @@ public class GameController : MonoBehaviour
     public Canvas mainUICanvas;
     
     private Pool<PlayerController> playerObjectPool;
-    public List<PlayerController> pastPlayers = new List<PlayerController>();
+
+    public IEnumerable<PlayerController> PastPlayers
+    {
+        get
+        {
+            foreach(ITimeTracker timeTracker in TimeTrackerObjects)
+            {
+                PlayerController playerController = timeTracker as PlayerController;
+                if (playerController != null && playerController != player)
+                {
+                    yield return playerController;
+                }
+            }
+        }
+    }
+
+    public static ITimeTracker GetTimeTrackerComponent(GameObject gameObject)
+    {
+        TimeMachineController timeMachineController = gameObject.GetComponent<TimeMachineController>();
+        if (timeMachineController != null) return timeMachineController;
+        
+        PlayerController playerController = gameObject.GetComponent<PlayerController>();
+        if (playerController != null) return playerController;
+        
+        BasicTimeTracker basicTimeTracker = gameObject.GetComponent<BasicTimeTracker>();
+        if (basicTimeTracker != null) return basicTimeTracker;
+        
+        return null;
+    }
 
     private class GameState
     {
@@ -369,7 +398,6 @@ public class GameController : MonoBehaviour
                 newPlayer.Init(this, id);
                 newPlayer.PlayerInput.enabled = false;
                 TimeTrackerObjects.Add(newPlayer);
-                pastPlayers.Add(newPlayer);
             }
         }
 
@@ -414,6 +442,22 @@ public class GameController : MonoBehaviour
                 TimeTrackerObjects.RemoveAt(i);
             }
         }
+    }
+
+    private T GetSnapshotValue<T>(ITimeTracker timeTracker, int timeStep, string parameter, T defaultValue = default)
+    {
+        if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
+        {
+            int startTimeStep = HistoryStartById[timeTracker.ID];
+            int relativeSnapshotIndex = timeStep - startTimeStep;
+
+            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            {
+                return (T)history[relativeSnapshotIndex][parameter];
+            }
+        }
+
+        return defaultValue;
     }
 
     private void PoolObject(ITimeTracker timeTracker)
@@ -470,7 +514,7 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public void RespawnLatest() // TODO: this next
+    public void RespawnLatest()
     {
         if (spawnState == null)
         {
@@ -578,6 +622,23 @@ public class GameController : MonoBehaviour
             {
                 throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
             }
+        }
+
+        foreach (PlayerController p in PastPlayers)
+        {
+            string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
+            string currentColliderState = p.GetCollisionStateString(); 
+            if (historyColliderState != currentColliderState)
+            {
+                Debug.Log($"{historyColliderState}\n{currentColliderState}");
+                throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            }
+            // Vector2 historyPosition = GetSnapshotValue(p, TimeStep, nameof(p.Rigidbody.position), Vector2.positiveInfinity);
+            // Debug.Log(Vector2.Distance(historyPosition, p.Position).ToString());
+            // if (Vector2.Distance(historyPosition, p.Position) > POSITION_ANOMALY_ERROR)
+            // {
+            //     throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            // }
         }
     }
 

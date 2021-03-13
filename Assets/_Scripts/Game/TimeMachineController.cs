@@ -86,10 +86,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void BackToPresent()
     {
-        CurrentlyActivated = HistoryActivated;
-        CurrentlyOccupied = HistoryOccupied;
-        CurrentActivatedTimeStep = HistoryActivatedTimeStep;
-        CurrentCountdown = HistoryCountdown;
+        CurrentlyActivated |= HistoryActivated;
+        CurrentlyOccupied |= HistoryOccupied;
+        if (CurrentActivatedTimeStep == -1) CurrentActivatedTimeStep = HistoryActivatedTimeStep;
+        if (CurrentCountdown == -1) CurrentCountdown = HistoryCountdown;
 
         HistoryActivated = false;
         HistoryOccupied = false;
