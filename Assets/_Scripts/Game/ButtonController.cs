@@ -10,7 +10,9 @@ public class ButtonController : ActivatableBehaviour
 
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
 
-    public override bool IsActivated => triggeringObjects.Count > 0;
+    public int collisionCount;
+
+    public override bool IsActivated => triggeringObjects.Count >= collisionCount;
 
     public void UpdateArt()
     {
