@@ -672,6 +672,7 @@ public class GameController : MonoBehaviour
         newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
         newPlayer.Rigidbody.position = player.Rigidbody.position;
         newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
+        SaveSnapshot(timeTravelStep, newPlayer); // save the spawn position for the new player
 
         this.player = newPlayer;
 
