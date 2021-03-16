@@ -213,6 +213,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void FixedUpdate()
     {
+        if (this != gameController.player) return; // don't update physics from inputs if not main player
+        
         UpdateIsGrounded();
         if (jump)
         {
@@ -280,7 +282,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
         snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
         snapshotDictionary[nameof(isActivating)] = isActivating;
-        snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
+        //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;

@@ -72,18 +72,6 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         return true;
     }
 
-    public void DoTimeTravel(bool isTravellingMachine)
-    {
-        CurrentlyActivated = false;
-        CurrentActivatedTimeStep = -1;
-        CurrentCountdown = -1;
-
-        if (!isTravellingMachine)
-        {
-            CurrentlyOccupied = false;
-        }
-    }
-
     public void BackToPresent()
     {
         CurrentlyActivated |= HistoryActivated;
@@ -185,7 +173,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         snapshotDictionary[nameof(HistoryActivated)] = HistoryActivated || CurrentlyActivated;
         snapshotDictionary[nameof(HistoryOccupied)] = HistoryOccupied || CurrentlyOccupied;
         snapshotDictionary[nameof(HistoryActivatedTimeStep)] = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
-        snapshotDictionary[nameof(HistoryCountdown)] = CurrentActivatedTimeStep == -1 ? CurrentCountdown : HistoryCountdown;
+        snapshotDictionary[nameof(HistoryCountdown)] = CurrentCountdown == -1 ? HistoryCountdown : CurrentCountdown;
 
         if (FlagDestroy)
         {
