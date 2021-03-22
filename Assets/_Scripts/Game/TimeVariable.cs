@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class TimeVariable<T>
 {
@@ -60,5 +62,52 @@ public class TimeInt : TimeVariable<int>
         snapshotDictionary[CurrentName] = Current;
         
         snapshotDictionary[HistoryName] = Current == -1 ? History : Current;
+    }
+}
+
+public class TimePosition : TimeVariable<Vector2>
+{
+    private readonly Action<Vector2> _setter;
+    private readonly Func<Vector2> _getter;
+
+    private Vector2 _current;
+
+    public TimePosition(string name, Action<Vector2> setter = null, Func<Vector2> getter = null) : base(name)
+    {
+        _setter = setter;
+        _getter = getter;
+    }
+
+    public override Vector2 Current
+    {
+        get
+        {
+            _current = _getter?.Invoke() ?? _current;
+            return _current;
+        }
+        set
+        {
+            _current = value;
+            _setter?.Invoke(value);
+        }
+    }
+
+    public Vector2 Get
+    {
+        get
+        {
+            Vector2 temp = Current;
+            return temp == Vector2.negativeInfinity ? History : temp;
+        }
+    }
+
+    public void ClearCurrent() => Current = Vector2.negativeInfinity;
+    
+    public override void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    {
+        Vector2 temp = Current;
+        snapshotDictionary[CurrentName] = temp;
+        
+        snapshotDictionary[HistoryName] = temp == Vector2.negativeInfinity ? History : temp;
     }
 }

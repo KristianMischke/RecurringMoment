@@ -11,23 +11,9 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     private bool touchedPlayer = false;
     public int ID { get; private set; }
 
-    public Vector2 Position
-    {
-        get => transform.position;
-        set => transform.position = value;
-    }
+    public TimePosition Position { get; private set; }
+    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
-    private bool _itemForm = false;
-    public bool ItemForm
-    {
-        get => _itemForm;
-        set
-        {
-            _itemForm = value;
-            gameObject.SetActive(!_itemForm);
-        }
-
-    }
     public bool FlagDestroy { get; set; }
 
     private Collider2D _collider2d;
@@ -42,9 +28,18 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
             return _collider2d;
         }
     }
-    
+
+    public bool SetItemState(bool state)
+    {
+        ItemForm.Current = state;
+        gameObject.SetActive(!ItemForm.AnyTrue);
+        return true;
+    }
+
     void FixedUpdate()
     {
+        gameObject.SetActive(!ItemForm.AnyTrue);
+        
         if (Collider2D.IsTouching(gameController.player.CapsuleCollider))
         {
             touchedPlayer = true;
@@ -59,6 +54,8 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
+        
+        Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -68,25 +65,23 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
         }
 
-        snapshotDictionary[nameof(ItemForm)] = ItemForm;
-        snapshotDictionary[nameof(Position)] = Position;
+        ItemForm.SaveSnapshot(snapshotDictionary);
+        Position.SaveSnapshot(snapshotDictionary);
     }
 
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
-        {
-            ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-        }
-        if (!touchedPlayer) //TODO: if object is bumped by something (not just the player) unexpected in the past, should ignore loading positions
-        {
-            Position = (Vector2) snapshotDictionary[nameof(Position)];
-        }
+        ItemForm.LoadSnapshot(snapshotDictionary);
+        Position.LoadSnapshot(snapshotDictionary);
+
+        gameObject.SetActive(!ItemForm.AnyTrue);
     }
 
     public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-        Position = (Vector2) snapshotDictionary[nameof(Position)];
+        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        Position.ForceLoadSnapshot(snapshotDictionary);
+        
+        gameObject.SetActive(!ItemForm.AnyTrue);
     }
 }

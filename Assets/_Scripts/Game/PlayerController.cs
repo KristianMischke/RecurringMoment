@@ -97,14 +97,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private GameController gameController;
     public int ID { get; private set; }
-    public Vector2 Position
-    {
-        get => transform.position;
-        set => transform.position = value;
-    }
-    public bool ItemForm { get => false; set { } }
+    public TimePosition Position { get; private set; }
+    public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
 
+    public bool SetItemState(bool state) => false;
 
     //---PlayerInputs---
     private void OnMove(InputValue movementValue)
@@ -168,15 +165,17 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     if (timeMachine != null)
                     {
-                        timeMachine.ItemForm = true;
-                        if (timeMachine.ItemForm)
+                        if (timeMachine.SetItemState(true))
+                        {
                             itemID = timeMachine.ID;
+                        }
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
-                        basicTimeTracker.ItemForm = true;
-                        if (basicTimeTracker.ItemForm)
+                        if (basicTimeTracker.SetItemState(true))
+                        {
                             itemID = basicTimeTracker.ID;
+                        }
                     }
                 }
             }
@@ -203,7 +202,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     private void Update()
-    { 
+    {
         Animator.SetBool("Walking", _rigidbody.velocity != Vector2.zero);
         if (_rigidbody.velocity != Vector2.zero)
         {
@@ -248,6 +247,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
+        
+        Position = new TimePosition("Position", x => Rigidbody.position = x, () => Rigidbody.position);
     }
 
     public string GetCollisionStateString()
@@ -278,7 +279,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        snapshotDictionary[nameof(Rigidbody.position)] = Rigidbody.position;
+        Position.SaveSnapshot(snapshotDictionary);
         snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
         snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
         snapshotDictionary[nameof(isActivating)] = isActivating;
@@ -293,7 +294,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        Rigidbody.position = (Vector2)snapshotDictionary[nameof(Rigidbody.position)];
+        Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
+        
         Rigidbody.velocity = (Vector2)snapshotDictionary[nameof(Rigidbody.velocity)];
         Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
         historyActivating = (bool)snapshotDictionary[nameof(isActivating)];

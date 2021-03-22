@@ -449,9 +449,9 @@ public class GameController : MonoBehaviour
             int startTimeStep = HistoryStartById[timeTracker.ID];
             int relativeSnapshotIndex = timeStep - startTimeStep;
 
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(parameter, out object result))
             {
-                return (T)history[relativeSnapshotIndex][parameter];
+                return (T)result;
             }
         }
 
@@ -472,8 +472,8 @@ public class GameController : MonoBehaviour
         {
             if (timeTracker.ID == id)
             {
-                timeTracker.Position = player.Position;
-                timeTracker.ItemForm = false;
+                timeTracker.Position.Current = player.Position.Get;
+                timeTracker.SetItemState(false);
                 break;
             }
         }
@@ -636,9 +636,9 @@ public class GameController : MonoBehaviour
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
             //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
             //}
-             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, nameof(p.Rigidbody.position), Vector2.positiveInfinity);
-             Debug.Log(Vector2.Distance(historyPosition, p.Position).ToString());
-             if (Vector2.Distance(historyPosition, p.Position) > POSITION_ANOMALY_ERROR)
+             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, nameof(p.Position.HistoryName), Vector2.positiveInfinity);
+             Debug.Log(Vector2.Distance(historyPosition, p.Position.Current).ToString());
+             if (Vector2.Distance(historyPosition, p.Position.Current) > POSITION_ANOMALY_ERROR)
              {
                  throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
              }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEditor;
 
 public class TimeMachineController : MonoBehaviour, ITimeTracker
 {
@@ -22,29 +23,21 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool IsActivatedOrOccupied => Activated.AnyTrue || Occupied.AnyTrue;
 
     public int ID { get; private set; }
-    public Vector2 Position
-    {
-        get => transform.position;
-        set => transform.position = value;
-    }
-    private bool _itemForm = false;
-
-    public bool ItemForm
-    {
-        get => _itemForm;
-        set
-        {
-            if(!value)
-                if (IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated, cannot move it
-                    return;
-
-            _itemForm = value;
-            gameObject.SetActive(!_itemForm);
-        }
-
-    }
+    public TimePosition Position { get; private set; }
+    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
+    
+    public bool SetItemState(bool state)
+    {
+        if(state)
+            if (IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated, cannot move it
+                return false;
+
+        ItemForm.Current = state;
+        gameObject.SetActive(!ItemForm.AnyTrue);
+        return true;
+    }
 
     public bool Activate(out int timeTravelDestStep)
     {
@@ -87,7 +80,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
 
     public void GameUpdate()
-    {
+    {   
         if (Countdown.Current > 0)
         {
             Countdown.Current--;
@@ -156,6 +149,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
+        
+        Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -169,9 +164,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
         }
-
-        snapshotDictionary[nameof(ItemForm)] = ItemForm;
-        snapshotDictionary[nameof(Position)] = Position;
+        
+        ItemForm.SaveSnapshot(snapshotDictionary);
+        Position.SaveSnapshot(snapshotDictionary);
     }
 
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
@@ -180,13 +175,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.LoadSnapshot(snapshotDictionary);
         ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
         Countdown.LoadSnapshot(snapshotDictionary);
+        ItemForm.LoadSnapshot(snapshotDictionary);
+        Position.LoadSnapshot(snapshotDictionary);
 
-        if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
-        {
-            ItemForm = (bool)snapshotDictionary[nameof(ItemForm)];
-            Position = (Vector2)snapshotDictionary[nameof(Position)];
-        }
-
+        gameObject.SetActive(!ItemForm.AnyTrue);
+        
         Occupied.Current &= Activated.History;
     }
 
@@ -197,7 +190,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.ForceLoadSnapshot(snapshotDictionary);
         Countdown.ForceLoadSnapshot(snapshotDictionary);
 
-        ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-        Position = (Vector2) snapshotDictionary[nameof(Position)];
+        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        Position.ForceLoadSnapshot(snapshotDictionary);
+        
+        gameObject.SetActive(!ItemForm.AnyTrue);
     }
 }
