@@ -261,7 +261,7 @@ public class GameController : MonoBehaviour
                 
                 player.gameObject.SetActive(true);
                 TimeTrackerObjects.Add(player);
-                OccupiedTimeMachine.CurrentlyOccupied = true;
+                OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine = null;
                 
                 // set the spawn state to this point
@@ -617,11 +617,11 @@ public class GameController : MonoBehaviour
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
         {
-            if (timeMachine.CurrentlyActivated && timeMachine.HistoryCountdown != -1)
+            if (timeMachine.Activated.Current && timeMachine.Countdown.History != -1)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating an already active Time Machine!");
             }
-            if (timeMachine.HistoryCountdown != -1 && timeMachine.CurrentCountdown != -1 && timeMachine.CurrentCountdown != timeMachine.HistoryCountdown)
+            if (timeMachine.Countdown.History != -1 && timeMachine.Countdown.Current != -1 && timeMachine.Countdown.Current != timeMachine.Countdown.History)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
             }
@@ -677,15 +677,15 @@ public class GameController : MonoBehaviour
         this.player = newPlayer;
 
         { // clear 'history' values on the time machine for the frame this was activated
-            timeMachine.HistoryCountdown = -1;
-            timeMachine.HistoryActivatedTimeStep = -1;
-            timeMachine.HistoryActivated = false;
-            timeMachine.HistoryOccupied = false;
+            timeMachine.Countdown.History = -1;
+            timeMachine.ActivatedTimeStep.History = -1;
+            timeMachine.Activated.History = false;
+            timeMachine.Occupied.History = false;
             
-            timeMachine.CurrentCountdown = -1;
-            timeMachine.CurrentActivatedTimeStep = -1;
-            timeMachine.CurrentlyActivated = false;
-            timeMachine.CurrentlyOccupied = false;
+            timeMachine.Countdown.Current = -1;
+            timeMachine.ActivatedTimeStep.Current = -1;
+            timeMachine.Activated.Current = false;
+            timeMachine.Occupied.Current = false;
             SaveSnapshot(AnimateFrame - 1, timeMachine);
         }
 
@@ -694,10 +694,10 @@ public class GameController : MonoBehaviour
         foreach (TimeMachineController otherTimeMachine in timeMachines)
         {
             LoadSnapshot(timeTravelStep, otherTimeMachine, false, forceLoad:true);
-            otherTimeMachine.CurrentCountdown = -1;
-            otherTimeMachine.CurrentActivatedTimeStep = -1;
-            otherTimeMachine.CurrentlyActivated = false;
-            otherTimeMachine.CurrentlyOccupied = false;
+            otherTimeMachine.Countdown.Current = -1;
+            otherTimeMachine.ActivatedTimeStep.Current = -1;
+            otherTimeMachine.Activated.Current = false;
+            otherTimeMachine.Occupied.Current = false;
             SaveSnapshot(timeTravelStep, otherTimeMachine);
         }
     }

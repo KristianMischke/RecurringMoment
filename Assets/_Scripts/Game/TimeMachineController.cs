@@ -14,17 +14,12 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 
-    public bool HistoryActivated = false;
-    public bool HistoryOccupied = false;
-    public int HistoryActivatedTimeStep = -1;
-    public int HistoryCountdown = -1;
+    public TimeBool Activated = new TimeBool("Activated");
+    public TimeBool Occupied = new TimeBool("Occupied");
+    public TimeInt ActivatedTimeStep = new TimeInt("ActivatedTimeStep");
+    public TimeInt Countdown = new TimeInt("Countdown");
 
-    public bool CurrentlyActivated = false;
-    public bool CurrentlyOccupied = false;
-    public int CurrentActivatedTimeStep = -1;
-    public int CurrentCountdown = -1;
-
-    public bool IsActivatedOrOccupied => HistoryActivated || CurrentlyActivated || HistoryOccupied || CurrentlyOccupied;
+    public bool IsActivatedOrOccupied => Activated.AnyTrue || Occupied.AnyTrue;
 
     public int ID { get; private set; }
     public Vector2 Position
@@ -40,7 +35,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         set
         {
             if(!value)
-                if (CurrentlyActivated || HistoryActivated || CurrentlyOccupied || HistoryOccupied || CurrentCountdown >= 0 || HistoryCountdown >= 0) // time machine is occupied or activated, cannot move it
+                if (IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated, cannot move it
                     return;
 
             _itemForm = value;
@@ -55,18 +50,18 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         timeTravelDestStep = -1;
 
-        if (CurrentlyOccupied || HistoryOccupied || CurrentCountdown >= 0 || HistoryCountdown >= 0) // time machine is occupied, cannot use it
+        if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
             return false;
 
-        if (CurrentlyActivated || HistoryActivated) // time machine is active, so deactivate and do timetravel
+        if (Activated.AnyTrue) // time machine is active, so deactivate and do timetravel
         {
-            timeTravelDestStep = CurrentlyActivated ? CurrentActivatedTimeStep : HistoryActivatedTimeStep;
-            CurrentActivatedTimeStep = -1;
-            CurrentlyActivated = false;
+            timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
+            ActivatedTimeStep.Current = -1;
+            Activated.Current = false;
         }
         else
         {
-            CurrentCountdown = TIME_MACHINE_COUNTDOWN;
+            Countdown.Current = TIME_MACHINE_COUNTDOWN;
         }
 
         return true;
@@ -74,15 +69,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void BackToPresent()
     {
-        CurrentlyActivated |= HistoryActivated;
-        CurrentlyOccupied |= HistoryOccupied;
-        if (CurrentActivatedTimeStep == -1) CurrentActivatedTimeStep = HistoryActivatedTimeStep;
-        if (CurrentCountdown == -1) CurrentCountdown = HistoryCountdown;
+        Activated.Current |= Activated.History;
+        Occupied.Current |= Occupied.History;
+        if (ActivatedTimeStep.Current == -1) ActivatedTimeStep.Current = ActivatedTimeStep.History;
+        if (Countdown.Current == -1) Countdown.Current = Countdown.History;
 
-        HistoryActivated = false;
-        HistoryOccupied = false;
-        HistoryActivatedTimeStep = -1;
-        HistoryCountdown = -1;
+        Activated.History = false;
+        Occupied.History = false;
+        ActivatedTimeStep.History = -1;
+        Countdown.History = -1;
     }
 
     public bool IsTouching(GameObject other)
@@ -93,17 +88,17 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        if (CurrentCountdown > 0)
+        if (Countdown.Current > 0)
         {
-            CurrentCountdown--;
+            Countdown.Current--;
         }
 
-        if (CurrentCountdown == 0)
+        if (Countdown.Current == 0)
         {
-            CurrentCountdown = -1;
+            Countdown.Current = -1;
 
-            CurrentlyActivated = true;
-            CurrentActivatedTimeStep = gameController.TimeStep;
+            Activated.Current = true;
+            ActivatedTimeStep.Current = gameController.TimeStep;
         }
     }
 
@@ -113,11 +108,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     }
     public void Update()
     {
-        if (CurrentlyOccupied || HistoryOccupied)
+        if (Occupied.AnyTrue)
         {
             renderer.color = new Color(0.8f, 0.8f, 1f);
         }
-        else if (CurrentlyActivated || HistoryActivated)
+        else if (Activated.AnyTrue)
         {
             renderer.color = new Color(1f, 1f, 0.8f);
         }
@@ -126,8 +121,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             renderer.color = new Color(1f, 1f, 1f);
         }
 
-        int displayStartStep = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
-        int displayCountdown = CurrentCountdown == -1 ? HistoryCountdown : CurrentCountdown;
+        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
+        int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
         if (displayCountdown >= 0)
         {
             timeText.text = (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
@@ -165,16 +160,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        snapshotDictionary[nameof(CurrentlyActivated)] = CurrentlyActivated;
-        snapshotDictionary[nameof(CurrentlyOccupied)] = CurrentlyOccupied;
-        snapshotDictionary[nameof(CurrentActivatedTimeStep)] = CurrentActivatedTimeStep;
-        snapshotDictionary[nameof(CurrentCountdown)] = CurrentCountdown;
+        Activated.SaveSnapshot(snapshotDictionary);
+        Occupied.SaveSnapshot(snapshotDictionary);
+        ActivatedTimeStep.SaveSnapshot(snapshotDictionary);
+        Countdown.SaveSnapshot(snapshotDictionary);
         
-        snapshotDictionary[nameof(HistoryActivated)] = HistoryActivated || CurrentlyActivated;
-        snapshotDictionary[nameof(HistoryOccupied)] = HistoryOccupied || CurrentlyOccupied;
-        snapshotDictionary[nameof(HistoryActivatedTimeStep)] = CurrentActivatedTimeStep == -1 ? HistoryActivatedTimeStep : CurrentActivatedTimeStep;
-        snapshotDictionary[nameof(HistoryCountdown)] = CurrentCountdown == -1 ? HistoryCountdown : CurrentCountdown;
-
         if (FlagDestroy)
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
@@ -186,10 +176,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        HistoryActivated = (bool)snapshotDictionary[nameof(HistoryActivated)];
-        HistoryOccupied = (bool)snapshotDictionary[nameof(HistoryOccupied)];
-        HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(HistoryActivatedTimeStep)];
-        HistoryCountdown = (int)snapshotDictionary[nameof(HistoryCountdown)];
+        Activated.LoadSnapshot(snapshotDictionary);
+        Occupied.LoadSnapshot(snapshotDictionary);
+        ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
+        Countdown.LoadSnapshot(snapshotDictionary);
 
         if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
         {
@@ -197,20 +187,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             Position = (Vector2)snapshotDictionary[nameof(Position)];
         }
 
-        CurrentlyOccupied &= HistoryActivated;
+        Occupied.Current &= Activated.History;
     }
 
     public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
     {
-        CurrentlyActivated = (bool)snapshotDictionary[nameof(CurrentlyActivated)];
-        CurrentlyOccupied = (bool)snapshotDictionary[nameof(CurrentlyOccupied)];
-        CurrentActivatedTimeStep = (int)snapshotDictionary[nameof(CurrentActivatedTimeStep)];
-        CurrentCountdown = (int)snapshotDictionary[nameof(CurrentCountdown)];
-        
-        HistoryActivated = (bool)snapshotDictionary[nameof(HistoryActivated)];
-        HistoryOccupied = (bool)snapshotDictionary[nameof(HistoryOccupied)];
-        HistoryActivatedTimeStep = (int)snapshotDictionary[nameof(HistoryActivatedTimeStep)];
-        HistoryCountdown = (int)snapshotDictionary[nameof(HistoryCountdown)];
+        Activated.ForceLoadSnapshot(snapshotDictionary);
+        Occupied.ForceLoadSnapshot(snapshotDictionary);
+        ActivatedTimeStep.ForceLoadSnapshot(snapshotDictionary);
+        Countdown.ForceLoadSnapshot(snapshotDictionary);
 
         ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
         Position = (Vector2) snapshotDictionary[nameof(Position)];
