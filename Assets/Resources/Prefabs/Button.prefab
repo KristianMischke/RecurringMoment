@@ -219,6 +219,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PressedArt: {fileID: 978344200368935894}
   NormalArt: {fileID: 978344198901258342}
+  collisionCount: 1
 --- !u!114 &4124366473047098373
 MonoBehaviour:
   m_ObjectHideFlags: 0
