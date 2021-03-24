@@ -213,6 +213,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void FixedUpdate()
     {
+        if (this != gameController.player) return; // don't update physics from inputs if not main player
+        
         UpdateIsGrounded();
         if (jump)
         {
@@ -248,12 +250,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         name = $"Player {id.ToString()}";
     }
 
+    public string GetCollisionStateString()
+    {
+        List<Collider2D> contactColliders = new List<Collider2D>();
+        _capsuleCollider.GetContacts(contactColliders);
+        
+        List<string> colliderStrings = new List<string>();
+        foreach (var collider in contactColliders)
+        {
+            if (collider.gameObject == gameController.player.gameObject || collider.gameObject == this.gameObject) continue;
+            
+            ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(collider.gameObject);
+            if (timeTracker != null)
+            {
+                colliderStrings.Add(timeTracker.ID.ToString());
+            }
+            else
+            {
+                colliderStrings.Add($"U{collider.GetInstanceID().ToString()}");   
+            }
+        }
+        
+        colliderStrings.Sort();
+
+        return string.Join(",", colliderStrings);
+    }
+
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
         snapshotDictionary[nameof(Rigidbody.position)] = Rigidbody.position;
         snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
         snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
         snapshotDictionary[nameof(isActivating)] = isActivating;
+        //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
@@ -269,4 +298,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
         historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
     }
+    
+    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
 }
