@@ -223,6 +223,7 @@ public class GameController : MonoBehaviour
             },
             x => {
                 x.gameObject.SetActive(false);
+                x.PlayerInput.enabled = false;
                 x.ClearState();
                 });
         
@@ -666,6 +667,8 @@ public class GameController : MonoBehaviour
         TimeStep = timeTravelStep;
         OccupiedTimeMachine = timeMachine;
 
+        this.player.PlayerInput.enabled = false;
+        
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, NextID++);
