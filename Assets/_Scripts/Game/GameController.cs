@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using UnityEngine.Serialization;
 
 public class TimeAnomalyException : Exception
 {
@@ -74,7 +72,7 @@ public class GameController : MonoBehaviour
         public int nextID = 0; // TODO: mutex lock?!
     
         public List<ITimeTracker> timeTrackerObjects = new List<ITimeTracker>();
-        public Dictionary<int, List<Dictionary<string, object>>> snapshotHistoryById = new Dictionary<int, List<Dictionary<string, object>>>();
+        public Dictionary<int, TimeDict> snapshotHistoryById = new Dictionary<int, TimeDict>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
         public int timeStep = 0;
         public int furthestTimeStep = 0;
@@ -101,11 +99,7 @@ public class GameController : MonoBehaviour
             snapshotHistoryById.Clear();
             foreach (var kvp in other.snapshotHistoryById)
             {
-                var history = snapshotHistoryById[kvp.Key] = new List<Dictionary<string, object>>();
-                foreach (var y in kvp.Value)
-                {
-                    history.Add(new Dictionary<string, object>(y));
-                }
+                snapshotHistoryById[kvp.Key] = new TimeDict(kvp.Value);
             }
 
             historyStartById = new Dictionary<int, int>(other.historyStartById);
@@ -135,7 +129,7 @@ public class GameController : MonoBehaviour
     }
 
     private List<ITimeTracker> TimeTrackerObjects => currentState.timeTrackerObjects;
-    private Dictionary<int, List<Dictionary<string, object>>> SnapshotHistoryById => currentState.snapshotHistoryById;
+    private Dictionary<int, TimeDict> SnapshotHistoryById => currentState.snapshotHistoryById;
     private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
     public int TimeStep
     {
@@ -384,7 +378,7 @@ public class GameController : MonoBehaviour
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0 && !(bool)history[timeStep][FLAG_DESTROY])
             {
                 // TODO: better structure to determine type of object and instantiate from appropriate pool (instead of just players)
                 PlayerController newPlayer = playerObjectPool.Aquire();
@@ -416,19 +410,19 @@ public class GameController : MonoBehaviour
             int startTimeStep = HistoryStartById[timeTracker.ID];
             int relativeSnapshotIndex = timeStep - startTimeStep;
 
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0)
             {
-                if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY) && !rewind)
+                if (history.GetValue<bool>(timeStep, FLAG_DESTROY) && !rewind)
                 {
                     delete = true;
                 }
                 else if (forceLoad)
                 {
-                    timeTracker.ForceLoadSnapshot(history[relativeSnapshotIndex]);
+                    timeTracker.ForceLoadSnapshot(history[timeStep]);
                 }
                 else
                 {
-                    timeTracker.LoadSnapshot(history[relativeSnapshotIndex]);
+                    timeTracker.LoadSnapshot(history[timeStep]);
                 }
             }
             else
@@ -449,9 +443,9 @@ public class GameController : MonoBehaviour
             int startTimeStep = HistoryStartById[timeTracker.ID];
             int relativeSnapshotIndex = timeStep - startTimeStep;
 
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(parameter, out object result))
+            if (relativeSnapshotIndex >= 0)
             {
-                return (T)result;
+                return history.GetValue<T>(timeStep, parameter);
             }
         }
 
@@ -491,25 +485,14 @@ public class GameController : MonoBehaviour
     {
         if (!SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
         {
-            history = SnapshotHistoryById[timeTracker.ID] = new List<Dictionary<string, object>>();
+            history = SnapshotHistoryById[timeTracker.ID] = new TimeDict();
             HistoryStartById[timeTracker.ID] = timeStep;
         }
 
         int startTimeStep = HistoryStartById[timeTracker.ID];
         int relativeSnapshotIndex = timeStep - startTimeStep;
-        if (relativeSnapshotIndex >= history.Count)
-        {
-            var frame = new Dictionary<string, object>();
-            timeTracker.SaveSnapshot(frame);
-            history.Add(frame);
-        }
-        else if (relativeSnapshotIndex >= 0 && timeTracker is TimeMachineController)
-        {
-            // time machines can re-write their past state if they are used
-            var frame = history[relativeSnapshotIndex];
-            frame.Clear();
-            timeTracker.SaveSnapshot(frame);
-        }
+
+        timeTracker.SaveSnapshot(history[timeStep]);
     }
 
     public void RetryLevel()
@@ -558,15 +541,13 @@ public class GameController : MonoBehaviour
             {
                 var history = SnapshotHistoryById[id];
 
-                if (history.Count > 0)
                 {
                     columns.Add($"{id}.{FLAG_DESTROY}");
 
-                    //NOTE: this would need to be adjusted for a sparse data structure
                     // grab columns from first history entry
-                    foreach (var kvp in history[0])
+                    foreach (string key in history.Keys)
                     {
-                        columns.Add($"{id}.{kvp.Key}");
+                        columns.Add($"{id}.{key}");
                     }
                 }
             }
@@ -594,9 +575,9 @@ public class GameController : MonoBehaviour
 
                         int startTimeStep = HistoryStartById[id];
                         int relativeSnapshotIndex = i - startTimeStep;
-                        if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(field, out object value))
+                        if (relativeSnapshotIndex >= 0 && (!history.GetValue<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
                         {
-                            row.Add(value.ToString());
+                            row.Add(history[i][field].ToString());
                         }
                         else
                         {
@@ -636,9 +617,9 @@ public class GameController : MonoBehaviour
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
             //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
             //}
-             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, nameof(p.Position.HistoryName), Vector2.positiveInfinity);
-             Debug.Log(Vector2.Distance(historyPosition, p.Position.Current).ToString());
-             if (Vector2.Distance(historyPosition, p.Position.Current) > POSITION_ANOMALY_ERROR)
+             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
+             Debug.Log(Vector2.Distance(historyPosition, p.Position.Get).ToString());
+             if (Vector2.Distance(historyPosition, p.Position.Get) > POSITION_ANOMALY_ERROR)
              {
                  throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
              }

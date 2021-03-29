@@ -58,7 +58,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         if (FlagDestroy)
         {
@@ -69,7 +69,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary);
     }
 
-    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
@@ -77,7 +77,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         gameObject.SetActive(!ItemForm.AnyTrue);
     }
 
-    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);

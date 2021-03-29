@@ -153,7 +153,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.SaveSnapshot(snapshotDictionary);
         Occupied.SaveSnapshot(snapshotDictionary);
@@ -169,7 +169,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary);
     }
 
-    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.LoadSnapshot(snapshotDictionary);
         Occupied.LoadSnapshot(snapshotDictionary);
@@ -183,7 +183,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.Current &= Activated.History;
     }
 
-    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.ForceLoadSnapshot(snapshotDictionary);
         Occupied.ForceLoadSnapshot(snapshotDictionary);

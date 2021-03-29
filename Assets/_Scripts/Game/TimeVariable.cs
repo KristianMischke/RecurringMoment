@@ -18,7 +18,7 @@ public class TimeVariable<T>
         Current = currentDefault;
     }
 
-    public virtual void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         // NOTE: behavior for how current/history are stored is ill-defined for templated type T
         snapshotDictionary[CurrentName] = Current;
@@ -26,16 +26,16 @@ public class TimeVariable<T>
         snapshotDictionary[HistoryName] = History;
     }
     
-    public virtual void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        History = (T)snapshotDictionary[HistoryName];
+        History = snapshotDictionary.GetValue<T>(HistoryName);
     }
     
-    public virtual void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        Current = (T)snapshotDictionary[CurrentName];
+        Current = snapshotDictionary.GetValue<T>(CurrentName);
         
-        History = (T)snapshotDictionary[HistoryName];
+        History = snapshotDictionary.GetValue<T>(HistoryName);
     }
 }
 
@@ -45,7 +45,7 @@ public class TimeBool : TimeVariable<bool>
 
     public bool AnyTrue => Current || History;
     
-    public override void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         snapshotDictionary[CurrentName] = Current;
         
@@ -57,7 +57,7 @@ public class TimeInt : TimeVariable<int>
 {
     public TimeInt(string name, int historyDefault = -1, int currentDefault = -1) : base(name, historyDefault, currentDefault) { }
     
-    public override void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         snapshotDictionary[CurrentName] = Current;
         
@@ -103,7 +103,7 @@ public class TimePosition : TimeVariable<Vector2>
 
     public void ClearCurrent() => Current = Vector2.negativeInfinity;
     
-    public override void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Vector2 temp = Current;
         snapshotDictionary[CurrentName] = temp;

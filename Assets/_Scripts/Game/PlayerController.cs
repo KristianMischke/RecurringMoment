@@ -277,7 +277,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         return string.Join(",", colliderStrings);
     }
 
-    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.SaveSnapshot(snapshotDictionary);
         snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
@@ -292,15 +292,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
-    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.LoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
         
-        Rigidbody.velocity = (Vector2)snapshotDictionary[nameof(Rigidbody.velocity)];
-        Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
-        historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
+        Rigidbody.velocity = snapshotDictionary.GetValue<Vector2>(nameof(Rigidbody.velocity));
+        Rigidbody.rotation = snapshotDictionary.GetValue<float>(nameof(Rigidbody.rotation));
+        historyActivating = snapshotDictionary.GetValue<bool>(nameof(isActivating));
     }
     
-    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
+    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary) => LoadSnapshot(snapshotDictionary);
 }
