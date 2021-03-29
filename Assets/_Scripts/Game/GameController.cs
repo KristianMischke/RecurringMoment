@@ -337,10 +337,6 @@ public class GameController : MonoBehaviour
                 {
                     targetTimeMachine = timeMachine;
                     didActivate = timeMachine.Activate(out timeTravelStep);
-                    if (timeTravelStep >= 0)
-                    {
-                        player.FlagDestroy = true;
-                    }
                     break;
                 }
             }
@@ -379,7 +375,7 @@ public class GameController : MonoBehaviour
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
-            if (relativeSnapshotIndex >= 0 && !(bool)history[timeStep][FLAG_DESTROY])
+            if (relativeSnapshotIndex >= 0 && !history.GetValue<bool>(timeStep, FLAG_DESTROY))
             {
                 // TODO: better structure to determine type of object and instantiate from appropriate pool (instead of just players)
                 PlayerController newPlayer = playerObjectPool.Aquire();
@@ -578,7 +574,7 @@ public class GameController : MonoBehaviour
                         int relativeSnapshotIndex = i - startTimeStep;
                         if (relativeSnapshotIndex >= 0 && (!history.GetValue<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
                         {
-                            row.Add(history[i][field].ToString());
+                            row.Add(history[i][field]?.ToString() ?? "");
                         }
                         else
                         {
@@ -650,6 +646,11 @@ public class GameController : MonoBehaviour
 
         this.player.PlayerInput.enabled = false;
         
+        // flag player to destroy
+        this.player.FlagDestroy = true;
+        SaveSnapshot(AnimateFrame-1, this.player);
+        this.player.FlagDestroy = false;
+        
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, NextID++);
@@ -677,7 +678,7 @@ public class GameController : MonoBehaviour
         // these values should already be recorded to history
         foreach (TimeMachineController otherTimeMachine in timeMachines)
         {
-            LoadSnapshot(timeTravelStep, otherTimeMachine, false, forceLoad:true);
+            LoadSnapshot(timeTravelStep, otherTimeMachine, false, forceLoad: true);
             otherTimeMachine.Countdown.Current = -1;
             otherTimeMachine.ActivatedTimeStep.Current = -1;
             otherTimeMachine.Activated.Current = false;
