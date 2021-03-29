@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Prototype_Level03.unity
     guid: ddd5e3b478fd7f34ebb1485d0a7714e4
   - enabled: 1
-    path: Assets/Scenes/aaronTest.unity
-    guid: 1774492d85ccf0d4b905041e8aa103b6
+    path: Assets/Scenes/Wilson Starting Scene.unity
+    guid: 41c1a3010bd3edd498e02c3c53576e14
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 4ca2e463a34acee49a4d1962e2ad2a2a, type: 2}
