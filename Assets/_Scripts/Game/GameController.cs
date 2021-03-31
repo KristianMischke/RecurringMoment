@@ -79,6 +79,7 @@ public class GameController : MonoBehaviour
         public int skipTimeStep = -1;
         public bool isPresent = true;
         public bool doTimeSkip = false;
+        public bool didTimeTravelThisFrame = false;
         public bool activatedLastFrame = false;
     
         // for animation logic
@@ -161,6 +162,11 @@ public class GameController : MonoBehaviour
         private set => currentState.doTimeSkip = value;
     }
 
+    public bool DidTimeTravelThisFrame
+    {
+        get => currentState.didTimeTravelThisFrame;
+        set => currentState.didTimeTravelThisFrame = value;
+    }
     public bool ActivatedLastFrame
     {
         get => currentState.activatedLastFrame;
@@ -263,6 +269,7 @@ public class GameController : MonoBehaviour
                 TimeTrackerObjects.Add(player);
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine = null;
+                DidTimeTravelThisFrame = true;
                 
                 // set the spawn state to this point
                 if (spawnState == null) spawnState = new GameState();
@@ -307,7 +314,10 @@ public class GameController : MonoBehaviour
 
     public void DoTimeStep()
     {
-        LoadSnapshotFull(TimeStep, false);
+        LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
+
+        if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
+        
         Physics2D.Simulate(Time.fixedDeltaTime);
         
         // restore history to current state if back to present

@@ -65,14 +65,14 @@ public class TimeInt : TimeVariable<int>
     }
 }
 
-public class TimePosition : TimeVariable<Vector2>
+public class TimeVector : TimeVariable<Vector2>
 {
     private readonly Action<Vector2> _setter;
     private readonly Func<Vector2> _getter;
 
     private Vector2 _current;
 
-    public TimePosition(string name, Action<Vector2> setter = null, Func<Vector2> getter = null) : base(name)
+    public TimeVector(string name, Action<Vector2> setter = null, Func<Vector2> getter = null) : base(name)
     {
         _setter = setter;
         _getter = getter;

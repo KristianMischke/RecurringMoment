@@ -97,14 +97,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private GameController gameController;
     public int ID { get; private set; }
-    public TimePosition Position { get; private set; }
+    public TimeVector Position { get; private set; }
+    public TimeVector Velocity { get; private set; }
     public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
 
     public bool SetItemState(bool state) => false;
 
     //---PlayerInputs---
-    private void OnMove(InputValue movementValue)
+    public void OnMove(InputValue movementValue)
     {
         if (gameController.player != this) return;
 
@@ -113,39 +114,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         horizontalInput = movementVector.x;
         verticalInput = movementVector.y;
     }
-    private void OnJump(InputValue inputValue)
+    public void OnJump(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         jump |= inputValue.isPressed && isGrounded;
     }
-    private void OnActivate(InputValue inputValue)
+    public void OnActivate(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         isActivating = inputValue.isPressed;
     }
-    private void OnSkipTime(InputValue inputValue)
+    public void OnSkipTime(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.SkipTime();
     }
-    private void OnSaveDebugHistory(InputValue inputValue)
+    public void OnSaveDebugHistory(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.ExportHistory();
     }
 
-    private void OnRetry(InputValue inputValue)
+    public void OnRetry(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.RetryLevel();
     }
 
-    private void OnGrab(InputValue inputValue)
+    public void OnGrab(InputValue inputValue)
     {
         if (itemID != -1)
         {
@@ -248,7 +249,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         ID = id;
         name = $"Player {id.ToString()}";
         
-        Position = new TimePosition("Position", x => Rigidbody.position = x, () => Rigidbody.position);
+        Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
+        Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
     }
 
     public string GetCollisionStateString()
@@ -295,12 +297,27 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.LoadSnapshot(snapshotDictionary);
-        Position.Current = Position.History;
-        
-        Rigidbody.velocity = snapshotDictionary.Get<Vector2>(nameof(Rigidbody.velocity));
+        Velocity.LoadSnapshot(snapshotDictionary);
+
+        if (gameController.player != this) // we don't want the current player to revert to their history positions/velocity
+        {
+            Position.Current = Position.History;
+            Velocity.Current = Velocity.History;
+        }
+
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
     }
-    
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary) => LoadSnapshot(snapshotDictionary);
+
+    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        Position.LoadSnapshot(snapshotDictionary);
+        Velocity.LoadSnapshot(snapshotDictionary);
+
+        Position.Current = Position.History;
+        Velocity.Current = Velocity.History;
+
+        Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
+        historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+    }
 }

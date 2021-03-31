@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 public interface ITimeTracker
 {
     int ID { get; }
-    TimePosition Position { get; }
+    TimeVector Position { get; }
     bool FlagDestroy { get; set; }
     void Init(GameController gameController, int id);
 

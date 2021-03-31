@@ -23,7 +23,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool IsActivatedOrOccupied => Activated.AnyTrue || Occupied.AnyTrue;
 
     public int ID { get; private set; }
-    public TimePosition Position { get; private set; }
+    public TimeVector Position { get; private set; }
     private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
@@ -150,7 +150,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         
-        Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
+        Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
     }
 
     public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)

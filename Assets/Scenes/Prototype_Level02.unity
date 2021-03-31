@@ -417,6 +417,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10d33fa630c3312498016273b6a6b1aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  min: {x: 0, y: 0}
+  max: {x: 0, y: 0}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

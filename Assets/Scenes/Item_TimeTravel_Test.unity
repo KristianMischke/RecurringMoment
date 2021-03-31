@@ -1658,10 +1658,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1819107518}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
-      propertyPath: playerPrefab
-      value: 
-      objectReference: {fileID: 204538365, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
-    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: levelEndObject
       value: 
       objectReference: {fileID: 209799011}
@@ -1677,7 +1673,9 @@ PrefabInstance:
       propertyPath: mainUICanvas
       value: 
       objectReference: {fileID: 119875634}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7578882842070330103, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+    - {fileID: 5743977720500331576, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1001 &4711500496275973040
 PrefabInstance:
