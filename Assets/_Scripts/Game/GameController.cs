@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using UnityEngine.Serialization;
 
 public class TimeAnomalyException : Exception
 {
@@ -74,13 +72,14 @@ public class GameController : MonoBehaviour
         public int nextID = 0; // TODO: mutex lock?!
     
         public List<ITimeTracker> timeTrackerObjects = new List<ITimeTracker>();
-        public Dictionary<int, List<Dictionary<string, object>>> snapshotHistoryById = new Dictionary<int, List<Dictionary<string, object>>>();
+        public Dictionary<int, TimeDict> snapshotHistoryById = new Dictionary<int, TimeDict>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
         public int timeStep = 0;
         public int furthestTimeStep = 0;
         public int skipTimeStep = -1;
         public bool isPresent = true;
         public bool doTimeSkip = false;
+        public bool didTimeTravelThisFrame = false;
         public bool activatedLastFrame = false;
     
         // for animation logic
@@ -101,11 +100,7 @@ public class GameController : MonoBehaviour
             snapshotHistoryById.Clear();
             foreach (var kvp in other.snapshotHistoryById)
             {
-                var history = snapshotHistoryById[kvp.Key] = new List<Dictionary<string, object>>();
-                foreach (var y in kvp.Value)
-                {
-                    history.Add(new Dictionary<string, object>(y));
-                }
+                snapshotHistoryById[kvp.Key] = new TimeDict(kvp.Value);
             }
 
             historyStartById = new Dictionary<int, int>(other.historyStartById);
@@ -135,7 +130,7 @@ public class GameController : MonoBehaviour
     }
 
     private List<ITimeTracker> TimeTrackerObjects => currentState.timeTrackerObjects;
-    private Dictionary<int, List<Dictionary<string, object>>> SnapshotHistoryById => currentState.snapshotHistoryById;
+    private Dictionary<int, TimeDict> SnapshotHistoryById => currentState.snapshotHistoryById;
     private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
     public int TimeStep
     {
@@ -167,6 +162,11 @@ public class GameController : MonoBehaviour
         private set => currentState.doTimeSkip = value;
     }
 
+    public bool DidTimeTravelThisFrame
+    {
+        get => currentState.didTimeTravelThisFrame;
+        set => currentState.didTimeTravelThisFrame = value;
+    }
     public bool ActivatedLastFrame
     {
         get => currentState.activatedLastFrame;
@@ -232,12 +232,17 @@ public class GameController : MonoBehaviour
 
     private PlayerController InstantiatePlayer()
     {
-        return Instantiate(playerPrefab);
+        var p = Instantiate(playerPrefab);
+        p.PlayerInput.enabled = false;
+        return p;
     }
 
     void Update()
     {
-        timerText.text = $"Test Timer:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+        if (timerText != null)
+        {
+            timerText.text = $"Test Timer:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+        }
     }
 
     private void FixedUpdate()
@@ -262,8 +267,9 @@ public class GameController : MonoBehaviour
                 
                 player.gameObject.SetActive(true);
                 TimeTrackerObjects.Add(player);
-                OccupiedTimeMachine.CurrentlyOccupied = true;
+                OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine = null;
+                DidTimeTravelThisFrame = true;
                 
                 // set the spawn state to this point
                 if (spawnState == null) spawnState = new GameState();
@@ -308,7 +314,10 @@ public class GameController : MonoBehaviour
 
     public void DoTimeStep()
     {
-        LoadSnapshotFull(TimeStep, false);
+        LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
+
+        if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
+        
         Physics2D.Simulate(Time.fixedDeltaTime);
         
         // restore history to current state if back to present
@@ -343,10 +352,6 @@ public class GameController : MonoBehaviour
                 {
                     targetTimeMachine = timeMachine;
                     didActivate = timeMachine.Activate(out timeTravelStep);
-                    if (timeTravelStep >= 0)
-                    {
-                        player.FlagDestroy = true;
-                    }
                     break;
                 }
             }
@@ -385,7 +390,7 @@ public class GameController : MonoBehaviour
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0 && !history.Get<bool>(timeStep, FLAG_DESTROY))
             {
                 // TODO: better structure to determine type of object and instantiate from appropriate pool (instead of just players)
                 PlayerController newPlayer = playerObjectPool.Aquire();
@@ -417,19 +422,19 @@ public class GameController : MonoBehaviour
             int startTimeStep = HistoryStartById[timeTracker.ID];
             int relativeSnapshotIndex = timeStep - startTimeStep;
 
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0)
             {
-                if (history[relativeSnapshotIndex].ContainsKey(FLAG_DESTROY) && !rewind)
+                if (history.Get<bool>(timeStep, FLAG_DESTROY) && !rewind)
                 {
                     delete = true;
                 }
                 else if (forceLoad)
                 {
-                    timeTracker.ForceLoadSnapshot(history[relativeSnapshotIndex]);
+                    timeTracker.ForceLoadSnapshot(history[timeStep]);
                 }
                 else
                 {
-                    timeTracker.LoadSnapshot(history[relativeSnapshotIndex]);
+                    timeTracker.LoadSnapshot(history[timeStep]);
                 }
             }
             else
@@ -450,9 +455,9 @@ public class GameController : MonoBehaviour
             int startTimeStep = HistoryStartById[timeTracker.ID];
             int relativeSnapshotIndex = timeStep - startTimeStep;
 
-            if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count)
+            if (relativeSnapshotIndex >= 0)
             {
-                return (T)history[relativeSnapshotIndex][parameter];
+                return history.Get<T>(timeStep, parameter);
             }
         }
 
@@ -473,8 +478,8 @@ public class GameController : MonoBehaviour
         {
             if (timeTracker.ID == id)
             {
-                timeTracker.Position = player.Position;
-                timeTracker.ItemForm = false;
+                timeTracker.Position.Current = player.Position.Get;
+                timeTracker.SetItemState(false);
                 break;
             }
         }
@@ -488,29 +493,18 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void SaveSnapshot(int timeStep, ITimeTracker timeTracker)
+    void SaveSnapshot(int timeStep, ITimeTracker timeTracker, bool force=false)
     {
         if (!SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
         {
-            history = SnapshotHistoryById[timeTracker.ID] = new List<Dictionary<string, object>>();
+            history = SnapshotHistoryById[timeTracker.ID] = new TimeDict();
             HistoryStartById[timeTracker.ID] = timeStep;
         }
 
         int startTimeStep = HistoryStartById[timeTracker.ID];
         int relativeSnapshotIndex = timeStep - startTimeStep;
-        if (relativeSnapshotIndex >= history.Count)
-        {
-            var frame = new Dictionary<string, object>();
-            timeTracker.SaveSnapshot(frame);
-            history.Add(frame);
-        }
-        else if (relativeSnapshotIndex >= 0 && timeTracker is TimeMachineController)
-        {
-            // time machines can re-write their past state if they are used
-            var frame = history[relativeSnapshotIndex];
-            frame.Clear();
-            timeTracker.SaveSnapshot(frame);
-        }
+
+        timeTracker.SaveSnapshot(history[timeStep], force);
     }
 
     public void RetryLevel()
@@ -559,15 +553,13 @@ public class GameController : MonoBehaviour
             {
                 var history = SnapshotHistoryById[id];
 
-                if (history.Count > 0)
                 {
                     columns.Add($"{id}.{FLAG_DESTROY}");
 
-                    //NOTE: this would need to be adjusted for a sparse data structure
                     // grab columns from first history entry
-                    foreach (var kvp in history[0])
+                    foreach (string key in history.Keys)
                     {
-                        columns.Add($"{id}.{kvp.Key}");
+                        columns.Add($"{id}.{key}");
                     }
                 }
             }
@@ -595,9 +587,9 @@ public class GameController : MonoBehaviour
 
                         int startTimeStep = HistoryStartById[id];
                         int relativeSnapshotIndex = i - startTimeStep;
-                        if (relativeSnapshotIndex >= 0 && relativeSnapshotIndex < history.Count && history[relativeSnapshotIndex].TryGetValue(field, out object value))
+                        if (relativeSnapshotIndex >= 0 && (!history.Get<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
                         {
-                            row.Add(value.ToString());
+                            row.Add(history[i].Get<object>(field)?.ToString() ?? "");
                         }
                         else
                         {
@@ -618,11 +610,11 @@ public class GameController : MonoBehaviour
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
         {
-            if (timeMachine.CurrentlyActivated && timeMachine.HistoryCountdown != -1)
+            if (timeMachine.Activated.Current && timeMachine.Countdown.History != -1)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating an already active Time Machine!");
             }
-            if (timeMachine.HistoryCountdown != -1 && timeMachine.CurrentCountdown != -1 && timeMachine.CurrentCountdown != timeMachine.HistoryCountdown)
+            if (timeMachine.Countdown.History != -1 && timeMachine.Countdown.Current != -1 && timeMachine.Countdown.Current != timeMachine.Countdown.History)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
             }
@@ -637,9 +629,9 @@ public class GameController : MonoBehaviour
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
             //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
             //}
-             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, nameof(p.Rigidbody.position), Vector2.positiveInfinity);
-             Debug.Log(Vector2.Distance(historyPosition, p.Position).ToString());
-             if (Vector2.Distance(historyPosition, p.Position) > POSITION_ANOMALY_ERROR)
+             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
+             Debug.Log(Vector2.Distance(historyPosition, p.Position.Get).ToString());
+             if (Vector2.Distance(historyPosition, p.Position.Get) > POSITION_ANOMALY_ERROR)
              {
                  throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
              }
@@ -669,6 +661,11 @@ public class GameController : MonoBehaviour
 
         this.player.PlayerInput.enabled = false;
         
+        // flag player to destroy
+        this.player.FlagDestroy = true;
+        SaveSnapshot(AnimateFrame-1, this.player);
+        this.player.FlagDestroy = false;
+        
         PlayerController newPlayer = playerObjectPool.Aquire();
         newPlayer.PlayerInput.enabled = true;
         newPlayer.Init(this, NextID++);
@@ -680,28 +677,28 @@ public class GameController : MonoBehaviour
         this.player = newPlayer;
 
         { // clear 'history' values on the time machine for the frame this was activated
-            timeMachine.HistoryCountdown = -1;
-            timeMachine.HistoryActivatedTimeStep = -1;
-            timeMachine.HistoryActivated = false;
-            timeMachine.HistoryOccupied = false;
+            timeMachine.Countdown.History = -1;
+            timeMachine.ActivatedTimeStep.History = -1;
+            timeMachine.Activated.History = false;
+            timeMachine.Occupied.History = false;
             
-            timeMachine.CurrentCountdown = -1;
-            timeMachine.CurrentActivatedTimeStep = -1;
-            timeMachine.CurrentlyActivated = false;
-            timeMachine.CurrentlyOccupied = false;
-            SaveSnapshot(AnimateFrame - 1, timeMachine);
+            timeMachine.Countdown.Current = -1;
+            timeMachine.ActivatedTimeStep.Current = -1;
+            timeMachine.Activated.Current = false;
+            timeMachine.Occupied.Current = false;
+            SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
         }
 
         // clear 'current' values from all time machines at the point in time the player is travelling back to
         // these values should already be recorded to history
         foreach (TimeMachineController otherTimeMachine in timeMachines)
         {
-            LoadSnapshot(timeTravelStep, otherTimeMachine, false, forceLoad:true);
-            otherTimeMachine.CurrentCountdown = -1;
-            otherTimeMachine.CurrentActivatedTimeStep = -1;
-            otherTimeMachine.CurrentlyActivated = false;
-            otherTimeMachine.CurrentlyOccupied = false;
-            SaveSnapshot(timeTravelStep, otherTimeMachine);
+            LoadSnapshot(timeTravelStep, otherTimeMachine, false, forceLoad: true);
+            otherTimeMachine.Countdown.Current = -1;
+            otherTimeMachine.ActivatedTimeStep.Current = -1;
+            otherTimeMachine.Activated.Current = false;
+            otherTimeMachine.Occupied.Current = false;
+            SaveSnapshot(timeTravelStep, otherTimeMachine, force:true);
         }
     }
 }

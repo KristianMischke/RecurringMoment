@@ -97,17 +97,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private GameController gameController;
     public int ID { get; private set; }
-    public Vector2 Position
-    {
-        get => transform.position;
-        set => transform.position = value;
-    }
-    public bool ItemForm { get => false; set { } }
+    public TimeVector Position { get; private set; }
+    public TimeVector Velocity { get; private set; }
+    public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
 
+    public bool SetItemState(bool state) => false;
 
     //---PlayerInputs---
-    private void OnMove(InputValue movementValue)
+    public void OnMove(InputValue movementValue)
     {
         if (gameController.player != this) return;
 
@@ -116,39 +114,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         horizontalInput = movementVector.x;
         verticalInput = movementVector.y;
     }
-    private void OnJump(InputValue inputValue)
+    public void OnJump(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         jump |= inputValue.isPressed && isGrounded;
     }
-    private void OnActivate(InputValue inputValue)
+    public void OnActivate(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         isActivating = inputValue.isPressed;
     }
-    private void OnSkipTime(InputValue inputValue)
+    public void OnSkipTime(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.SkipTime();
     }
-    private void OnSaveDebugHistory(InputValue inputValue)
+    public void OnSaveDebugHistory(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.ExportHistory();
     }
 
-    private void OnRetry(InputValue inputValue)
+    public void OnRetry(InputValue inputValue)
     {
         if (gameController.player != this) return;
 
         gameController.RetryLevel();
     }
 
-    private void OnGrab(InputValue inputValue)
+    public void OnGrab(InputValue inputValue)
     {
         if (itemID != -1)
         {
@@ -168,15 +166,17 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     if (timeMachine != null)
                     {
-                        timeMachine.ItemForm = true;
-                        if (timeMachine.ItemForm)
+                        if (timeMachine.SetItemState(true))
+                        {
                             itemID = timeMachine.ID;
+                        }
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
-                        basicTimeTracker.ItemForm = true;
-                        if (basicTimeTracker.ItemForm)
+                        if (basicTimeTracker.SetItemState(true))
+                        {
                             itemID = basicTimeTracker.ID;
+                        }
                     }
                 }
             }
@@ -203,7 +203,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     private void Update()
-    { 
+    {
         Animator.SetBool("Walking", _rigidbody.velocity != Vector2.zero);
         if (_rigidbody.velocity != Vector2.zero)
         {
@@ -248,6 +248,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
+        
+        Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
+        Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
     }
 
     public string GetCollisionStateString()
@@ -276,28 +279,45 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         return string.Join(",", colliderStrings);
     }
 
-    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        snapshotDictionary[nameof(Rigidbody.position)] = Rigidbody.position;
-        snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
-        snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
-        snapshotDictionary[nameof(isActivating)] = isActivating;
+        Position.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity, force);
+        snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
+        snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
-            snapshotDictionary[GameController.FLAG_DESTROY] = true;
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
         }
         //NOTE: players should never be in item form, so don't save/load that info here
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
-    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        Rigidbody.position = (Vector2)snapshotDictionary[nameof(Rigidbody.position)];
-        Rigidbody.velocity = (Vector2)snapshotDictionary[nameof(Rigidbody.velocity)];
-        Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
-        historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
+        Position.LoadSnapshot(snapshotDictionary);
+        Velocity.LoadSnapshot(snapshotDictionary);
+
+        if (gameController.player != this) // we don't want the current player to revert to their history positions/velocity
+        {
+            Position.Current = Position.History;
+            Velocity.Current = Velocity.History;
+        }
+
+        Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
+        historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
     }
-    
-    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
+
+    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        Position.LoadSnapshot(snapshotDictionary);
+        Velocity.LoadSnapshot(snapshotDictionary);
+
+        Position.Current = Position.History;
+        Velocity.Current = Velocity.History;
+
+        Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
+        historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+    }
 }

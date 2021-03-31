@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 public interface ITimeTracker
 {
     int ID { get; }
-    bool ItemForm { get; set; }
-    UnityEngine.Vector2 Position { get; set; }
+    TimeVector Position { get; }
     bool FlagDestroy { get; set; }
     void Init(GameController gameController, int id);
 
-    void SaveSnapshot(Dictionary<string, object> snapshotDictionary);
-    void LoadSnapshot(Dictionary<string, object> snapshotDictionary);
-    void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary);
+    bool SetItemState(bool state);
+    
+    void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false);
+    void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
+    void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
 }
