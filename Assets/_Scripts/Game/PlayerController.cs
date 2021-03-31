@@ -280,13 +280,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.SaveSnapshot(snapshotDictionary);
-        snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
-        snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
-        snapshotDictionary[nameof(isActivating)] = isActivating;
+        snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity);
+        snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation);
+        snapshotDictionary.Set(nameof(isActivating), isActivating);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
-            snapshotDictionary[GameController.FLAG_DESTROY] = true;
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true);
         }
         //NOTE: players should never be in item form, so don't save/load that info here
     }
@@ -297,9 +297,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Position.LoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
         
-        Rigidbody.velocity = snapshotDictionary.GetValue<Vector2>(nameof(Rigidbody.velocity));
-        Rigidbody.rotation = snapshotDictionary.GetValue<float>(nameof(Rigidbody.rotation));
-        historyActivating = snapshotDictionary.GetValue<bool>(nameof(isActivating));
+        Rigidbody.velocity = snapshotDictionary.Get<Vector2>(nameof(Rigidbody.velocity));
+        Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
+        historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
     }
     
     public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary) => LoadSnapshot(snapshotDictionary);

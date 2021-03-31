@@ -1,0 +1,11 @@
+﻿{
+    "name": "Tests",
+    "references": [
+        "Assembly-CSharp",
+        "RecurringMoment.System",
+        "RecurringMoment.Game"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

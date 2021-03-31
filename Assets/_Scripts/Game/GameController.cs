@@ -375,7 +375,7 @@ public class GameController : MonoBehaviour
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
-            if (relativeSnapshotIndex >= 0 && !history.GetValue<bool>(timeStep, FLAG_DESTROY))
+            if (relativeSnapshotIndex >= 0 && !history.Get<bool>(timeStep, FLAG_DESTROY))
             {
                 // TODO: better structure to determine type of object and instantiate from appropriate pool (instead of just players)
                 PlayerController newPlayer = playerObjectPool.Aquire();
@@ -409,7 +409,7 @@ public class GameController : MonoBehaviour
 
             if (relativeSnapshotIndex >= 0)
             {
-                if (history.GetValue<bool>(timeStep, FLAG_DESTROY) && !rewind)
+                if (history.Get<bool>(timeStep, FLAG_DESTROY) && !rewind)
                 {
                     delete = true;
                 }
@@ -442,7 +442,7 @@ public class GameController : MonoBehaviour
 
             if (relativeSnapshotIndex >= 0)
             {
-                return history.GetValue<T>(timeStep, parameter);
+                return history.Get<T>(timeStep, parameter);
             }
         }
 
@@ -572,9 +572,9 @@ public class GameController : MonoBehaviour
 
                         int startTimeStep = HistoryStartById[id];
                         int relativeSnapshotIndex = i - startTimeStep;
-                        if (relativeSnapshotIndex >= 0 && (!history.GetValue<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
+                        if (relativeSnapshotIndex >= 0 && (!history.Get<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
                         {
-                            row.Add(history[i][field]?.ToString() ?? "");
+                            row.Add(history[i].Get<object>(field)?.ToString() ?? "");
                         }
                         else
                         {

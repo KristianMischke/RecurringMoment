@@ -62,7 +62,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         if (FlagDestroy)
         {
-            snapshotDictionary[GameController.FLAG_DESTROY] = true;
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true);
         }
 
         ItemForm.SaveSnapshot(snapshotDictionary);

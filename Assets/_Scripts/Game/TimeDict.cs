@@ -15,17 +15,12 @@ public class TimeDict
             _timeDict = source;
             _timeStep = timeStep;
         }
-
-        public object this[string key]
-        {
-            get => _timeDict.GetValue<object>(_timeStep, key);
-            set => _timeDict.SetValue(_timeStep, key, value);
-        }
-
-        public T GetValue<T>(string key) => _timeDict.GetValue<T>(_timeStep, key);
+        
+        public T Get<T>(string key) => _timeDict.Get<T>(_timeStep, key);
+        public void Set<T>(string key, T value) where T : IEquatable<T> => _timeDict.Set(_timeStep, key, value);
     }
     
-    private Dictionary<string, VariableTimeline<object>> _dict = new Dictionary<string, VariableTimeline<object>>();
+    private Dictionary<string, IVariableTimeline> _dict = new Dictionary<string, IVariableTimeline>();
 
     public TimeDict()
     {
@@ -35,18 +30,18 @@ public class TimeDict
     {
         foreach (var kvp in other._dict)
         {
-            _dict[kvp.Key] = new VariableTimeline<object>(kvp.Value);
+            _dict[kvp.Key] = kvp.Value.Copy();
         }
     }
 
     public IEnumerable<string> Keys => _dict.Keys;
     
-    public T GetValue<T>(int timeStep, string key, T defaultValue = default)
+    public T Get<T>(int timeStep, string key, T defaultValue = default)
     {
         T result = defaultValue;
         if (_dict.TryGetValue(key, out var timeline))
         {
-            object temp = timeline[timeStep];
+            object temp = timeline.GetRaw(timeStep);
             if (temp != null)
             {
                 result = (T)temp;
@@ -55,24 +50,31 @@ public class TimeDict
         return result;
     }
     
-    public void SetValue(int timeStep, string key, object value)
+    public void Set<T>(int timeStep, string key, T value) where T : IEquatable<T>
     {
         if (!_dict.TryGetValue(key, out var timeline))
         {
-            timeline = _dict[key] = new VariableTimeline<object>();
+            timeline = _dict[key] = new VariableTimeline<T>();
         }
 
-        timeline[timeStep] = value;
+        timeline.SetRaw(timeStep, value);
     }
 
     // index a vertical slice of the time dictionary at a given timeStep
     public TimeSlice this[int timeStep] => new TimeSlice(this, timeStep);
 }
 
+public interface IVariableTimeline
+{
+    object GetRaw(int timeStep);
+    void SetRaw(int timeStep, object value);
+    IVariableTimeline Copy();
+}
+
 /// <summary>
 ///     This class stores the values of a variable in time
 /// </summary>
-public class VariableTimeline<T> //where T : IEquatable<T>
+public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
 {
     private SortedList<int, T> valueHistory;
     
@@ -86,7 +88,7 @@ public class VariableTimeline<T> //where T : IEquatable<T>
         valueHistory = new SortedList<int, T>(other.valueHistory);
     }
 
-    public T GetValue(int timeStep)
+    public T Get(int timeStep)
     {
         if (!valueHistory.TryGetValue(timeStep, out T result))
         {
@@ -114,10 +116,10 @@ public class VariableTimeline<T> //where T : IEquatable<T>
         return result;
     }
 
-    public void SetValue(int timeStep, T value)
+    public void Set(int timeStep, T value)
     {
         // only store deltas in the timeline
-        if (!value.Equals(GetValue(timeStep)))
+        if (!value.Equals(Get(timeStep)))
         {
             valueHistory[timeStep] = value;
         }   
@@ -125,7 +127,12 @@ public class VariableTimeline<T> //where T : IEquatable<T>
 
     public T this[int timeStep]
     {
-        get => GetValue(timeStep);
-        set => SetValue(timeStep, value);
+        get => Get(timeStep);
+        set => Set(timeStep, value);
     }
+
+    // implement interface for abstracting the templated type
+    public object GetRaw(int timeStep) => Get(timeStep);
+    public void SetRaw(int timeStep, object value) => Set(timeStep, (T)value);
+    public IVariableTimeline Copy() => new VariableTimeline<T>(this);
 }
