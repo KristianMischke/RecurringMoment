@@ -7,6 +7,8 @@ public class CameraTracker : MonoBehaviour
 
     private GameController gameController;
     public Vector2 min, max;
+	public GameObject itemShow; 
+	public int xOffSet, yOffSet; 
 
     // Start is called before the first frame update
     void Start()
@@ -19,5 +21,6 @@ public class CameraTracker : MonoBehaviour
     {
 	//Follow the player's position
         this.transform.position = new Vector3 (gameController.player.Position.x, gameController.player.Position.y, -10);
+		itemShow.transform.position = new Vector3 (this.transform.position.x + xOffSet, this.transform.position.y + yOffSet, 0);
     }
 }
