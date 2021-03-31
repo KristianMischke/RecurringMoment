@@ -17,7 +17,7 @@ public class TimeDict
         }
         
         public T Get<T>(string key) => _timeDict.Get<T>(_timeStep, key);
-        public void Set<T>(string key, T value) where T : IEquatable<T> => _timeDict.Set(_timeStep, key, value);
+        public void Set<T>(string key, T value, bool force=false) where T : IEquatable<T> => _timeDict.Set(_timeStep, key, value, force);
     }
     
     private Dictionary<string, IVariableTimeline> _dict = new Dictionary<string, IVariableTimeline>();
@@ -50,14 +50,14 @@ public class TimeDict
         return result;
     }
     
-    public void Set<T>(int timeStep, string key, T value) where T : IEquatable<T>
+    public void Set<T>(int timeStep, string key, T value, bool force=false) where T : IEquatable<T>
     {
         if (!_dict.TryGetValue(key, out var timeline))
         {
             timeline = _dict[key] = new VariableTimeline<T>();
         }
 
-        timeline.SetRaw(timeStep, value);
+        timeline.SetRaw(timeStep, value, force);
     }
 
     // index a vertical slice of the time dictionary at a given timeStep
@@ -67,7 +67,7 @@ public class TimeDict
 public interface IVariableTimeline
 {
     object GetRaw(int timeStep);
-    void SetRaw(int timeStep, object value);
+    void SetRaw(int timeStep, object value, bool force=false);
     IVariableTimeline Copy();
 }
 
@@ -116,10 +116,10 @@ public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
         return result;
     }
 
-    public void Set(int timeStep, T value)
+    public void Set(int timeStep, T value, bool force = false)
     {
-        // only store deltas in the timeline
-        if (!value.Equals(Get(timeStep)))
+        // only store deltas in the timeline (or force the value)
+        if (force || !value.Equals(Get(timeStep)))
         {
             valueHistory[timeStep] = value;
         }   
@@ -133,6 +133,6 @@ public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
 
     // implement interface for abstracting the templated type
     public object GetRaw(int timeStep) => Get(timeStep);
-    public void SetRaw(int timeStep, object value) => Set(timeStep, (T)value);
+    public void SetRaw(int timeStep, object value, bool force=false) => Set(timeStep, (T)value, force);
     public IVariableTimeline Copy() => new VariableTimeline<T>(this);
 }

@@ -18,12 +18,12 @@ public class TimeVariable<T> where T : IEquatable<T>
         Current = currentDefault;
     }
 
-    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         // NOTE: behavior for how current/history are stored is ill-defined for templated type T
-        snapshotDictionary.Set(CurrentName, Current);
+        snapshotDictionary.Set(CurrentName, Current, force);
         
-        snapshotDictionary.Set(HistoryName, History);
+        snapshotDictionary.Set(HistoryName, History, force);
     }
     
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -45,11 +45,11 @@ public class TimeBool : TimeVariable<bool>
 
     public bool AnyTrue => Current || History;
     
-    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        snapshotDictionary.Set(CurrentName, Current);
+        snapshotDictionary.Set(CurrentName, Current, force);
         
-        snapshotDictionary.Set(HistoryName, History || Current);
+        snapshotDictionary.Set(HistoryName, History || Current, force);
     }
 }
 
@@ -57,11 +57,11 @@ public class TimeInt : TimeVariable<int>
 {
     public TimeInt(string name, int historyDefault = -1, int currentDefault = -1) : base(name, historyDefault, currentDefault) { }
     
-    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        snapshotDictionary.Set(CurrentName, Current);
+        snapshotDictionary.Set(CurrentName, Current, force);
         
-        snapshotDictionary.Set(HistoryName, Current == -1 ? History : Current);
+        snapshotDictionary.Set(HistoryName, Current == -1 ? History : Current, force);
     }
 }
 
@@ -103,11 +103,11 @@ public class TimePosition : TimeVariable<Vector2>
 
     public void ClearCurrent() => Current = Vector2.negativeInfinity;
     
-    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         Vector2 temp = Current;
-        snapshotDictionary.Set(CurrentName, temp);
+        snapshotDictionary.Set(CurrentName, temp, force);
         
-        snapshotDictionary.Set(HistoryName, temp == Vector2.negativeInfinity ? History : temp);
+        snapshotDictionary.Set(HistoryName, temp == Vector2.negativeInfinity ? History : temp, force);
     }
 }

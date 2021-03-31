@@ -226,7 +226,9 @@ public class GameController : MonoBehaviour
 
     private PlayerController InstantiatePlayer()
     {
-        return Instantiate(playerPrefab);
+        var p = Instantiate(playerPrefab);
+        p.PlayerInput.enabled = false;
+        return p;
     }
 
     void Update()
@@ -481,7 +483,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void SaveSnapshot(int timeStep, ITimeTracker timeTracker)
+    void SaveSnapshot(int timeStep, ITimeTracker timeTracker, bool force=false)
     {
         if (!SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
         {
@@ -492,7 +494,7 @@ public class GameController : MonoBehaviour
         int startTimeStep = HistoryStartById[timeTracker.ID];
         int relativeSnapshotIndex = timeStep - startTimeStep;
 
-        timeTracker.SaveSnapshot(history[timeStep]);
+        timeTracker.SaveSnapshot(history[timeStep], force);
     }
 
     public void RetryLevel()
@@ -674,7 +676,7 @@ public class GameController : MonoBehaviour
             timeMachine.ActivatedTimeStep.Current = -1;
             timeMachine.Activated.Current = false;
             timeMachine.Occupied.Current = false;
-            SaveSnapshot(AnimateFrame - 1, timeMachine);
+            SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
         }
 
         // clear 'current' values from all time machines at the point in time the player is travelling back to
@@ -686,7 +688,7 @@ public class GameController : MonoBehaviour
             otherTimeMachine.ActivatedTimeStep.Current = -1;
             otherTimeMachine.Activated.Current = false;
             otherTimeMachine.Occupied.Current = false;
-            SaveSnapshot(timeTravelStep, otherTimeMachine);
+            SaveSnapshot(timeTravelStep, otherTimeMachine, force:true);
         }
     }
 }

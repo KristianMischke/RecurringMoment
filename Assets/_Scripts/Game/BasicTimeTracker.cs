@@ -58,15 +58,15 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         if (FlagDestroy)
         {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true);
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
         }
 
-        ItemForm.SaveSnapshot(snapshotDictionary);
-        Position.SaveSnapshot(snapshotDictionary);
+        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)

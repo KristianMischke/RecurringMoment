@@ -27,6 +27,49 @@ namespace Tests
         }
         
         [Test]
+        public void VariableTimelineBoolNoForceTest()
+        {
+            VariableTimeline<bool> timeline = new VariableTimeline<bool>();
+            
+            timeline.Set(0, true);
+            timeline.Set(25, false);
+            Assert.IsTrue(timeline.Get(15));
+            Assert.IsFalse(timeline.Get(25));
+            Assert.IsFalse(timeline.Get(30));
+            
+            timeline.Set(30, false, force:false); // NO FORCE set future value to same as the propagated value from time=25
+            Assert.IsFalse(timeline.Get(30));
+            timeline.Set(27,  true); // now set value between two 'false' data points
+            Assert.IsFalse(timeline.Get(26));
+            Assert.IsTrue(timeline.Get(27));
+            Assert.IsTrue(timeline.Get(28));
+            Assert.IsTrue(timeline.Get(30)); // values should NOT be affected by the 30 data point b/c it was not forced
+            Assert.IsTrue(timeline.Get(31));
+        }
+        
+        [Test]
+        public void VariableTimelineBoolWithForceTest()
+        {
+            VariableTimeline<bool> timeline = new VariableTimeline<bool>();
+            
+            timeline.Set(0, true);
+            timeline.Set(25, false);
+            Assert.IsTrue(timeline.Get(15));
+            Assert.IsFalse(timeline.Get(25));
+            Assert.IsFalse(timeline.Get(30));
+            
+            timeline.Set(30, false, force:true); // FORCE set future value to same as the propagated value from time=25
+            Assert.IsFalse(timeline.Get(30));
+            timeline.Set(27,  true); // now set value between two 'false' data points
+            Assert.IsFalse(timeline.Get(26));
+            Assert.IsTrue(timeline.Get(27));
+            Assert.IsTrue(timeline.Get(28));
+            Assert.IsFalse(timeline.Get(30)); // values should be affected by the 30 data point b/c it was forced
+            Assert.IsFalse(timeline.Get(31));
+        }
+        
+        
+        [Test]
         public void VariableTimelineIntTest()
         {
             VariableTimeline<int> timeline = new VariableTimeline<int>();

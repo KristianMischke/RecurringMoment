@@ -153,20 +153,20 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position = new TimePosition("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        Activated.SaveSnapshot(snapshotDictionary);
-        Occupied.SaveSnapshot(snapshotDictionary);
-        ActivatedTimeStep.SaveSnapshot(snapshotDictionary);
-        Countdown.SaveSnapshot(snapshotDictionary);
+        Activated.SaveSnapshot(snapshotDictionary, force);
+        Occupied.SaveSnapshot(snapshotDictionary, force);
+        ActivatedTimeStep.SaveSnapshot(snapshotDictionary, force);
+        Countdown.SaveSnapshot(snapshotDictionary, force);
         
         if (FlagDestroy)
         {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true);
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
         }
         
-        ItemForm.SaveSnapshot(snapshotDictionary);
-        Position.SaveSnapshot(snapshotDictionary);
+        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -175,6 +175,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.LoadSnapshot(snapshotDictionary);
         ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
         Countdown.LoadSnapshot(snapshotDictionary);
+        
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
 

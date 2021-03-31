@@ -13,7 +13,7 @@ public interface ITimeTracker
 
     bool SetItemState(bool state);
     
-    void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary);
+    void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false);
     void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
     void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
 }

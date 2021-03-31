@@ -277,16 +277,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         return string.Join(",", colliderStrings);
     }
 
-    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        Position.SaveSnapshot(snapshotDictionary);
-        snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity);
-        snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation);
-        snapshotDictionary.Set(nameof(isActivating), isActivating);
+        Position.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity, force);
+        snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
+        snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true);
+            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
         }
         //NOTE: players should never be in item form, so don't save/load that info here
     }
