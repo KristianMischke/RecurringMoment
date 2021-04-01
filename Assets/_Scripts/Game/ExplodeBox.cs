@@ -25,49 +25,30 @@ public class ExplodeBox : MonoBehaviour
         {
 			Vector2 loc = self.transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
-			RaycastHit2D [] hits = Physics2D.RaycastAll(loc, Vector2.up, distance);
+			float angle = 45.0f;
 			
-			// checks the up direction 
-			foreach(var hit in hits)
-			{
-				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag + " or - " + hit.collider.transform.tag); 
-				if (hit.collider.transform.gameObject.tag == "ExplodeWall")
-				{
-					Debug.Log("It is the exploseWall part");
-					hit.collider.transform.gameObject.SetActive(false); 
-				}
-			}
 			
-			// checks the down direction 
-			hits = Physics2D.RaycastAll(loc, Vector2.down, distance);
-			foreach(var hit in hits)
-			{
-				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag + " or - " + hit.collider.transform.tag); 
-				if (hit.collider.transform.gameObject.tag == "ExplodeWall")
-				{
-					Debug.Log("It is the exploseWall part");
-					hit.collider.transform.gameObject.SetActive(false); 
-				}
-			}
-			// checks the left direction 
-			hits = Physics2D.RaycastAll(loc, Vector2.left, distance);
-			foreach(var hit in hits)
-			{
-				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag + " or - " + hit.collider.transform.tag); 
-				if (hit.collider.transform.gameObject.tag == "ExplodeWall")
-				{
-					Debug.Log("It is the exploseWall part");
-					hit.collider.transform.gameObject.SetActive(false); 
-				}
-			}
 			
-			hits = Physics2D.RaycastAll(loc, Vector2.right, distance);
+			List<RaycastHit2D> hits = new List<RaycastHit2D>();
+			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.up, distance)); 
+			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.down, distance)); 
+			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.left, distance)); 
+			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.right, distance)); 
+			
+			// gets the side angles as well 
+			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
+			angle = 145.0f;
+			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
+			angle = 245.0f;
+			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
+			angle = 345.0f;
+			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
+
 			foreach(var hit in hits)
 			{
 				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag + " or - " + hit.collider.transform.tag); 
 				if (hit.collider.transform.gameObject.tag == "ExplodeWall")
 				{
-					Debug.Log("It is the exploseWall part");
 					hit.collider.transform.gameObject.SetActive(false); 
 				}
 			}
@@ -77,6 +58,10 @@ public class ExplodeBox : MonoBehaviour
         
     }
 
+	public Vector2 GetDirectionVector2D(float angle)
+	{
+		return new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)).normalized; 
+	}
     private bool AllActivated()
     {
         bool valid = true;
