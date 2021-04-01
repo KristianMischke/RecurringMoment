@@ -39,6 +39,9 @@ public class GameController : MonoBehaviour
     public Canvas mainUICanvas;
     
     private Pool<PlayerController> playerObjectPool;
+	
+	public GameObject playerItem;
+	public Sprite tempImage; 
 
     public IEnumerable<PlayerController> PastPlayers
     {
