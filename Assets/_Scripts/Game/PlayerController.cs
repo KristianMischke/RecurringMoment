@@ -92,6 +92,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public TimeVector Velocity { get; private set; }
     public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
+    public bool ShouldPoolObject => true;
 
     public bool SetItemState(bool state) => false;
 

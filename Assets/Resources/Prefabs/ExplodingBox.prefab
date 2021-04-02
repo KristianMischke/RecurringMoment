@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fb01d5be6215a24dba799595f9abab5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _shouldPoolObject: 1
   requiredActivatables:
   - {fileID: 0}
   distance: 10
@@ -108,6 +109,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7319135265960423019, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+    - {fileID: 171346486477498572, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+    - {fileID: 171346486477498575, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
 --- !u!1 &1954012280130790977 stripped
 GameObject:

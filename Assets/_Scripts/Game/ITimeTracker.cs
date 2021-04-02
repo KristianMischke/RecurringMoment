@@ -11,6 +11,7 @@ public interface ITimeTracker
     int ID { get; }
     TimeVector Position { get; }
     bool FlagDestroy { get; set; }
+    bool ShouldPoolObject { get; }
     void Init(GameController gameController, int id);
 
     bool SetItemState(bool state);

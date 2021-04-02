@@ -42,7 +42,10 @@ public class GameController : MonoBehaviour
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
-    
+
+    private Dictionary<string, Pool<BasicTimeTracker>> timeTrackerPools = new Dictionary<string, Pool<BasicTimeTracker>>();
+    private Pool<TimeMachineController> timeMachinePool;
+    private Pool<ExplodeBox> exploadingBoxPool;
     private Pool<PlayerController> playerObjectPool;
 	
 	public GameObject playerItem;
@@ -220,6 +223,32 @@ public class GameController : MonoBehaviour
         timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
         timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
 
+        playerObjectPool = new Pool<PlayerController>(
+            InstantiatePlayer,
+            x =>
+            {
+                x.gameObject.SetActive(true);
+                x.PlayerInput.enabled = false;
+            },
+            x => {
+                x.gameObject.SetActive(false);
+                x.PlayerInput.enabled = false;
+                x.ClearState();
+            });
+        
+        // timeMachinePool = new Pool<TimeMachineController>(
+        //     InstantiatePlayer,
+        //     x =>
+        //     {
+        //         x.gameObject.SetActive(true);
+        //         x.PlayerInput.enabled = false;
+        //     },
+        //     x => {
+        //         x.gameObject.SetActive(false);
+        //         x.PlayerInput.enabled = false;
+        //         x.ClearState();
+        //     });
+        
         timeMachines.Clear();
         TimeTrackerObjects.Clear();
         
@@ -254,19 +283,6 @@ public class GameController : MonoBehaviour
         
         //TODO: assert nextLevel is a valid level
 
-        playerObjectPool = new Pool<PlayerController>(
-            InstantiatePlayer,
-            x =>
-            {
-                x.gameObject.SetActive(true);
-                x.PlayerInput.enabled = false;
-            },
-            x => {
-                x.gameObject.SetActive(false);
-                x.PlayerInput.enabled = false;
-                x.ClearState();
-                });
-        
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
     }
 
@@ -447,7 +463,7 @@ public class GameController : MonoBehaviour
 
             if (delete && timeTracker.ID != player.ID)
             {
-                PoolObject(timeTracker);
+                SaveObjectToPool(timeTracker);
                 TimeTrackerObjects.RemoveAt(i);
             }
         }
@@ -504,11 +520,12 @@ public class GameController : MonoBehaviour
         return defaultValue;
     }
 
-    private void PoolObject(ITimeTracker timeTracker)
+    private void SaveObjectToPool(ITimeTracker timeTracker)
     {
-        if (timeTracker is PlayerController)
+        var playerController = timeTracker as PlayerController;
+        if (playerController != null)
         {
-            playerObjectPool.Release(timeTracker as PlayerController);
+            playerObjectPool.Release(playerController);
         }
     }
 

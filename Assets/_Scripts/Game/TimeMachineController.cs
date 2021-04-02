@@ -27,6 +27,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
+    public bool ShouldPoolObject => true;
     
     public bool SetItemState(bool state)
     {

@@ -15,6 +15,10 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public bool FlagDestroy { get; set; }
 
+    public virtual bool ShouldPoolObject => _shouldPoolObject;
+    [SerializeField] private bool _shouldPoolObject;
+    
+
     private Collider2D _collider2d;
     public Collider2D Collider2D
     {
