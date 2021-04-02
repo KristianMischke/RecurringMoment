@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
-
+	
     public Rigidbody2D Rigidbody
     {
         get
@@ -148,10 +148,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void OnGrab(InputValue inputValue)
     {
+		// to get the sprite 
+		Sprite itemImage = gameController.tempImage; 
+		bool isFound = false;
+
         if (itemID != -1)
         {
             gameController.DropItem(itemID);
             itemID = -1;
+			gameController.playerItem.SetActive(false); 
+			gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage;
         }
         else
         {
@@ -164,22 +170,35 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
                 if (validObj && contact.gameObject != gameObject)
                 {
-                    if (timeMachine != null)
+					isFound = true;
+					if (timeMachine != null)
                     {
                         if (timeMachine.SetItemState(true))
                         {
                             itemID = timeMachine.ID;
-                        }
+                            itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                            Debug.Log("The name of the sprite is : " + itemImage.name);
+                    
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
                         if (basicTimeTracker.SetItemState(true))
                         {
                             itemID = basicTimeTracker.ID;
-                        }
+						itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+						Debug.Log("The name of the sprite is : " + itemImage.name);
+                    
                     }
                 }
             }
+			
+			// this is when he grabs a object and it shows up in the screen 
+			if(isFound == true)
+			{
+				gameController.playerItem.SetActive(true); // shows the screen to the player 
+				gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage; 
+				Debug.Log("The name of the sprite is : " + itemImage.name);
+			}
         }
     }
     //------
