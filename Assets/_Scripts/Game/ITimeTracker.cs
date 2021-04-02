@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public interface ITimeTracker
 {
+    GameObject gameObject { get; }
     int ID { get; }
     TimeVector Position { get; }
     bool FlagDestroy { get; set; }

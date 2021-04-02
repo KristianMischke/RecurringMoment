@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Assertions;
 
 public class TimeAnomalyException : Exception
 {
@@ -33,7 +34,6 @@ public class GameController : MonoBehaviour
     public Dictionary<string, GameObject> timeTrackerPrefabs = new Dictionary<string, GameObject>();
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
-    public List<BasicTimeTracker> basicTimeTrackers = new List<BasicTimeTracker>();
     public PlayerController player;
     public PlayerController playerPrefab;
     public BoxCollider2D levelEndObject;
@@ -63,16 +63,26 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public static ITimeTracker GetTimeTrackerComponent(GameObject gameObject)
+    public static ITimeTracker GetTimeTrackerComponent(GameObject gameObject, bool checkParents = false)
     {
+        if (gameObject == null) return null;
+        
         TimeMachineController timeMachineController = gameObject.GetComponent<TimeMachineController>();
         if (timeMachineController != null) return timeMachineController;
         
         PlayerController playerController = gameObject.GetComponent<PlayerController>();
         if (playerController != null) return playerController;
         
+        ExplodeBox explodeBox = gameObject.GetComponent<ExplodeBox>();
+        if (explodeBox != null) return explodeBox;
+        
         BasicTimeTracker basicTimeTracker = gameObject.GetComponent<BasicTimeTracker>();
         if (basicTimeTracker != null) return basicTimeTracker;
+
+        if (checkParents && gameObject.transform.parent != null)
+        {
+            return GetTimeTrackerComponent(gameObject.transform.parent.gameObject, true);
+        }
         
         return null;
     }
@@ -210,24 +220,39 @@ public class GameController : MonoBehaviour
         timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
         timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
 
-        //TODO: find all ITimeTracker objects here?!
+        timeMachines.Clear();
+        TimeTrackerObjects.Clear();
         
-        //TODO: assert nextLevel is a valid level
-        //TODO: assert player not null
+        // Find the player, store and initialize it
+        var playersInScene = FindObjectsOfType<PlayerController>();
+        Assert.AreEqual(1, playersInScene.Length, "There should be exactly one (1) player in the scene");
+        player = playersInScene[0];
         player.Init(this, NextID++);
         TimeTrackerObjects.Add(player);
-
-        foreach (var timeMachine in timeMachines)
+        
+        void GatherTimeTrackerObjects<T>() where T : UnityEngine.Object, ITimeTracker
         {
-            timeMachine.Init(this, NextID++);
-            TimeTrackerObjects.Add(timeMachine);
+            var timeTrackerObjects = FindObjectsOfType<T>();
+
+            foreach (var timeTracker in timeTrackerObjects)
+            {
+                TimeMachineController timeMachine = timeTracker as TimeMachineController;
+                if (timeMachine != null)
+                {
+                    timeMachines.Add(timeMachine);
+                }
+                
+                timeTracker.Init(this, NextID++);
+                TimeTrackerObjects.Add(timeTracker);
+            }
         }
 
-        foreach (var basicTimeTracker in basicTimeTrackers)
-        {
-            basicTimeTracker.Init(this, NextID++);
-            TimeTrackerObjects.Add(basicTimeTracker);
-        }
+        // Gather other TimeTracker Objects
+        GatherTimeTrackerObjects<TimeMachineController>();
+        GatherTimeTrackerObjects<ExplodeBox>();
+        GatherTimeTrackerObjects<BasicTimeTracker>();
+        
+        //TODO: assert nextLevel is a valid level
 
         playerObjectPool = new Pool<PlayerController>(
             InstantiatePlayer,

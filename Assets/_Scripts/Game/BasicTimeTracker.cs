@@ -8,7 +8,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 {
     protected GameController gameController;
 
-    private bool touchedPlayer = false;
     public int ID { get; protected set; }
 
     public TimeVector Position { get; protected set; }
@@ -23,7 +22,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         {
             if (_collider2d == null)
             {
-                _collider2d = GetComponentInChildren<Collider2D>();
+                _collider2d = gameObject.GetComponentInChildren<Collider2D>();
             }
             return _collider2d;
         }
@@ -39,15 +38,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     void FixedUpdate()
     {
         gameObject.SetActive(!ItemForm.AnyTrue);
-        
-        if (Collider2D.IsTouching(gameController.player.CapsuleCollider))
-        {
-            touchedPlayer = true;
-        }
-        if (gameController.IsPresent) //TODO: prolly not the best place for this... should make .WhenPresent() method to reset certain variables
-        {
-            touchedPlayer = false;
-        }
     }
 
     public virtual void Init(GameController gameController, int id)

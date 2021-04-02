@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requiredActivatables:
   - {fileID: 0}
-  self: {fileID: 1954012280130790977}
-  exploded: 0
   distance: 10
 --- !u!1001 &1837105157904715410
 PrefabInstance:
@@ -108,7 +106,8 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7319135265960423019, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
 --- !u!1 &1954012280130790977 stripped
 GameObject:

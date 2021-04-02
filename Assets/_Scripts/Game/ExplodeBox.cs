@@ -32,10 +32,19 @@ public class ExplodeBox : BasicTimeTracker
 
 			foreach(var hit in hits)
 			{
-				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag); 
-				if (hit.collider.transform.gameObject.CompareTag("ExplodeWall"))
+				Debug.Log("The collider hit is :" + hit.collider.gameObject.tag);
+				
+				// get the time tracker from the object or its parent(s)
+				ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
+				
+				if (timeTracker != null && timeTracker.gameObject.CompareTag("ExplodeWall"))
 				{
-					hit.collider.transform.gameObject.SetActive(false); 
+					timeTracker.FlagDestroy = true;
+				}
+				else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
+				{
+					hit.collider.gameObject.SetActive(false);
+					Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
 				}
 			}
 
