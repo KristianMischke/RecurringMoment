@@ -35,17 +35,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             return _capsuleCollider;
         }
     }
-    public Collider2D GrabCollider
-    {
-        get
-        {
-            if (_grabCollider == null)
-            {
-                _grabCollider = GetComponentInChildren<Collider2D>();
-            }
-            return _grabCollider;
-        }
-    }
+
+    public Collider2D GrabCollider;
     public PlayerInput PlayerInput
     {
         get
@@ -178,16 +169,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                             itemID = timeMachine.ID;
                             itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                             Debug.Log("The name of the sprite is : " + itemImage.name);
-                    
+                        }
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
                         if (basicTimeTracker.SetItemState(true))
                         {
                             itemID = basicTimeTracker.ID;
-						itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
-						Debug.Log("The name of the sprite is : " + itemImage.name);
-                    
+                            itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                            Debug.Log("The name of the sprite is : " + itemImage.name);
+                        }
                     }
                 }
             }

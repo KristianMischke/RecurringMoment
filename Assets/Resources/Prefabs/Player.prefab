@@ -215,6 +215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c6b2e7a06c3c4b4fa8fa6f90a246aca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  GrabCollider: {fileID: 5323333000555512028}
   maxHorizontalSpeed: 20
   jumpMultiplier: 20
   movementMultiplier: 30

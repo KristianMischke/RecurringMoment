@@ -20,7 +20,7 @@ public class CameraTracker : MonoBehaviour
     void Update()
     {
 	     //Follow the player's position
-        this.transform.position = new Vector3 (gameController.player.Position.x, gameController.player.Position.y, -10);
-		  itemShow.transform.position = new Vector3 (this.transform.position.x + xOffSet, this.transform.position.y + yOffSet, 0);
+        this.transform.position = new Vector3 (gameController.player.transform.position.x, gameController.player.transform.position.y, -10);
+		itemShow.transform.position = new Vector3 (this.transform.position.x + xOffSet, this.transform.position.y + yOffSet, 0);
     }
 }
