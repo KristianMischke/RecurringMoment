@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
-
+	
     public Rigidbody2D Rigidbody
     {
         get
@@ -150,10 +150,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void OnGrab(InputValue inputValue)
     {
+		// to get the sprite 
+		Sprite itemImage = gameController.tempImage; 
+		bool isFound = false;
+
         if (itemID != -1)
         {
             gameController.DropItem(itemID);
             itemID = -1;
+			gameController.playerItem.SetActive(false); 
+			gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage;
         }
         else
         {
@@ -166,20 +172,35 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
                 if (validObj && contact.gameObject != gameObject)
                 {
-                    if (timeMachine != null)
+					isFound = true;
+					if (timeMachine != null)
                     {
                         timeMachine.ItemForm = true;
                         if (timeMachine.ItemForm)
                             itemID = timeMachine.ID;
+						itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+						Debug.Log("The name of the sprite is : " + itemImage.name);
+                    
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
                         basicTimeTracker.ItemForm = true;
                         if (basicTimeTracker.ItemForm)
                             itemID = basicTimeTracker.ID;
+						itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+						Debug.Log("The name of the sprite is : " + itemImage.name);
+                    
                     }
                 }
             }
+			
+			// this is when he grabs a object and it shows up in the screen 
+			if(isFound == true)
+			{
+				gameController.playerItem.SetActive(true); // shows the screen to the player 
+				gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage; 
+				Debug.Log("The name of the sprite is : " + itemImage.name);
+			}
         }
     }
     //------
@@ -213,6 +234,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void FixedUpdate()
     {
+        if (this != gameController.player) return; // don't update physics from inputs if not main player
+        
         UpdateIsGrounded();
         if (jump)
         {
@@ -248,12 +271,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         name = $"Player {id.ToString()}";
     }
 
+    public string GetCollisionStateString()
+    {
+        List<Collider2D> contactColliders = new List<Collider2D>();
+        _capsuleCollider.GetContacts(contactColliders);
+        
+        List<string> colliderStrings = new List<string>();
+        foreach (var collider in contactColliders)
+        {
+            if (collider.gameObject == gameController.player.gameObject || collider.gameObject == this.gameObject) continue;
+            
+            ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(collider.gameObject);
+            if (timeTracker != null)
+            {
+                colliderStrings.Add(timeTracker.ID.ToString());
+            }
+            else
+            {
+                colliderStrings.Add($"U{collider.GetInstanceID().ToString()}");   
+            }
+        }
+        
+        colliderStrings.Sort();
+
+        return string.Join(",", colliderStrings);
+    }
+
     public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
     {
         snapshotDictionary[nameof(Rigidbody.position)] = Rigidbody.position;
         snapshotDictionary[nameof(Rigidbody.velocity)] = Rigidbody.velocity;
         snapshotDictionary[nameof(Rigidbody.rotation)] = Rigidbody.rotation;
         snapshotDictionary[nameof(isActivating)] = isActivating;
+        //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
             snapshotDictionary[GameController.FLAG_DESTROY] = true;
@@ -269,4 +319,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = (float)snapshotDictionary[nameof(Rigidbody.rotation)];
         historyActivating = (bool)snapshotDictionary[nameof(isActivating)];
     }
+    
+    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary) => LoadSnapshot(snapshotDictionary);
 }

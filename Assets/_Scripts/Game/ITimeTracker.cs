@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-interface ITimeTracker
+public interface ITimeTracker
 {
     int ID { get; }
     bool ItemForm { get; set; }
@@ -14,4 +14,5 @@ interface ITimeTracker
 
     void SaveSnapshot(Dictionary<string, object> snapshotDictionary);
     void LoadSnapshot(Dictionary<string, object> snapshotDictionary);
+    void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary);
 }
