@@ -25,6 +25,13 @@ public class GameController : MonoBehaviour
     public const int TIME_TRAVEL_REWIND_MULT = 10;
     public const float POSITION_ANOMALY_ERROR = 0.75f;
 
+    public const string TYPE_BOX = "MoveableBox";
+    public const string TYPE_EXPLOAD_BOX = "ExploadingBox";
+    public const string TYPE_PLAYER = "Player";
+    public const string TYPE_TIME_MACHINE = "TimeMachine";
+
+    public Dictionary<string, GameObject> timeTrackerPrefabs = new Dictionary<string, GameObject>();
+    
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public List<BasicTimeTracker> basicTimeTrackers = new List<BasicTimeTracker>();
     public PlayerController player;
@@ -198,6 +205,11 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
+        timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
+        timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExploadingBox");
+        timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
+        timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
+
         //TODO: find all ITimeTracker objects here?!
         
         //TODO: assert nextLevel is a valid level

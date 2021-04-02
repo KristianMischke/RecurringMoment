@@ -6,12 +6,12 @@ using TMPro;
 
 public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 {
-    private GameController gameController;
+    protected GameController gameController;
 
     private bool touchedPlayer = false;
-    public int ID { get; private set; }
+    public int ID { get; protected set; }
 
-    public TimeVector Position { get; private set; }
+    public TimeVector Position { get; protected set; }
     private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
@@ -29,7 +29,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         }
     }
 
-    public bool SetItemState(bool state)
+    public virtual bool SetItemState(bool state)
     {
         ItemForm.Current = state;
         gameObject.SetActive(!ItemForm.AnyTrue);
@@ -50,7 +50,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         }
     }
 
-    public void Init(GameController gameController, int id)
+    public virtual void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
         ID = id;
@@ -58,7 +58,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
+    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         if (FlagDestroy)
         {
@@ -69,7 +69,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
@@ -77,7 +77,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         gameObject.SetActive(!ItemForm.AnyTrue);
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);

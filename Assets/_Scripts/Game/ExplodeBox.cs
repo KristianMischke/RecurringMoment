@@ -2,32 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExplodeBox : MonoBehaviour
+public class ExplodeBox : BasicTimeTracker
 {
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
-	public GameObject self;
-    [SerializeField] bool exploded = false;
-	[SerializeField] float distance = 3; 
+	[SerializeField] float distance = 3;
 
-    bool doorMoving = false;
-    float timer;
-    Vector2 originalPos;
-
-    private void Start()
+	void FixedUpdate()
     {
-        originalPos = transform.position;
-    }
-
-    void Update()
-    {
-		
         if (AllActivated())
         {
-			Vector2 loc = self.transform.position;
+			Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
-			float angle = 45.0f;
-			
-			
 			
 			List<RaycastHit2D> hits = new List<RaycastHit2D>();
 			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.up, distance)); 
@@ -35,27 +20,27 @@ public class ExplodeBox : MonoBehaviour
 			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.left, distance)); 
 			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.right, distance)); 
 			
-			// gets the side angles as well 
+			// gets the diagonal angles as well
+			float angle = 45.0f;
 			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
-			angle = 145.0f;
+			angle = 135.0f;
 			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 245.0f;
+			angle = 225.0f;
 			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 345.0f;
+			angle = 315.0f;
 			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
 
 			foreach(var hit in hits)
 			{
-				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag + " or - " + hit.collider.transform.tag); 
-				if (hit.collider.transform.gameObject.tag == "ExplodeWall")
+				Debug.Log("The collider hit is :" + hit.collider.transform.gameObject.tag); 
+				if (hit.collider.transform.gameObject.CompareTag("ExplodeWall"))
 				{
 					hit.collider.transform.gameObject.SetActive(false); 
 				}
 			}
-            self.SetActive(false); 
-			exploded = true;
+
+			FlagDestroy = true; // mark object for destruction in time
         }
-        
     }
 
 	public Vector2 GetDirectionVector2D(float angle)
