@@ -254,6 +254,22 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public virtual void OnPoolInstantiate()
+    {
+        PlayerInput.enabled = false;
+    }
+
+    public virtual void OnPoolInit()
+    {
+        PlayerInput.enabled = false;
+    }
+
+    public virtual void OnPoolRelease()
+    {
+        PlayerInput.enabled = false;
+        ClearState();
+    }
+    
     public void Init(GameController gameController, int id)
     {
         this.gameController = gameController;

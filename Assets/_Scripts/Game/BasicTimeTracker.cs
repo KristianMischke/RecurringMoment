@@ -44,6 +44,10 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         gameObject.SetActive(!ItemForm.AnyTrue);
     }
 
+    public virtual void OnPoolInstantiate() { }
+    public virtual void OnPoolInit() { }
+    public virtual void OnPoolRelease() { }
+
     public virtual void Init(GameController gameController, int id)
     {
         this.gameController = gameController;

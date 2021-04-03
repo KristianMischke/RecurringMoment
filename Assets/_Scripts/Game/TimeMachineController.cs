@@ -146,6 +146,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public virtual void OnPoolInstantiate() { }
+    public virtual void OnPoolInit() { }
+    public virtual void OnPoolRelease() { }
     public void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
