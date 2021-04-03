@@ -113,7 +113,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a73031324da760479255789cfcbee71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  framesActive: 120
+  timeActive: 1
+  controller: {fileID: 0}
+  mainUIcanvas: {fileID: 0}
+  retryPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
 --- !u!50 &6050971181920639902
 Rigidbody2D:
   serializedVersion: 4

@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class Shoot : MonoBehaviour
 {
-    public GameObject bullet, player;
-    public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f;
-    float dist = 0, toFire = 0;
+    public GameObject bullet;
+    public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f, bulletLife = 1f;
+    public GameObject gameController;
+    public Canvas mainUIcanvas;
+    public RetryPopup retryPopupPrefab;
+    [HideInInspector]
+    public bool seen = false;
+    float minDist;
+    float dist = 0f, toFire = 0f;
 
+    GameObject closest;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -19,11 +27,17 @@ public class Shoot : MonoBehaviour
     void Update()
     {
 
-        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, player.transform.position));
-        toFire -= Time.deltaTime;
-        if(dist <= range && toFire <= 0)
+        if(Detected())
         {
-            Blast(player.GetComponent<CapsuleCollider2D>());
+            toFire -= Time.deltaTime;
+            if(toFire <= 0)
+            {
+                Blast(closest.GetComponent<CapsuleCollider2D>());
+                toFire = fireRateSeconds;
+            }
+        }
+        else
+        {
             toFire = fireRateSeconds;
         }
         
@@ -34,8 +48,52 @@ public class Shoot : MonoBehaviour
     {
 
         GameObject b = Instantiate(bullet, gameObject.transform.position, gameObject.transform.rotation);
+        b.GetComponent<ObjectLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
         Rigidbody2D r = b.GetComponent<Rigidbody2D>();
         r.velocity = (target.gameObject.transform.position - gameObject.transform.position).normalized * shotSpeed;
+
+    }
+
+    bool Detected()
+    {
+
+        minDist = Mathf.Infinity;
+        //RaycastHit2D hit = new RaycastHit2D();
+        foreach (var p in gameController.GetComponent<GameController>().PastPlayers)
+        {
+            dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
+            
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = p.gameObject;
+            }
+        }
+        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().player.transform.position));
+       
+        if (dist < minDist)
+        {
+            minDist = dist;
+            closest = gameController.GetComponent<GameController>().player.gameObject;
+        }
+        if(!seen && (minDist <= range))
+        {
+            StartCoroutine(Alerted()) ;
+        }
+        seen = (minDist <= range);
+        return seen;
+
+    }
+
+    IEnumerator Alerted()
+    {
+
+        transform.GetChild(0).gameObject.SetActive(true);
+        for(int i = 0; i < 45; i++)
+        {
+            yield return null;
+        }
+        transform.GetChild(0).gameObject.SetActive(false);
 
     }
 }

@@ -20,21 +20,28 @@ public class GuardMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(movingRight)
+        if (!(gameObject.GetComponent<Shoot>().seen))
         {
-            gameObject.transform.Translate(Vector2.right * speed * Time.deltaTime);
-            if(gameObject.transform.position.x >= right)
+
+            if (movingRight)
             {
-                movingRight = false;
+                gameObject.transform.Translate(Vector2.right * speed * Time.deltaTime);
+                if (gameObject.transform.position.x >= right)
+                {
+                    movingRight = false;
+                }
             }
-        }
-        else
-        {
-            gameObject.transform.Translate(Vector2.right * speed * Time.deltaTime * -1.0f);
-            if (gameObject.transform.position.x <= left)
+            else
             {
-                movingRight = true;
+                gameObject.transform.Translate(Vector2.right * speed * Time.deltaTime * -1.0f);
+                if (gameObject.transform.position.x <= left)
+                {
+                    movingRight = true;
+                }
             }
+
         }
+        
     }
+
 }
