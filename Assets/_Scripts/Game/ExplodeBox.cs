@@ -7,7 +7,7 @@ public class ExplodeBox : BasicTimeTracker
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
 
-	void FixedUpdate()
+	public override void GameUpdate()
     {
         if (AllActivated())
         {

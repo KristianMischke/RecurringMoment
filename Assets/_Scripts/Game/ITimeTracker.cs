@@ -49,6 +49,12 @@ public interface ITimeTracker
     /// <param name="gameController"></param>
     /// <param name="id"></param>
     void Init(GameController gameController, int id);
+    /// <summary>
+    ///     Method called in <see cref="GameController"/> during every TimeStep.
+    ///     Use this method instead of Unity's Update() or FixedUpdate() functions if you are modifying TimeVariables
+    ///     Use Update() or FixedUpdate() for visual information or ReadOnly access of TimeVariables
+    /// </summary>
+    void GameUpdate();
 
     /// <summary>
     ///     Method to assign the item state of this object

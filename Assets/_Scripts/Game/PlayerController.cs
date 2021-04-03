@@ -86,6 +86,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
 
+    public bool DidTimeTravel { get; set; }
+    
+    /* TODO: TimeBool to track if the player is grounded (use to determine if past player is in valid location
+     *       This is important in case player is standing on ground that moves/is destroyed
+    */
+    
     private GameController gameController;
     public int ID { get; private set; }
     public TimeVector Position { get; private set; }
@@ -236,6 +242,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.velocity = new Vector2(Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed), Rigidbody.velocity.y);
     }
 
+    public void GameUpdate()
+    {
+        
+    }
+
     void UpdateIsGrounded()
     {
         RaycastHit2D[] raycastHits = Physics2D.RaycastAll(transform.position, Vector2.down, CapsuleCollider.size.y);//, LayerMask.NameToLayer("LevelPlatforms"));
@@ -312,6 +323,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity, force);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
+        snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         if(FlagDestroy)
         {
@@ -334,6 +346,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+        DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
     }
 
     public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -346,5 +359,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+        DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
     }
 }

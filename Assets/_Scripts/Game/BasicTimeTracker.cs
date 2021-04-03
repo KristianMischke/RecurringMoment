@@ -39,11 +39,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         return true;
     }
 
-    void FixedUpdate()
-    {
-        gameObject.SetActive(!ItemForm.AnyTrue);
-    }
-
     public virtual void OnPoolInstantiate() { }
     public virtual void OnPoolInit() { }
     public virtual void OnPoolRelease() { }
@@ -54,6 +49,11 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         ID = id;
         
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
+    }
+
+    public virtual void GameUpdate()
+    {
+        gameObject.SetActive(!ItemForm.AnyTrue);
     }
 
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
