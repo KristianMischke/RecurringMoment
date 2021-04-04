@@ -144,9 +144,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         gameController.RetryLevel();
     }
 
+    private bool queueGrab = false;
     public void OnGrab(InputValue inputValue)
     {
-		// to get the sprite 
+        queueGrab = true;
+    }
+    //------
+
+    private void DoGrab()
+    {
+        // to get the sprite 
 		Sprite itemImage = gameController.tempImage; 
 		bool isFound = false;
 
@@ -200,7 +207,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 			}
         }
     }
-    //------
 
     public void ClearActivate()
     {
@@ -219,6 +225,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         isActivating = false;
         historyActivating = false;
         ItemID.Current = ItemID.History = -1;
+        DidTimeTravel = false;
     }
 
     private void Update()
@@ -246,7 +253,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        
+        if (queueGrab)
+        {
+            DoGrab();
+            queueGrab = false;
+        }
     }
 
     void UpdateIsGrounded()

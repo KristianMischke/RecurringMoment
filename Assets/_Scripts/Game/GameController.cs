@@ -363,6 +363,10 @@ public class GameController : MonoBehaviour
             if (addToTrackerList)
             {
                 AllReferencedObjects[id] = TimeTrackerObjects[id] = obj;
+                if (type == TYPE_TIME_MACHINE)
+                {
+                    timeMachines.Add(obj as TimeMachineController);
+                }
             }
 
             return obj;
@@ -412,13 +416,18 @@ public class GameController : MonoBehaviour
                 AnimateFrame = -1;
                 AnimateRewind = false;
                 
+                // show player & add back to tracking list
                 player.gameObject.SetActive(true);
                 AllReferencedObjects[player.ID] = TimeTrackerObjects[player.ID] = player;
 
+                // if the player brought an item back in time, add it to the tracking lists
                 if (player.ItemID.Current >= 0 && tempPlayersItem != null)
                 {
-                    tempPlayersItem.gameObject.SetActive(true);
-                    AllReferencedObjects[tempPlayersItem.ID] = TimeTrackerObjects[tempPlayersItem.ID] = tempPlayersItem;                    
+                    AllReferencedObjects[tempPlayersItem.ID] = TimeTrackerObjects[tempPlayersItem.ID] = tempPlayersItem;
+                    if (ObjectTypeByID[tempPlayersItem.ID] == TYPE_TIME_MACHINE)
+                    {
+                        timeMachines.Add(tempPlayersItem as TimeMachineController);
+                    }
                 }
                 
                 OccupiedTimeMachine.Occupied.Current = true;

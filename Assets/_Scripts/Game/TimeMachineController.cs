@@ -36,7 +36,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 return false;
 
         ItemForm.Current = state;
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        ItemForm.History = state;
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
     }
 
@@ -180,8 +181,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         
         Occupied.Current &= Activated.History;
     }
@@ -196,7 +198,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
         
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 }

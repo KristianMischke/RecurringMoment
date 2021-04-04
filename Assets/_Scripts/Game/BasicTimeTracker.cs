@@ -37,6 +37,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         if (!_isItemable) return false;
         
         ItemForm.Current = state;
+        ItemForm.History = state;
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
     }
@@ -70,6 +71,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
 
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
@@ -79,6 +81,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
         
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
