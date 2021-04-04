@@ -35,7 +35,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public virtual bool SetItemState(bool state)
     {
         ItemForm.Current = state;
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
     }
 
@@ -69,7 +69,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
 
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 
     public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -78,6 +78,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
         
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 }
