@@ -27,6 +27,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
+    public bool ShouldPoolObject => true;
     
     public bool SetItemState(bool state)
     {
@@ -35,7 +36,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 return false;
 
         ItemForm.Current = state;
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        ItemForm.History = state;
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
     }
 
@@ -89,6 +91,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         if (Countdown.Current == 0)
         {
             Countdown.Current = -1;
+            Countdown.History = -1;
 
             Activated.Current = true;
             ActivatedTimeStep.Current = gameController.TimeStep;
@@ -145,6 +148,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public virtual void OnPoolInstantiate() { }
+    public virtual void OnPoolInit() { }
+    public virtual void OnPoolRelease() { }
     public void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
@@ -160,11 +166,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.SaveSnapshot(snapshotDictionary, force);
         Countdown.SaveSnapshot(snapshotDictionary, force);
         
-        if (FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
-        
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         ItemForm.SaveSnapshot(snapshotDictionary, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
@@ -176,10 +178,12 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
         Countdown.LoadSnapshot(snapshotDictionary);
         
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         
         Occupied.Current &= Activated.History;
     }
@@ -191,9 +195,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.ForceLoadSnapshot(snapshotDictionary);
         Countdown.ForceLoadSnapshot(snapshotDictionary);
 
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
         
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 }
