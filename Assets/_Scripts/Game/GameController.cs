@@ -111,6 +111,7 @@ public class GameController : MonoBehaviour
     {
         public int nextID = 0; // TODO: mutex lock?!
     
+        public Dictionary<int, ICustomObject> allReferencedObjects = new Dictionary<int, ICustomObject>();
         public Dictionary<int, ITimeTracker> timeTrackerObjects = new Dictionary<int, ITimeTracker>();
         public Dictionary<int, TimeDict> snapshotHistoryById = new Dictionary<int, TimeDict>();
         public Dictionary<int, string> objectTypeByID = new Dictionary<int, string>();
@@ -131,6 +132,12 @@ public class GameController : MonoBehaviour
         public void DeepCopy(GameState other)
         {
             nextID = other.nextID;
+            
+            allReferencedObjects.Clear();
+            foreach (var kvp in other.allReferencedObjects)
+            {
+                allReferencedObjects[kvp.Key] = kvp.Value;
+            }
             
             timeTrackerObjects.Clear();
             foreach (var kvp in other.timeTrackerObjects)
@@ -174,6 +181,7 @@ public class GameController : MonoBehaviour
         private set => currentState.nextID = value;
     }
 
+    private Dictionary<int, ICustomObject> AllReferencedObjects => currentState.allReferencedObjects;
     private Dictionary<int, ITimeTracker> TimeTrackerObjects => currentState.timeTrackerObjects;
 
     private Dictionary<int, TimeDict> SnapshotHistoryById => currentState.snapshotHistoryById;
@@ -273,6 +281,7 @@ public class GameController : MonoBehaviour
         
         timeMachines.Clear();
         TimeTrackerObjects.Clear();
+        AllReferencedObjects.Clear();
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -280,31 +289,41 @@ public class GameController : MonoBehaviour
         player = playersInScene[0];
         player.Init(this, NextID++);
         TimeTrackerObjects[player.ID] = player;
+        AllReferencedObjects[player.ID] = player;
         
-        void GatherTimeTrackerObjects<T>() where T : UnityEngine.Object, ITimeTracker
+        void GatherSceneObjects<T>() where T : UnityEngine.Object, ICustomObject
         {
-            var timeTrackerObjects = FindObjectsOfType<T>();
+            var foundObjects = FindObjectsOfType<T>();
 
-            foreach (var timeTracker in timeTrackerObjects)
+            foreach (var obj in foundObjects)
             {
-                if(TimeTrackerObjects.ContainsValue(timeTracker)) continue; // Already gathered this object
+                if(AllReferencedObjects.ContainsValue(obj)) continue; // Already gathered this object
                 
-                TimeMachineController timeMachine = timeTracker as TimeMachineController;
+                TimeMachineController timeMachine = obj as TimeMachineController;
                 if (timeMachine != null)
                 {
                     timeMachines.Add(timeMachine);
                 }
                 
-                timeTracker.Init(this, NextID++);
-                TimeTrackerObjects[timeTracker.ID] = timeTracker;
+                obj.Init(this, NextID++);
+                AllReferencedObjects[obj.ID] = obj;
+
+                var timeTracker = obj as ITimeTracker;
+                if (timeTracker != null)
+                {
+                    TimeTrackerObjects[timeTracker.ID] = timeTracker;
+                }
             }
         }
 
-        // Gather other TimeTracker Objects
-        GatherTimeTrackerObjects<TimeMachineController>();
-        GatherTimeTrackerObjects<ExplodeBox>();
-        GatherTimeTrackerObjects<BasicTimeTracker>();
+        // Gather non-TimeTracker Objects, but still ones we need IDs for
+        GatherSceneObjects<IndestructableObject>();
         
+        // Gather other TimeTracker Objects
+        GatherSceneObjects<TimeMachineController>();
+        GatherSceneObjects<ExplodeBox>();
+        GatherSceneObjects<BasicTimeTracker>();
+
         //TODO: assert nextLevel is a valid level
 
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
@@ -343,7 +362,7 @@ public class GameController : MonoBehaviour
             obj.FlagDestroy = false;
             if (addToTrackerList)
             {
-                TimeTrackerObjects[id] = obj;
+                AllReferencedObjects[id] = TimeTrackerObjects[id] = obj;
             }
 
             return obj;
@@ -394,7 +413,7 @@ public class GameController : MonoBehaviour
                 AnimateRewind = false;
                 
                 player.gameObject.SetActive(true);
-                TimeTrackerObjects[player.ID] = player;
+                AllReferencedObjects[player.ID] = TimeTrackerObjects[player.ID] = player;
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
@@ -466,9 +485,9 @@ public class GameController : MonoBehaviour
 
         for (int i = 0; i < NextID; i++)
         {
-            if (TimeTrackerObjects.TryGetValue(i, out var timeTracker))
+            if (AllReferencedObjects.TryGetValue(i, out var obj))
             {
-                timeTracker.GameUpdate();
+                obj.GameUpdate();
             }
         }
 
@@ -551,6 +570,7 @@ public class GameController : MonoBehaviour
                     {
                         SaveObjectToPool(timeTracker);
                         TimeTrackerObjects.Remove(i);
+                        AllReferencedObjects.Remove(i);
                     }
                     else
                     {
@@ -565,6 +585,8 @@ public class GameController : MonoBehaviour
 
     void LoadSnapshot(int timeStep, ITimeTracker timeTracker, bool rewind, out bool delete, bool forceLoad = false)
     {
+        // NOTE: the only reason we should delete (aka pool) and object when Loading the snapshot, is because it is not 
+        // in this timeStep... if FLAG_DESTROY is true, that should always be handled in the SaveSnapshot method
         delete = false;
         if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
         {
@@ -573,11 +595,7 @@ public class GameController : MonoBehaviour
 
             if (relativeSnapshotIndex >= 0)
             {
-                if (history.Get<bool>(timeStep, FLAG_DESTROY) && !rewind)
-                {
-                    delete = true;
-                }
-                else if (forceLoad)
+                if (forceLoad)
                 {
                     timeTracker.ForceLoadSnapshot(history[timeStep]);
                 }
@@ -613,6 +631,9 @@ public class GameController : MonoBehaviour
         return defaultValue;
     }
 
+    public ICustomObject GetObjectByID(int id) => AllReferencedObjects.TryGetValue(id, out var result) ? result : null;
+    public ITimeTracker GetTimeTrackerByID(int id) => TimeTrackerObjects.TryGetValue(id, out var result) ? result : null;
+    
     public void DropItem(int id)
     {
         foreach (var kvp in TimeTrackerObjects)
@@ -633,7 +654,6 @@ public class GameController : MonoBehaviour
         {
             if (TimeTrackerObjects.TryGetValue(i, out var timeTracker))
             {
-
                 SaveSnapshot(timeStep, timeTracker);
 
                 // if object was deleted this timeStep, then pool it
@@ -643,6 +663,7 @@ public class GameController : MonoBehaviour
                     {
                         SaveObjectToPool(timeTracker);
                         TimeTrackerObjects.Remove(i);
+                        AllReferencedObjects.Remove(i);
                     }
                     else
                     {
@@ -712,12 +733,13 @@ public class GameController : MonoBehaviour
             columns.Add("timeStep");
             for (int id = 0; id < NextID; id++)
             {
-                var history = SnapshotHistoryById[id];
-
-                // grab columns history entry
-                foreach (string key in history.Keys)
+                if (SnapshotHistoryById.TryGetValue(id, out var history))
                 {
-                    columns.Add($"{id}.{key}");
+                    // grab columns history entry
+                    foreach (string key in history.Keys)
+                    {
+                        columns.Add($"{id}.{key}");
+                    }
                 }
             }
 

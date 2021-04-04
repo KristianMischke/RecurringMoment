@@ -53,22 +53,19 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual void GameUpdate()
     {
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        if (FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
-
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         ItemForm.SaveSnapshot(snapshotDictionary, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
 
@@ -77,6 +74,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
         

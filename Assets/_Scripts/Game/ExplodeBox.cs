@@ -1,11 +1,31 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class ExplodeBox : BasicTimeTracker
 {
+	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
+
+	public override void Init(GameController gameController, int id)
+	{
+		base.Init(gameController, id);
+
+		// Gather the ICustomObject of the activatables so we don't lose track of them after time travelling
+		requiredActivatableIDs.Clear();
+		foreach (var activatable in requiredActivatables)
+		{
+			var customObj = activatable.gameObject.GetComponent<ICustomObject>();
+			Assert.IsNotNull(customObj, "[ExplodeBox] in order for the box to be activated after time travel," +
+			                              $"the activatables must inherit from {nameof(ICustomObject)}.\n" +
+			                              $"If they don't to be tracked in time, consider adding {nameof(IndestructableObject)} to them");
+			
+			requiredActivatableIDs.Add(customObj.ID);
+		}
+	}
 
 	public override void GameUpdate()
     {
@@ -65,5 +85,49 @@ public class ExplodeBox : BasicTimeTracker
         }
 
         return valid;
+    }
+
+    private string prevActivatableString = null;
+    private void LoadActivatables(TimeDict.TimeSlice snapshotDictionary)
+    {
+	    string newActivatableString = snapshotDictionary.Get<string>(nameof(requiredActivatableIDs));
+	    if (prevActivatableString != newActivatableString)
+	    {
+		    prevActivatableString = newActivatableString;
+		    
+		    requiredActivatables.Clear();
+		    requiredActivatableIDs.Clear();
+		    
+		    string[] activatableStringIDs = newActivatableString.Split(',');
+		    foreach (var stringID in activatableStringIDs)
+		    {
+			    if (int.TryParse(stringID, out int id))
+			    {
+				    var activatableBehaviour = gameController.GetObjectByID(id)?.gameObject
+					    .GetComponent<ActivatableBehaviour>();
+				    Assert.IsNotNull(activatableBehaviour);
+				    requiredActivatables.Add(activatableBehaviour);
+				    requiredActivatableIDs.Add(id);
+			    }
+		    }
+	    }
+    }
+    
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force = false)
+    {
+	    base.SaveSnapshot(snapshotDictionary, force);
+	    
+	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs));
+    }
+
+    public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+	    base.LoadSnapshot(snapshotDictionary);
+		LoadActivatables(snapshotDictionary);
+    }
+    public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+	    base.ForceLoadSnapshot(snapshotDictionary);
+	    LoadActivatables(snapshotDictionary);
     }
 }

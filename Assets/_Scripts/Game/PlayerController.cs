@@ -325,10 +325,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
-        if(FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
     }
 
@@ -347,6 +344,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
     public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -360,5 +359,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+        
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 }

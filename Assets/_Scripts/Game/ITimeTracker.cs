@@ -5,7 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public interface ITimeTracker
+/// <summary>
+///     <para>Custom interface that all objects the Recurring Moment project needs to reference via code.</para>
+///     <para>This is required if a <see cref="ITimeTracker"/> object needs a reference to an object not tracked in time</para>
+///     <para><see cref="IndestructableObject"/> implement this interface directly because they don't need to record timely data</para>
+/// </summary>
+public interface ICustomObject
 {
     /// <summary>
     ///     The game object of this <see cref="ITimeTracker"/>
@@ -16,6 +21,27 @@ public interface ITimeTracker
     ///     The unique ID representing this <see cref="ITimeTracker"/>
     /// </summary>
     int ID { get; }
+    
+    /// <summary>
+    ///     Method called in <see cref="GameController"/> to initialize this object with an ID and pass it the
+    ///     gameController reference
+    /// </summary>
+    /// <param name="gameController"></param>
+    /// <param name="id"></param>
+    void Init(GameController gameController, int id);
+    /// <summary>
+    ///     Method called in <see cref="GameController"/> during every TimeStep.
+    ///     Use this method instead of Unity's Update() or FixedUpdate() functions if you are modifying TimeVariables
+    ///     Use Update() or FixedUpdate() for visual information or ReadOnly access of TimeVariables
+    /// </summary>
+    void GameUpdate();
+}
+
+/// <summary>
+///     Interface designed fop objects that track information in time (e.g. custom variables, or destroy state)
+/// </summary>
+public interface ITimeTracker : ICustomObject
+{
     /// <summary>
     ///     The Vector of this gameObject, to be tracked in time
     /// </summary>
@@ -41,20 +67,6 @@ public interface ITimeTracker
     ///     Method called in <see cref="GameController"/> when this item is released to the pool
     /// </summary>
     void OnPoolRelease();
-    
-    /// <summary>
-    ///     Method called in <see cref="GameController"/> to initialize this object with an ID and pass it the
-    ///     gameController reference
-    /// </summary>
-    /// <param name="gameController"></param>
-    /// <param name="id"></param>
-    void Init(GameController gameController, int id);
-    /// <summary>
-    ///     Method called in <see cref="GameController"/> during every TimeStep.
-    ///     Use this method instead of Unity's Update() or FixedUpdate() functions if you are modifying TimeVariables
-    ///     Use Update() or FixedUpdate() for visual information or ReadOnly access of TimeVariables
-    /// </summary>
-    void GameUpdate();
 
     /// <summary>
     ///     Method to assign the item state of this object

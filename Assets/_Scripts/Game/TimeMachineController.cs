@@ -164,11 +164,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.SaveSnapshot(snapshotDictionary, force);
         Countdown.SaveSnapshot(snapshotDictionary, force);
         
-        if (FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
-        
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         ItemForm.SaveSnapshot(snapshotDictionary, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
@@ -180,6 +176,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
         Countdown.LoadSnapshot(snapshotDictionary);
         
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
 
@@ -195,6 +192,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         ActivatedTimeStep.ForceLoadSnapshot(snapshotDictionary);
         Countdown.ForceLoadSnapshot(snapshotDictionary);
 
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
         
