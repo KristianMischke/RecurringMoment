@@ -97,10 +97,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bullet: {fileID: 6563743087319956307, guid: 65bd86ed0b86d12409f639e24eb37200, type: 3}
-  player: {fileID: 0}
   fireRateSeconds: 1.5
   shotSpeed: 10
   range: 8
+  bulletLife: 2
+  gameController: {fileID: 0}
+  mainUIcanvas: {fileID: 0}
+  retryPopupPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
+  seen: 0
 --- !u!114 &9128684925753525163
 MonoBehaviour:
   m_ObjectHideFlags: 0

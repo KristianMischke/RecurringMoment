@@ -42,14 +42,12 @@ public class ObjectLife : MonoBehaviour
         if (collision.gameObject.tag == "Player")
         {
             Destroy(gameObject);
-            Destroy(collision.gameObject);
-
-            //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            collision.gameObject.SetActive(false);
             Debug.Log("ouch");
             var popup = Instantiate(retryPrefab, mainUIcanvas.transform);
-            popup.Init("Uh oh!", "You/past you got SHOT", controller.RetryLevel, controller.RespawnLatest);
+            popup.Init("Uh oh!", "You/past you got hit!", controller.RetryLevel, controller.RespawnLatest);
         }
-        else if(collision.GetType() ==typeof(BoxCollider2D))
+        else if(collision.GetType() ==typeof(BoxCollider2D) && !(collision.isTrigger))
         {
             Destroy(gameObject);
         }
