@@ -218,7 +218,7 @@ MonoBehaviour:
   GrabCollider: {fileID: 5323333000555512028}
   maxHorizontalSpeed: 20
   jumpMultiplier: 20
-  movementMultiplier: 30
+  movementMultiplier: 25
   isGrounded: 0
 --- !u!114 &4052834050897800091
 MonoBehaviour:
