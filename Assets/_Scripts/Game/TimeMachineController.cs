@@ -90,6 +90,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         if (Countdown.Current == 0)
         {
             Countdown.Current = -1;
+            Countdown.History = -1;
 
             Activated.Current = true;
             ActivatedTimeStep.Current = gameController.TimeStep;

@@ -415,6 +415,7 @@ public class GameController : MonoBehaviour
                 player.gameObject.SetActive(true);
                 AllReferencedObjects[player.ID] = TimeTrackerObjects[player.ID] = player;
                 OccupiedTimeMachine.Occupied.Current = true;
+                OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
                 
@@ -787,7 +788,7 @@ public class GameController : MonoBehaviour
         // check if past player(s) died
         foreach (PlayerController p in PastPlayers)
         {
-            if (p.FlagDestroy && !p.DidTimeTravel)
+            if (GetSnapshotValue<bool>(p, TimeStep, FLAG_DESTROY) && !p.DidTimeTravel)
             {
                 // player is destroyed & not timetravelling
                 throw new TimeAnomalyException("Past Player was killed!");
@@ -797,11 +798,15 @@ public class GameController : MonoBehaviour
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
         {
-            if (timeMachine.Activated.Current && timeMachine.Countdown.History != -1)
+            bool currentActivated = GetSnapshotValue<bool>(timeMachine, TimeStep, timeMachine.Activated.CurrentName);
+            int historyCountdown = GetSnapshotValue(timeMachine, TimeStep, timeMachine.Countdown.HistoryName, -1);
+            int currentCountdown = GetSnapshotValue(timeMachine, TimeStep, timeMachine.Countdown.CurrentName, -1);
+            
+            if (currentActivated && historyCountdown != -1)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating an already active Time Machine!");
             }
-            if (timeMachine.Countdown.History != -1 && timeMachine.Countdown.Current != -1 && timeMachine.Countdown.Current != timeMachine.Countdown.History)
+            if (historyCountdown != -1 && currentCountdown != -1 && currentCountdown != historyCountdown)
             {
                 throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
             }
