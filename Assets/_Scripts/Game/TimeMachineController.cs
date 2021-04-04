@@ -28,11 +28,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public bool FlagDestroy { get; set; }
     public bool ShouldPoolObject => true;
+
+
+    //Whether or not a machine is able to be converted into item form
+    public bool isFoldable = false;
     
     public bool SetItemState(bool state)
     {
         if(state)
-            if (IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated, cannot move it
+            if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated (or not foldable), cannot move it
                 return false;
 
         ItemForm.Current = state;
