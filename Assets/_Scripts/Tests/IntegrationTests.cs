@@ -21,15 +21,12 @@ namespace Tests
             
             _game = Object.Instantiate(Resources.Load<GameObject>("Prefabs/GameController")).GetComponent<GameController>();
             
-            _game.playerPrefab = Resources.Load<PlayerController>("Prefabs/Player");
-            _game.player = Object.Instantiate(_game.playerPrefab).GetComponent<PlayerController>();
+            PlayerController playerPrefab = Resources.Load<PlayerController>("Prefabs/Player");
+            _game.player = Object.Instantiate(playerPrefab).GetComponent<PlayerController>();
             _game.player.PlayerInput.enabled = true;
             
             TimeMachineController timeMachine = Object.Instantiate(Resources.Load<GameObject>("Prefabs/TimeMachine")).GetComponent<TimeMachineController>();
-            _game.timeMachines = new List<TimeMachineController>() { timeMachine };
-            
             BasicTimeTracker moveableBox = Object.Instantiate(Resources.Load<GameObject>("Prefabs/MoveableBox")).GetComponent<BasicTimeTracker>();
-            _game.basicTimeTrackers = new List<BasicTimeTracker>() { moveableBox };
             
             _game.levelEndObject = Object.Instantiate(Resources.Load<GameObject>("Prefabs/LevelEnd")).GetComponent<BoxCollider2D>();
             _game.levelEndObject.transform.position = new Vector3(30, 0, 0);
