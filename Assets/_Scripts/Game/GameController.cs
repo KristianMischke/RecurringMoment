@@ -35,7 +35,7 @@ public class GameController : MonoBehaviour
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
-    public PlayerController playerPrefab;
+    public ITimeTracker tempPlayersItem; // used to hold reference to player's item while timetravelling
     public BoxCollider2D levelEndObject;
     public string nextLevel;
     // visuals
@@ -260,7 +260,7 @@ public class GameController : MonoBehaviour
     {
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
-        timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExploadingBox");
+        timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");
         timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
         timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
 
@@ -414,6 +414,13 @@ public class GameController : MonoBehaviour
                 
                 player.gameObject.SetActive(true);
                 AllReferencedObjects[player.ID] = TimeTrackerObjects[player.ID] = player;
+
+                if (player.ItemID.Current >= 0 && tempPlayersItem != null)
+                {
+                    tempPlayersItem.gameObject.SetActive(true);
+                    AllReferencedObjects[tempPlayersItem.ID] = TimeTrackerObjects[tempPlayersItem.ID] = tempPlayersItem;                    
+                }
+                
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
                 OccupiedTimeMachine = null;
@@ -637,15 +644,14 @@ public class GameController : MonoBehaviour
     
     public void DropItem(int id)
     {
-        foreach (var kvp in TimeTrackerObjects)
+        if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
         {
-            var timeTracker = kvp.Value;
-            if (timeTracker.ID == id)
-            {
-                timeTracker.Position.Current = player.Position.Get;
-                timeTracker.SetItemState(false);
-                break;
-            }
+            timeTracker.Position.Current = player.Position.Get;
+            timeTracker.SetItemState(false);
+        }
+        else
+        {
+            Debug.LogError($"[GameController] could not drop item id:{id}");
         }
     }
 
@@ -857,8 +863,7 @@ public class GameController : MonoBehaviour
         this.player.FlagDestroy = true;
         this.player.DidTimeTravel = true;
         SaveSnapshot(AnimateFrame-1, this.player);
-        this.player.FlagDestroy = false;
-        
+
         // addToTrackerList=false because object will be added to the tracker list
         // when time resumes after rewinding the past
         PlayerController newPlayer = AcquireAndInitPooledTimeTracker(TYPE_PLAYER, NextID++, addToTrackerList:false) as PlayerController;
@@ -866,9 +871,21 @@ public class GameController : MonoBehaviour
         newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
         newPlayer.Rigidbody.position = player.Rigidbody.position;
         newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
-        SaveSnapshot(timeTravelStep, newPlayer); // save the spawn position for the new player
 
-        this.player = newPlayer;
+        if (this.player.ItemID.Current >= 0 && TimeTrackerObjects.TryGetValue(this.player.ItemID.Current, out var playerItem))
+        {
+            playerItem.FlagDestroy = true;
+            SaveSnapshot(AnimateFrame-1, playerItem);
+
+            ITimeTracker newPlayerItem = AcquireAndInitPooledTimeTracker(ObjectTypeByID[playerItem.ID], NextID++, addToTrackerList: false);
+            newPlayerItem.SetItemState(true);
+            newPlayer.ItemID.Current = newPlayerItem.ID;
+            tempPlayersItem = newPlayerItem;
+            SaveSnapshot(timeTravelStep, newPlayerItem);
+        }
+        
+        SaveSnapshot(timeTravelStep, newPlayer); // save the spawn position for the new player
+        this.player = newPlayer; // update current player to the new one
 
         { // clear 'history' values on the time machine for the frame this was activated
             timeMachine.Countdown.History = -1;

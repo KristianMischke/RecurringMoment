@@ -214,6 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shouldPoolObject: 1
+  _isItemable: 1
 --- !u!1 &7046470718177916268
 GameObject:
   m_ObjectHideFlags: 0

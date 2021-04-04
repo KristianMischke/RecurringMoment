@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shouldPoolObject: 1
+  _isItemable: 1
+  requiredActivatableIDs: 
   requiredActivatables:
   - {fileID: 0}
   distance: 10

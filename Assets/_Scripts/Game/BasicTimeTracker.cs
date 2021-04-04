@@ -17,7 +17,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual bool ShouldPoolObject => _shouldPoolObject;
     [SerializeField] private bool _shouldPoolObject;
-    
+    [SerializeField] private bool _isItemable; // can the player hold this as an item?    
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -34,6 +34,8 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual bool SetItemState(bool state)
     {
+        if (!_isItemable) return false;
+        
         ItemForm.Current = state;
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
