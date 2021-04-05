@@ -52,7 +52,7 @@ public class SizeMatcher : MonoBehaviour
     {
         Vector2? dims = null;
 
-        if (matchSpriteRenderer && SpriteRenderer != null && SpriteRenderer.drawMode == SpriteDrawMode.Sliced)
+        if (matchSpriteRenderer && SpriteRenderer != null && SpriteRenderer.drawMode == SpriteDrawMode.Sliced || SpriteRenderer.drawMode == SpriteDrawMode.Tiled)
         {
             dims = SpriteRenderer.size;
         }
