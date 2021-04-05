@@ -1268,6 +1268,10 @@ PrefabInstance:
       propertyPath: requiredActivatables.Array.data[0]
       value: 
       objectReference: {fileID: 978344199354846059}
+    - target: {fileID: 432367698, guid: a7cbac99e9206fb4589c18b8b8d213ba, type: 3}
+      propertyPath: offset
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 8877231957068217623, guid: a7cbac99e9206fb4589c18b8b8d213ba, type: 3}
       propertyPath: m_SortingOrder
       value: -15
