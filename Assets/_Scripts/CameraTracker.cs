@@ -2,10 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class CameraTracker : MonoBehaviour
 {
 
     private GameController gameController;
+    private Camera _camera;
+
+    public Camera Camera
+    {
+        get
+        {
+            if (_camera == null)
+            {
+                _camera = GetComponent<Camera>();
+            }
+
+            return _camera;
+        }
+    }
+    
     public Vector2 relativeMin, relativeMax;
     private Vector2 startPos;
 
@@ -19,10 +35,33 @@ public class CameraTracker : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-	     //Follow the player's position
-         this.transform.position = new Vector3(
-             Mathf.Clamp(gameController.player.transform.position.x, relativeMin.x + startPos.x, relativeMax.x + startPos.x),
-             Mathf.Clamp(gameController.player.transform.position.y, relativeMin.y + startPos.y, relativeMax.y + startPos.y),
-             -10);
+        if (gameController.TimeStep > 0)
+        {
+            //Follow the player's position
+            this.transform.position = new Vector3(
+                Mathf.Clamp(gameController.player.transform.position.x, relativeMin.x + startPos.x,
+                    relativeMax.x + startPos.x),
+                Mathf.Clamp(gameController.player.transform.position.y, relativeMin.y + startPos.y,
+                    relativeMax.y + startPos.y),
+                -10);
+        }
     }
+    
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+
+        var lower = Camera.ViewportToWorldPoint(new Vector3(0, 0, Camera.nearClipPlane));
+        var upper = Camera.ViewportToWorldPoint(new Vector3(1, 1, Camera.nearClipPlane));
+        var radius = (upper - lower) / 2;
+        lower += (Vector3)relativeMin;
+        upper += (Vector3)relativeMax;
+
+        Vector2 size = upper - lower;
+        Vector3 center = gameController.TimeStep > 0 ? (Vector3)startPos: transform.position;
+        center += (Vector3)relativeMax/2 + (Vector3)relativeMin/2;
+        Gizmos.DrawWireCube(center, size);
+    }
+#endif
 }
