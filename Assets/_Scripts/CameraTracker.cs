@@ -6,13 +6,13 @@ public class CameraTracker : MonoBehaviour
 {
 
     private GameController gameController;
-    public Vector2 min, max;
-	public GameObject itemShow; 
-	public int xOffSet, yOffSet; 
+    public Vector2 relativeMin, relativeMax;
+    private Vector2 startPos;
 
     // Start is called before the first frame update
     void Start()
     {
+        startPos = transform.position;
         gameController = (GameController)GameObject.FindObjectsOfType(typeof(GameController))[0];
     }
 
@@ -20,7 +20,9 @@ public class CameraTracker : MonoBehaviour
     void Update()
     {
 	     //Follow the player's position
-        this.transform.position = new Vector3 (gameController.player.transform.position.x, gameController.player.transform.position.y, -10);
-		itemShow.transform.position = new Vector3 (this.transform.position.x + xOffSet, this.transform.position.y + yOffSet, 0);
+         this.transform.position = new Vector3(
+             Mathf.Clamp(gameController.player.transform.position.x, relativeMin.x + startPos.x, relativeMax.x + startPos.x),
+             Mathf.Clamp(gameController.player.transform.position.y, relativeMin.y + startPos.y, relativeMax.y + startPos.y),
+             -10);
     }
 }
