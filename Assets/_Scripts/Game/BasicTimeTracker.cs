@@ -6,29 +6,18 @@ using TMPro;
 
 public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 {
-    private GameController gameController;
+    protected GameController gameController;
 
-    private bool touchedPlayer = false;
-    public int ID { get; private set; }
+    public int ID { get; protected set; }
 
-    public Vector2 Position
-    {
-        get => transform.position;
-        set => transform.position = value;
-    }
+    public TimeVector Position { get; protected set; }
+    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
-    private bool _itemForm = false;
-    public bool ItemForm
-    {
-        get => _itemForm;
-        set
-        {
-            _itemForm = value;
-            gameObject.SetActive(!_itemForm);
-        }
-
-    }
     public bool FlagDestroy { get; set; }
+
+    public virtual bool ShouldPoolObject => _shouldPoolObject;
+    [SerializeField] private bool _shouldPoolObject;
+    [SerializeField] private bool _isItemable; // can the player hold this as an item?    
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -37,56 +26,63 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         {
             if (_collider2d == null)
             {
-                _collider2d = GetComponentInChildren<Collider2D>();
+                _collider2d = gameObject.GetComponentInChildren<Collider2D>();
             }
             return _collider2d;
         }
     }
-    
-    void FixedUpdate()
+
+    public virtual bool SetItemState(bool state)
     {
-        if (Collider2D.IsTouching(gameController.player.CapsuleCollider))
-        {
-            touchedPlayer = true;
-        }
-        if (gameController.IsPresent) //TODO: prolly not the best place for this... should make .WhenPresent() method to reset certain variables
-        {
-            touchedPlayer = false;
-        }
+        if (!_isItemable) return false;
+        
+        ItemForm.Current = state;
+        ItemForm.History = state;
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        return true;
     }
 
-    public void Init(GameController gameController, int id)
+    public virtual void OnPoolInstantiate() { }
+    public virtual void OnPoolInit() { }
+    public virtual void OnPoolRelease() { }
+
+    public virtual void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
         ID = id;
+        
+        Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void GameUpdate()
     {
-        if (FlagDestroy)
-        {
-            snapshotDictionary[GameController.FLAG_DESTROY] = true;
-        }
-
-        snapshotDictionary[nameof(ItemForm)] = ItemForm;
-        snapshotDictionary[nameof(Position)] = Position;
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 
-    public void LoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        if (!ItemForm) //TODO: need better way to handle the variables that can be "broken" in the past... i.e. things that are not set in stone
-        {
-            ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-        }
-        if (!touchedPlayer) //TODO: if object is bumped by something (not just the player) unexpected in the past, should ignore loading positions
-        {
-            Position = (Vector2) snapshotDictionary[nameof(Position)];
-        }
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
+        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void ForceLoadSnapshot(Dictionary<string, object> snapshotDictionary)
+    public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        ItemForm = (bool) snapshotDictionary[nameof(ItemForm)];
-        Position = (Vector2) snapshotDictionary[nameof(Position)];
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+        ItemForm.LoadSnapshot(snapshotDictionary);
+        Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
+
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+    }
+
+    public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        Position.ForceLoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
+        
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 }
