@@ -8,13 +8,10 @@ using UnityEngine.Assertions;
 
 public class TimeAnomalyException : Exception
 {
-    public TimeAnomalyException()
+    public string Title;
+    public TimeAnomalyException(string title, string reason) : base($"Time Anomaly: {reason}")
     {
-        
-    }
-    public TimeAnomalyException(string reason) : base($"Time Anomaly: {reason}")
-    {
-        
+        Title = title;
     }
 }
 
@@ -525,6 +522,11 @@ public class GameController : MonoBehaviour
         }
         ActivatedLastFrame = player.IsActivating;
 
+        if (player.FlagDestroy)
+        {
+            throw new TimeAnomalyException("Oh no!", "You died!");
+        }
+
         int thisTimeStep = TimeStep;
         SaveSnapshotFull(TimeStep);
         ValidateTimeAnomalies();
@@ -730,7 +732,7 @@ public class GameController : MonoBehaviour
     public void ShowRetryPopup(TimeAnomalyException e)
     {
         var popup = Instantiate(retryPopupPrefab, mainUICanvas.transform);
-        popup.Init("Symmetry Broken!", e.Message, RetryLevel, RespawnLatest);
+        popup.Init(e.Title, e.Message, RetryLevel, RespawnLatest);
     }
 
     public void ExportHistory()
@@ -806,9 +808,11 @@ public class GameController : MonoBehaviour
             if (GetSnapshotValue<bool>(p, TimeStep, FLAG_DESTROY) && !p.DidTimeTravel)
             {
                 // player is destroyed & not timetravelling
-                throw new TimeAnomalyException("Past Player was killed!");
+                throw new TimeAnomalyException("Oh No!", "Past Player was killed!");
             }
         }
+
+        string symmetryBrokenTitle = "Symmetry Broken!";        
         
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
         foreach (TimeMachineController timeMachine in timeMachines)
@@ -819,11 +823,11 @@ public class GameController : MonoBehaviour
             
             if (currentActivated && historyCountdown != -1)
             {
-                throw new TimeAnomalyException("Doppelganger tried activating an already active Time Machine!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating an already active Time Machine!");
             }
             if (historyCountdown != -1 && currentCountdown != -1 && currentCountdown != historyCountdown)
             {
-                throw new TimeAnomalyException("Doppelganger tried activating a Time Machine in count-down!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!");
             }
         }
 
@@ -840,7 +844,7 @@ public class GameController : MonoBehaviour
              Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
              if (Vector2.Distance(historyPosition, p.Position.Get) > POSITION_ANOMALY_ERROR)
              {
-                 throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+                 throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
              }
         }
     }
