@@ -1479,14 +1479,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Button
       objectReference: {fileID: 0}
-    - target: {fileID: 978344200753596278, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 978344200753596278, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
 --- !u!114 &978344199354846059 stripped
