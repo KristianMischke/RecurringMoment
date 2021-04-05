@@ -168,14 +168,20 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         if (timeMachine.SetItemState(true))
                         {
-                            itemID = timeMachine.ID;
+                            isFound = true;
+                            ItemID.Current = timeMachine.ID;
+                            itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                            Debug.Log("The name of the sprite is : " + itemImage.name);
                         }
                     }
                     else if (contact.TryGetComponent(out BasicTimeTracker basicTimeTracker))
                     {
                         if (basicTimeTracker.SetItemState(true))
                         {
-                            itemID = basicTimeTracker.ID;
+                            isFound = true;
+                            ItemID.Current = basicTimeTracker.ID;
+                            itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                            Debug.Log("The name of the sprite is : " + itemImage.name);
                         }
                     }
                 }
