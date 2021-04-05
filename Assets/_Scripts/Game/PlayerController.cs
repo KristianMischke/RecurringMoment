@@ -181,6 +181,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         if (timeMachine.SetItemState(true))
                         {
+                            isFound = true;
                             ItemID.Current = timeMachine.ID;
                             itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                             Debug.Log("The name of the sprite is : " + itemImage.name);
@@ -190,6 +191,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         if (basicTimeTracker.SetItemState(true))
                         {
+                            isFound = true;
                             ItemID.Current = basicTimeTracker.ID;
                             itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                             Debug.Log("The name of the sprite is : " + itemImage.name);
