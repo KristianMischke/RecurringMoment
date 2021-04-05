@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class ObjectLife : MonoBehaviour
 {
+    //TODO: rename Bullet or somthing more representative
+    //TODO: bullets probably need to be time tracked... but that's tricky because they are spawned in time by another
+    //      entity... so I'll need to think about this
 
     public float timeActive = 2.0f;
     public GameController controller;
@@ -39,13 +42,11 @@ public class ObjectLife : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Player")
+        PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+        if (playerController != null)
         {
-            Destroy(gameObject);
-            collision.gameObject.SetActive(false);
+            playerController.FlagDestroy = true; // NOTE: probably want to move this to the "critical" section for time variable manipulation
             Debug.Log("ouch");
-            var popup = Instantiate(retryPrefab, mainUIcanvas.transform);
-            popup.Init("Uh oh!", "You/past you got hit!", controller.RetryLevel, controller.RespawnLatest);
         }
         else if(collision.GetType() ==typeof(BoxCollider2D) && !(collision.isTrigger))
         {

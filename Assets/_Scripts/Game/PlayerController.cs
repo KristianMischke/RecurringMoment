@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour, ITimeTracker
 {
@@ -163,7 +164,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             ItemID.Current = -1;
             ItemID.History = -1;
 			gameController.playerItem.SetActive(false); 
-			gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage;
+			gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
         }
         else
         {
@@ -176,7 +177,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
                 if (validObj && contact.gameObject != gameObject)
                 {
-					isFound = true;
 					if (timeMachine != null)
                     {
                         if (timeMachine.SetItemState(true))
@@ -204,7 +204,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 			if(isFound == true)
 			{
 				gameController.playerItem.SetActive(true); // shows the screen to the player 
-				gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage; 
+				gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage; 
 				Debug.Log("The name of the sprite is : " + itemImage.name);
 			}
         }

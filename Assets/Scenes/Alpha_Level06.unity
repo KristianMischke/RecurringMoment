@@ -937,7 +937,7 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: 56f2419c429d05046b658a329d90d274, type: 3}
 --- !u!1 &1705154290 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 7260056097696014964, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1206121752218666647, guid: 56f2419c429d05046b658a329d90d274, type: 3}
   m_PrefabInstance: {fileID: 1705154289}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &1705154291 stripped
@@ -1422,7 +1422,7 @@ PrefabInstance:
       objectReference: {fileID: 209799011}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: nextLevel
-      value: Alpha_Level05
+      value: Alpha_Level07
       objectReference: {fileID: 0}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: mainUICanvas
