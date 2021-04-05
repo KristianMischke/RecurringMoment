@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
-
+	
     public Rigidbody2D Rigidbody
     {
         get
@@ -35,17 +35,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             return _capsuleCollider;
         }
     }
-    public Collider2D GrabCollider
-    {
-        get
-        {
-            if (_grabCollider == null)
-            {
-                _grabCollider = GetComponentInChildren<Collider2D>();
-            }
-            return _grabCollider;
-        }
-    }
+
+    public Collider2D GrabCollider;
     public PlayerInput PlayerInput
     {
         get
@@ -85,7 +76,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
 
-    private int itemID = -1;
+    public TimeInt ItemID = new TimeInt("itemID");
     
     //apply in fixed update
     private float verticalInput, horizontalInput;
@@ -95,12 +86,19 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
 
+    public bool DidTimeTravel { get; set; }
+    
+    /* TODO: TimeBool to track if the player is grounded (use to determine if past player is in valid location
+     *       This is important in case player is standing on ground that moves/is destroyed
+    */
+    
     private GameController gameController;
     public int ID { get; private set; }
     public TimeVector Position { get; private set; }
     public TimeVector Velocity { get; private set; }
     public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
+    public bool ShouldPoolObject => true;
 
     public bool SetItemState(bool state) => false;
 
@@ -146,12 +144,26 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         gameController.RetryLevel();
     }
 
+    private bool queueGrab = false;
     public void OnGrab(InputValue inputValue)
     {
-        if (itemID != -1)
+        queueGrab = true;
+    }
+    //------
+
+    private void DoGrab()
+    {
+        // to get the sprite 
+		Sprite itemImage = gameController.tempImage; 
+		bool isFound = false;
+
+        if (ItemID.Current != -1)
         {
-            gameController.DropItem(itemID);
-            itemID = -1;
+            gameController.DropItem(ItemID.Current);
+            ItemID.Current = -1;
+            ItemID.History = -1;
+			gameController.playerItem.SetActive(false); 
+			gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage;
         }
         else
         {
@@ -164,7 +176,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
                 if (validObj && contact.gameObject != gameObject)
                 {
-                    if (timeMachine != null)
+					isFound = true;
+					if (timeMachine != null)
                     {
                         if (timeMachine.SetItemState(true))
                         {
@@ -186,9 +199,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     }
                 }
             }
+			
+			// this is when he grabs a object and it shows up in the screen 
+			if(isFound == true)
+			{
+				gameController.playerItem.SetActive(true); // shows the screen to the player 
+				gameController.playerItem.GetComponentInChildren<SpriteRenderer>().sprite = itemImage; 
+				Debug.Log("The name of the sprite is : " + itemImage.name);
+			}
         }
     }
-    //------
 
     public void ClearActivate()
     {
@@ -206,6 +226,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         jump = false;
         isActivating = false;
         historyActivating = false;
+        ItemID.Current = ItemID.History = -1;
+        DidTimeTravel = false;
     }
 
     private void Update()
@@ -231,6 +253,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.velocity = new Vector2(Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed), Rigidbody.velocity.y);
     }
 
+    public void GameUpdate()
+    {
+        if (queueGrab)
+        {
+            DoGrab();
+            queueGrab = false;
+        }
+    }
+
     void UpdateIsGrounded()
     {
         RaycastHit2D[] raycastHits = Physics2D.RaycastAll(transform.position, Vector2.down, CapsuleCollider.size.y);//, LayerMask.NameToLayer("LevelPlatforms"));
@@ -249,6 +280,22 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public virtual void OnPoolInstantiate()
+    {
+        PlayerInput.enabled = false;
+    }
+
+    public virtual void OnPoolInit()
+    {
+        PlayerInput.enabled = false;
+    }
+
+    public virtual void OnPoolRelease()
+    {
+        PlayerInput.enabled = false;
+        ClearState();
+    }
+    
     public void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
@@ -288,20 +335,20 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         Position.SaveSnapshot(snapshotDictionary, force);
-        snapshotDictionary.Set(nameof(Rigidbody.velocity), Rigidbody.velocity, force);
+        Velocity.SaveSnapshot(snapshotDictionary, force);
+        ItemID.SaveSnapshot(snapshotDictionary, force);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
+        snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
-        if(FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        ItemID.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -313,10 +360,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+        DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
     public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        ItemID.ForceLoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -325,5 +376,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
+        DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+        
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 }

@@ -118,7 +118,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: 600340bc5e8bd68499b3ba801e578e7d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d8e7973c98177be43ae4745ee25ecf81, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -215,9 +215,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c6b2e7a06c3c4b4fa8fa6f90a246aca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  GrabCollider: {fileID: 5323333000555512028}
   maxHorizontalSpeed: 20
   jumpMultiplier: 20
-  movementMultiplier: 30
+  movementMultiplier: 25
   isGrounded: 0
 --- !u!114 &4052834050897800091
 MonoBehaviour:

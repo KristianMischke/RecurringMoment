@@ -6,15 +6,18 @@ using TMPro;
 
 public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 {
-    private GameController gameController;
+    protected GameController gameController;
 
-    private bool touchedPlayer = false;
-    public int ID { get; private set; }
+    public int ID { get; protected set; }
 
-    public TimeVector Position { get; private set; }
+    public TimeVector Position { get; protected set; }
     private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
+
+    public virtual bool ShouldPoolObject => _shouldPoolObject;
+    [SerializeField] private bool _shouldPoolObject;
+    [SerializeField] private bool _isItemable; // can the player hold this as an item?    
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -23,34 +26,27 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         {
             if (_collider2d == null)
             {
-                _collider2d = GetComponentInChildren<Collider2D>();
+                _collider2d = gameObject.GetComponentInChildren<Collider2D>();
             }
             return _collider2d;
         }
     }
 
-    public bool SetItemState(bool state)
+    public virtual bool SetItemState(bool state)
     {
+        if (!_isItemable) return false;
+        
         ItemForm.Current = state;
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        ItemForm.History = state;
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
     }
 
-    void FixedUpdate()
-    {
-        gameObject.SetActive(!ItemForm.AnyTrue);
-        
-        if (Collider2D.IsTouching(gameController.player.CapsuleCollider))
-        {
-            touchedPlayer = true;
-        }
-        if (gameController.IsPresent) //TODO: prolly not the best place for this... should make .WhenPresent() method to reset certain variables
-        {
-            touchedPlayer = false;
-        }
-    }
+    public virtual void OnPoolInstantiate() { }
+    public virtual void OnPoolInit() { }
+    public virtual void OnPoolRelease() { }
 
-    public void Init(GameController gameController, int id)
+    public virtual void Init(GameController gameController, int id)
     {
         this.gameController = gameController;
         ID = id;
@@ -58,30 +54,35 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
     }
 
-    public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
+    public virtual void GameUpdate()
     {
-        if (FlagDestroy)
-        {
-            snapshotDictionary.Set(GameController.FLAG_DESTROY, true, force);
-        }
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+    }
 
+    public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
+    {
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         ItemForm.SaveSnapshot(snapshotDictionary, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.LoadSnapshot(snapshotDictionary);
         Position.LoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm.ForceLoadSnapshot(snapshotDictionary);
         Position.ForceLoadSnapshot(snapshotDictionary);
+        Position.Current = Position.History;
         
-        gameObject.SetActive(!ItemForm.AnyTrue);
+        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
     }
 }
