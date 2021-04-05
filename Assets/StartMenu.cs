@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI; 
 public class StartMenu : MonoBehaviour
 {
-	private int nextScene = 0; // the current first level in the build may need to change later if it gets altered 
+	public int nextScene = 0; // the current first level in the build may need to change later if it gets altered 
 	public Button button;
 	void Start()
 	{
