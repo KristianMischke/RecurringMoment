@@ -662,6 +662,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+--- !u!1 &1516892654 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2081600883027642798, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+  m_PrefabInstance: {fileID: 2081600882538346742}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1705154289
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -883,7 +888,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.03
+      value: 2.08
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.y
@@ -911,7 +916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -925,12 +930,47 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9128684925753525162, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: gameController
+      value: 
+      objectReference: {fileID: 1516892654}
+    - target: {fileID: 9128684925753525162, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: mainUIcanvas
+      value: 
+      objectReference: {fileID: 1705154292}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distLeft
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distRight
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_Name
       value: guard
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+--- !u!1 &2051039932 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+  m_PrefabInstance: {fileID: 2051039931}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2051039933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051039932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3515764d23fc72148b36583605591278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _shouldPoolObject: 0
+  _isItemable: 0
 --- !u!1 &2076756055
 GameObject:
   m_ObjectHideFlags: 0
@@ -1003,7 +1043,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1920048978300648349
 PrefabInstance:
@@ -1115,7 +1155,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2081600883027642799, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2081600883027642799, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1235,7 +1275,7 @@ PrefabInstance:
       objectReference: {fileID: 209799011}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: nextLevel
-      value: Alpha_Level05
+      value: Alpha_Level08
       objectReference: {fileID: 0}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: mainUICanvas
