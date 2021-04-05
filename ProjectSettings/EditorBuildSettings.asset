@@ -12,10 +12,10 @@ EditorBuildSettings:
     path: Assets/Scenes/Alpha_Level01.unity
     guid: e57cc11099477154292fcddd8f920d97
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level02.unity
+    path: Assets/Scenes/Alpha_Level03.unity
     guid: 7b17b8202cbd0e24d9b14cae6dbfd9d1
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level03.unity
+    path: Assets/Scenes/Alpha_Level04.unity
     guid: 9ff934b47e1b69d42b5860b93d3956dc
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 4ca2e463a34acee49a4d1962e2ad2a2a, type: 2}
