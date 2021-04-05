@@ -14,6 +14,10 @@ public class DoorController : MonoBehaviour
     float timer;
     Vector2 originalPos;
 
+    [SerializeField] GameObject OpenObject;
+    [SerializeField] GameObject ClosedObject;
+    
+
     private void Start()
     {
         originalPos = transform.position;
@@ -23,10 +27,14 @@ public class DoorController : MonoBehaviour
     {
         if (AllActivated())
         {
+            OpenObject.SetActive(true); //TODO: animate door instead of this
+            ClosedObject.SetActive(false);
             timer += Time.deltaTime;
         }
         else
         {
+            OpenObject.SetActive(false); //TODO: animate door instead of this
+            ClosedObject.SetActive(true);
             timer -= Time.deltaTime;
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
