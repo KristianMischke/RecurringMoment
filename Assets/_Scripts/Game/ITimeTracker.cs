@@ -85,7 +85,8 @@ public interface ITimeTracker : ICustomObject
     void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false);
     /// <summary>
     ///     Method called by <see cref="GameController"/> to load a snapshot of this objects time-tracked variables into
-    ///     the current state.
+    ///     the current state. This method doesn't necessarily need to restore the current state (although sometimes it
+    ///     needs to); it does however need to restore any history states.
     /// </summary>
     /// <param name="snapshotDictionary"><see cref="TimeDict.TimeSlice"/>dictionary for storing the values</param>
     void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
