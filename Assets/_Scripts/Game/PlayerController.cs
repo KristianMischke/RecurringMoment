@@ -176,7 +176,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool validObj = contact.CompareTag("TriggerObject") || contact.TryGetComponent(out timeMachine);
                 if (validObj && contact.gameObject != gameObject)
                 {
-					isFound = true;
 					if (timeMachine != null)
                     {
                         if (timeMachine.SetItemState(true))
