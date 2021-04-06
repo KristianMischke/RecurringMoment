@@ -4,7 +4,9 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEditor.Animations;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 public class TimeAnomalyException : Exception
 {
@@ -36,6 +38,7 @@ public class GameController : MonoBehaviour
     public BoxCollider2D levelEndObject;
     public string nextLevel;
     // visuals
+    private Image rewindIndicator;
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
@@ -323,6 +326,10 @@ public class GameController : MonoBehaviour
 
         //TODO: assert nextLevel is a valid level
 
+        // get rewind indicator object
+        rewindIndicator = GameObject.Find("RewindIndicator").GetComponent<Image>();
+        Assert.IsNotNull(rewindIndicator);
+        
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
     }
 
@@ -400,6 +407,8 @@ public class GameController : MonoBehaviour
             return;
         }
 
+        rewindIndicator.enabled = AnimateRewind;
+        
         if (AnimateRewind)
         {
             player.gameObject.SetActive(false);
