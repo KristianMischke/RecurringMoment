@@ -71,7 +71,7 @@ public class SizeMatcher : MonoBehaviour
                 dims = (Vector2)Vector2Int.RoundToInt(dims.Value / gridSize) * gridSize;
             }
 
-            if (SpriteRenderer != null && SpriteRenderer.drawMode == SpriteDrawMode.Sliced) SpriteRenderer.size = dims.Value;
+            if (SpriteRenderer != null && SpriteRenderer.drawMode == SpriteDrawMode.Sliced || SpriteRenderer.drawMode == SpriteDrawMode.Tiled) SpriteRenderer.size = dims.Value;
             if (BoxCollider2D != null)
             {
                 BoxCollider2D.size = dims.Value;
