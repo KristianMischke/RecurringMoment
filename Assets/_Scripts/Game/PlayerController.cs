@@ -146,6 +146,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     private bool queueGrab = false;
+    private static readonly int Walking = Animator.StringToHash("Walking");
+
     public void OnGrab(InputValue inputValue)
     {
         queueGrab = true;
@@ -232,7 +234,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        Animator.SetBool("Walking", _rigidbody.velocity != Vector2.zero);
+        Animator.SetBool(Walking, _rigidbody.velocity != Vector2.zero);
         if (_rigidbody.velocity != Vector2.zero)
         {
             SpriteRenderer.flipX = _rigidbody.velocity.x > 0;

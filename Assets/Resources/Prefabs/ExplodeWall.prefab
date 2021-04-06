@@ -135,7 +135,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7033443879693436386}
   - component: {fileID: 7304199359070769095}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ExplodeWall
   m_TagString: ExplodeWall
   m_Icon: {fileID: 0}
