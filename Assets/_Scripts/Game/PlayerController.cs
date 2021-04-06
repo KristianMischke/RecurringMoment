@@ -145,6 +145,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         gameController.RetryLevel();
     }
 
+    public void OnRespawn(InputValue inputValue)
+    {
+        if (gameController.player != this) return;
+
+        gameController.RespawnLatest();
+    }
+
     private bool queueGrab = false;
     public void OnGrab(InputValue inputValue)
     {
