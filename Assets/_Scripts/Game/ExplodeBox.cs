@@ -9,10 +9,12 @@ public class ExplodeBox : BasicTimeTracker
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
-
+	private LineRenderer explodeRadius; 
+	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
+		explodeRadius = GetComponentInChildren<LineRenderer>();
 
 		// Gather the ICustomObject of the activatables so we don't lose track of them after time travelling
 		requiredActivatableIDs.Clear();
@@ -29,26 +31,35 @@ public class ExplodeBox : BasicTimeTracker
 
 	public override void GameUpdate()
     {
+		Vector2 loc = transform.position;
+		explodeRadius.useWorldSpace = false; 
+		explodeRadius.positionCount = 361; // all of the degrees plus one to make the circle 
+
+		
+		Vector3 [] position = new Vector3[361];
+		for (int x = 0; x < 361; x++)
+		{
+			var rad = Mathf.Deg2Rad * (x * 360f / 360);
+			position[x] = new Vector3(Mathf.Sin(rad) * distance, Mathf.Cos(rad) * distance, 0); 
+		}
+		
+		
+		explodeRadius.SetPositions(position);
+		explodeRadius.loop = true; // make it connect at the end 
+		
         if (AllActivated())
         {
-			Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
 			
 			List<RaycastHit2D> hits = new List<RaycastHit2D>();
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.up, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.down, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.left, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.right, distance)); 
 			
-			// gets the diagonal angles as well
-			float angle = 45.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
-			angle = 135.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 225.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 315.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
+
+			// changed it so that it goes through the whole circle so that it hits everything hopefully 
+			for(float x = 0f; x < 360; x++)
+			{
+				hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(x),distance)); 
+				Debug.DrawRay(loc, GetDirectionVector2D(x), Color.white);
+			}
 
 			foreach(var hit in hits)
 			{
@@ -57,11 +68,11 @@ public class ExplodeBox : BasicTimeTracker
 				// get the time tracker from the object or its parent(s)
 				ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
 				
-				if (timeTracker != null && timeTracker.gameObject.CompareTag("ExplodeWall"))
+				if (timeTracker != null && (timeTracker.gameObject.CompareTag("ExplodeWall") || timeTracker.gameObject.CompareTag("Player") )				)
 				{
 					timeTracker.FlagDestroy = true;
 				}
-				else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
+				else if (hit.collider.gameObject.CompareTag("ExplodeWall") || hit.collider.gameObject.CompareTag("Guard") || hit.collider.gameObject.CompareTag("Player") )
 				{
 					hit.collider.gameObject.SetActive(false);
 					Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
