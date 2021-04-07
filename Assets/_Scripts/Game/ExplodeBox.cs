@@ -27,6 +27,27 @@ public class ExplodeBox : BasicTimeTracker
 		}
 	}
 
+	public override void CopyTimeTrackerState(ITimeTracker other)
+	{
+		ExplodeBox otherBox = other as ExplodeBox;
+		if (otherBox != null)
+		{
+			Position.Copy(otherBox.Position);
+			ItemForm.Copy(otherBox.ItemForm);
+
+			_shouldPoolObject = otherBox._shouldPoolObject;
+			_isItemable = otherBox._isItemable;
+
+			distance = otherBox.distance;
+			requiredActivatableIDs.AddRange(otherBox.requiredActivatableIDs);
+			requiredActivatables.AddRange(otherBox.requiredActivatables);
+		}
+		else
+		{
+			gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(ExplodeBox)}");
+		}
+	}
+	
 	public override void GameUpdate()
     {
         if (AllActivated())

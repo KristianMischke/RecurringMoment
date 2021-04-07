@@ -34,7 +34,6 @@ public class GameController : MonoBehaviour
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
-    public ITimeTracker tempPlayersItem; // used to hold reference to player's item while timetravelling
     public BoxCollider2D levelEndObject;
     public string nextLevel;
     // visuals
@@ -256,6 +255,15 @@ public class GameController : MonoBehaviour
 
     #endregion
 
+    public void Log(string message)
+    {
+        Debug.Log($"[GameController] t={TimeStep.ToString()} | {message}");
+    }
+    public void LogError(string message)
+    {
+        Debug.LogError($"[GameController] t={TimeStep.ToString()} | {message}");
+    }
+    
     void Start()
     {
         //--- Setup object prefabs and pools
@@ -339,6 +347,7 @@ public class GameController : MonoBehaviour
         T timeTracker = default;
         if (timeTrackerPrefabs.TryGetValue(type, out var prefabObject))
         {
+            Log($"Instantiating {type} for pool");
             timeTracker = Instantiate(prefabObject).GetComponent<T>();
             timeTracker.OnPoolInstantiate();
         }
@@ -347,11 +356,13 @@ public class GameController : MonoBehaviour
     }
     private void InitTimeTracker<T>(T obj) where T : ITimeTracker
     {
+        Log($"Initializing {GetTimeTrackerType(obj)} from pool");
         obj.gameObject.SetActive(true);
         obj.OnPoolInit();
     }
     private void ReleaseTimeTracker<T>(T obj) where T : ITimeTracker
     {
+        Log($"Releasing {GetTimeTrackerType(obj)} to pool");
         obj.gameObject.SetActive(false);
         obj.OnPoolRelease();
     }
@@ -362,6 +373,7 @@ public class GameController : MonoBehaviour
         if (timeTrackerPools.TryGetValue(type, out var pool))
         {
             var obj = pool.Aquire();
+            Log($"{id.ToString()}.Init()");
             obj.Init(this, id);
             obj.FlagDestroy = false;
             if (addToTrackerList)
@@ -419,22 +431,13 @@ public class GameController : MonoBehaviour
 
             if (AnimateFrame == TimeStep) // we are done rewinding
             {
+                Log($"Finish Rewind Animation");
+                
                 AnimateFrame = -1;
                 AnimateRewind = false;
                 
                 // show player & add back to tracking list
                 player.gameObject.SetActive(true);
-                AllReferencedObjects[player.ID] = TimeTrackerObjects[player.ID] = player;
-
-                // if the player brought an item back in time, add it to the tracking lists
-                if (player.ItemID.Current >= 0 && tempPlayersItem != null)
-                {
-                    AllReferencedObjects[tempPlayersItem.ID] = TimeTrackerObjects[tempPlayersItem.ID] = tempPlayersItem;
-                    if (ObjectTypeByID[tempPlayersItem.ID] == TYPE_TIME_MACHINE)
-                    {
-                        timeMachines.Add(tempPlayersItem as TimeMachineController);
-                    }
-                }
                 
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
@@ -666,12 +669,13 @@ public class GameController : MonoBehaviour
     {
         if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
         {
+            Log($"Drop Item {id.ToString()}");
             timeTracker.Position.Current = player.Position.Get;
             timeTracker.SetItemState(false);
         }
         else
         {
-            Debug.LogError($"[GameController] could not drop item id:{id}");
+            LogError($"could not drop item {id.ToString()}");
         }
     }
 
@@ -873,6 +877,8 @@ public class GameController : MonoBehaviour
     {
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
         IsPresent = false;
+        
+        Log("DoTimeTravel");
 
         AnimateRewind = true;
         AnimateFrame = TimeStep;
@@ -886,23 +892,20 @@ public class GameController : MonoBehaviour
         this.player.DidTimeTravel = true;
         SaveSnapshot(AnimateFrame-1, this.player);
 
-        // addToTrackerList=false because object will be added to the tracker list
-        // when time resumes after rewinding the past
-        PlayerController newPlayer = AcquireAndInitPooledTimeTracker(TYPE_PLAYER, NextID++, addToTrackerList:false) as PlayerController;
+        // clone the player
+        PlayerController newPlayer = AcquireAndInitPooledTimeTracker(TYPE_PLAYER, NextID++) as PlayerController;
         newPlayer.PlayerInput.enabled = true;
-        newPlayer.Rigidbody.velocity = player.Rigidbody.velocity;
-        newPlayer.Rigidbody.position = player.Rigidbody.position;
-        newPlayer.Rigidbody.rotation = player.Rigidbody.rotation;
+        newPlayer.CopyTimeTrackerState(this.player);
 
+        // if the player is holding an item, clone it
         if (this.player.ItemID.Current >= 0 && TimeTrackerObjects.TryGetValue(this.player.ItemID.Current, out var playerItem))
         {
             playerItem.FlagDestroy = true;
             SaveSnapshot(AnimateFrame-1, playerItem);
 
-            ITimeTracker newPlayerItem = AcquireAndInitPooledTimeTracker(ObjectTypeByID[playerItem.ID], NextID++, addToTrackerList: false);
-            newPlayerItem.SetItemState(true);
-            newPlayer.ItemID.Current = newPlayerItem.ID;
-            tempPlayersItem = newPlayerItem;
+            ITimeTracker newPlayerItem = AcquireAndInitPooledTimeTracker(ObjectTypeByID[playerItem.ID], NextID++);
+            newPlayerItem.CopyTimeTrackerState(playerItem);
+            newPlayer.ItemID.Current = newPlayerItem.ID; // update the new player's item id to match the cloned item id
             SaveSnapshot(timeTravelStep, newPlayerItem);
         }
         

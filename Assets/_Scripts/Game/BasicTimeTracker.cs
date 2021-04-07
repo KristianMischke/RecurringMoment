@@ -11,13 +11,13 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public int ID { get; protected set; }
 
     public TimeVector Position { get; protected set; }
-    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
+    protected TimeBool ItemForm { get; } = new TimeBool("ItemForm");
 
     public bool FlagDestroy { get; set; }
 
     public virtual bool ShouldPoolObject => _shouldPoolObject;
-    [SerializeField] private bool _shouldPoolObject;
-    [SerializeField] private bool _isItemable; // can the player hold this as an item?    
+    [SerializeField] protected bool _shouldPoolObject;
+    [SerializeField] protected bool _isItemable; // can the player hold this as an item?    
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -40,6 +40,23 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         ItemForm.History = state;
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
         return true;
+    }
+    
+    public virtual void CopyTimeTrackerState(ITimeTracker other)
+    {
+        BasicTimeTracker otherTracker = other as BasicTimeTracker;
+        if (otherTracker != null)
+        {
+            Position.Copy(otherTracker.Position);
+            ItemForm.Copy(otherTracker.ItemForm);
+
+            _shouldPoolObject = otherTracker._shouldPoolObject;
+            _isItemable = otherTracker._isItemable;
+        }
+        else
+        {
+            gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(BasicTimeTracker)}");
+        }
     }
 
     public virtual void OnPoolInstantiate() { }
