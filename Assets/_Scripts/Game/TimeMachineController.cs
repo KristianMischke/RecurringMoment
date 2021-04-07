@@ -32,6 +32,27 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     //Whether or not a machine is able to be converted into item form
     public bool isFoldable = false;
+
+    public void CopyTimeTrackerState(ITimeTracker other)
+    {
+        TimeMachineController otherTM = other as TimeMachineController;
+        if (otherTM != null)
+        {
+            Activated.Copy(otherTM.Activated);
+            Occupied.Copy(otherTM.Occupied);
+            ActivatedTimeStep.Copy(otherTM.ActivatedTimeStep);
+            Countdown.Copy(otherTM.Countdown);
+            
+            Position.Copy(otherTM.Position);
+            ItemForm.Copy(otherTM.ItemForm);
+            
+            isFoldable = otherTM.isFoldable;
+        }
+        else
+        {
+            gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(TimeMachineController)}");
+        }
+    }
     
     public bool SetItemState(bool state)
     {

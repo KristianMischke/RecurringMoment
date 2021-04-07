@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour, ITimeTracker
 {
+    // NOTE: don't access these directly, use the properties that start with uppercase letters
     private Rigidbody2D _rigidbody;
     private CapsuleCollider2D _capsuleCollider;
     private Collider2D _grabCollider;
@@ -14,6 +15,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
 	
+    #region EasyAccessProperties
     public Rigidbody2D Rigidbody
     {
         get
@@ -71,6 +73,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             return _spriteRenderer;
         }
     }
+    #endregion
 
     [SerializeField] private float maxHorizontalSpeed;
     [SerializeField] private float jumpMultiplier;
@@ -102,6 +105,20 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public bool ShouldPoolObject => true;
 
     public bool SetItemState(bool state) => false;
+    
+    public void CopyTimeTrackerState(ITimeTracker other)
+    {
+        PlayerController otherPlayer = other as PlayerController;
+        if (otherPlayer != null)
+        {
+            Position.Copy(otherPlayer.Position);
+            Velocity.Copy(otherPlayer.Velocity);
+        }
+        else
+        {
+            gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(PlayerController)}");
+        }
+    }
 
     //---PlayerInputs---
     public void OnMove(InputValue movementValue)
@@ -153,6 +170,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     private bool queueGrab = false;
+    private static readonly int Walking = Animator.StringToHash("Walking");
+
     public void OnGrab(InputValue inputValue)
     {
         queueGrab = true;
@@ -239,7 +258,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        Animator.SetBool("Walking", _rigidbody.velocity != Vector2.zero);
+        Animator.SetBool(Walking, _rigidbody.velocity != Vector2.zero);
         if (_rigidbody.velocity != Vector2.zero)
         {
             SpriteRenderer.flipX = _rigidbody.velocity.x > 0;
