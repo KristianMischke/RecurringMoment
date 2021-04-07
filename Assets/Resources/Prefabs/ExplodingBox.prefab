@@ -15,8 +15,7 @@ MonoBehaviour:
   _shouldPoolObject: 1
   _isItemable: 1
   requiredActivatableIDs: 
-  requiredActivatables:
-  - {fileID: 0}
+  requiredActivatables: []
   distance: 10
 --- !u!1001 &1837105157904715410
 PrefabInstance:

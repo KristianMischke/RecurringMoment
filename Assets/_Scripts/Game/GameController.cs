@@ -26,7 +26,7 @@ public class GameController : MonoBehaviour
     public const float POSITION_ANOMALY_ERROR = 0.75f;
 
     public const string TYPE_BOX = "MoveableBox";
-    public const string TYPE_EXPLOAD_BOX = "ExploadingBox";
+    public const string TYPE_EXPLOAD_BOX = "ExplodeBox";
     public const string TYPE_PLAYER = "Player";
     public const string TYPE_TIME_MACHINE = "TimeMachine";
 
@@ -325,6 +325,7 @@ public class GameController : MonoBehaviour
         }
 
         // Gather non-TimeTracker Objects, but still ones we need IDs for
+        GatherSceneObjects<ActivatableBehaviour>();
         GatherSceneObjects<IndestructableObject>();
         
         // Gather other TimeTracker Objects
