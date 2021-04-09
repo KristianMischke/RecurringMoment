@@ -233,13 +233,17 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 608999230873697660, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 16.672728
+      value: 16.77
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.1046414
+      value: -6.7
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.z
@@ -285,6 +289,14 @@ PrefabInstance:
       propertyPath: mainUIcanvas
       value: 
       objectReference: {fileID: 119875634}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distRight
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: movingRight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_Name
       value: guard (1)
@@ -1101,6 +1113,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
   m_PrefabInstance: {fileID: 195853171}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1525480139 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+  m_PrefabInstance: {fileID: 9128684924874006621}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &1525480140
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525480139}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
 --- !u!1001 &1737899445
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1880,11 +1918,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4713130455757959754, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -22.96
+      value: -6.5
       objectReference: {fileID: 0}
     - target: {fileID: 4713130455757959754, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.01999998
+      value: 6.6
       objectReference: {fileID: 0}
     - target: {fileID: 4713130455757959754, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2013,11 +2051,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.9
+      value: -22.6
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.83
+      value: -0.8
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2063,6 +2101,18 @@ PrefabInstance:
       propertyPath: mainUIcanvas
       value: 
       objectReference: {fileID: 119875634}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distLeft
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: speed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128684925753525163, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: movingRight
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_Name
       value: guard
