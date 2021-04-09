@@ -78,6 +78,21 @@ public class ExplodeBox : BasicTimeTracker
 					Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
 				}
 			}
+			
+			if(GameObject.Find("ItemContainer") != null)
+			{
+				GameObject[] allPlayer;// since it kills the player when the item is inside the inventory it kills 
+				// all of them breaking the symmetry 
+				allPlayer = GameObject.FindGameObjectsWithTag("Player");
+				foreach (GameObject p in allPlayer)
+				{
+					p.SetActive(false);
+					p.FlagDestroy = true;
+				}
+				Debug.Log("found the itemcontainer");
+				//gameController.player.gameObject.SetActive(false); 
+				//GameObject.PlayerController.SetActive = false;
+			}
 
 			FlagDestroy = true; // mark object for destruction in time
         }
