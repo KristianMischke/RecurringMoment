@@ -186,11 +186,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         if (ItemID.Current != -1)
         {
-            gameController.DropItem(ItemID.Current);
-            ItemID.Current = -1;
-            ItemID.History = -1;
-			gameController.playerItem.SetActive(false); 
-			gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+            if (gameController.DropItem(ItemID.Current)) // check to see if we successfully drop the item
+            {
+                ItemID.Current = -1;
+                ItemID.History = -1;
+                gameController.playerItem.SetActive(false);
+                gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+            }
         }
         else
         {

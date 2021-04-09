@@ -665,17 +665,18 @@ public class GameController : MonoBehaviour
     public ICustomObject GetObjectByID(int id) => AllReferencedObjects.TryGetValue(id, out var result) ? result : null;
     public ITimeTracker GetTimeTrackerByID(int id) => TimeTrackerObjects.TryGetValue(id, out var result) ? result : null;
     
-    public void DropItem(int id)
+    public bool DropItem(int id)
     {
         if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
         {
             Log($"Drop Item {id.ToString()}");
             timeTracker.Position.Current = player.Position.Get;
-            timeTracker.SetItemState(false);
+            return timeTracker.SetItemState(false);
         }
         else
         {
             LogError($"could not drop item {id.ToString()}");
+            return false;
         }
     }
 
