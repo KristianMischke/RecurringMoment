@@ -670,7 +670,8 @@ public class GameController : MonoBehaviour
         if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
         {
             Log($"Drop Item {id.ToString()}");
-            timeTracker.Position.Current = player.Position.Get;
+            Vector2 offset = new Vector2(player.facingRight ? 1.2f : -1.2f, 0); 
+            timeTracker.Position.Current = player.Position.Get + offset;
             return timeTracker.SetItemState(false);
         }
         else

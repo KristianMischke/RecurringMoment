@@ -87,6 +87,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private bool jump;
     private bool isActivating, historyActivating;
 
+    public bool facingRight = true; 
+    
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
 
@@ -260,10 +262,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        Animator.SetBool(Walking, _rigidbody.velocity != Vector2.zero);
-        if (_rigidbody.velocity != Vector2.zero)
+        Animator.SetBool(Walking, Rigidbody.velocity != Vector2.zero);
+        
+        if (Rigidbody.velocity.x != 0)
         {
-            SpriteRenderer.flipX = _rigidbody.velocity.x > 0;
+            facingRight = Rigidbody.velocity.x > 0;
+            SpriteRenderer.flipX = facingRight;
         }
     }
 
