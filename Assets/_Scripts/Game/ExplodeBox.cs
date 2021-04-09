@@ -31,21 +31,9 @@ public class ExplodeBox : BasicTimeTracker
 
 	public override void GameUpdate()
     {
+		bool isInPlayerInv = false; 
+		
 		Vector2 loc = transform.position;
-		explodeRadius.useWorldSpace = false; 
-		explodeRadius.positionCount = 361; // all of the degrees plus one to make the circle 
-
-		
-		Vector3 [] position = new Vector3[361];
-		for (int x = 0; x < 361; x++)
-		{
-			var rad = Mathf.Deg2Rad * (x * 360f / 360);
-			position[x] = new Vector3(Mathf.Sin(rad) * distance, Mathf.Cos(rad) * distance, 0); 
-		}
-		
-		
-		explodeRadius.SetPositions(position);
-		explodeRadius.loop = true; // make it connect at the end 
 		
         if (AllActivated())
         {
@@ -63,7 +51,7 @@ public class ExplodeBox : BasicTimeTracker
 
 			foreach(var hit in hits)
 			{
-				Debug.Log("The collider hit is :" + hit.collider.gameObject.tag);
+				//Debug.Log("The collider hit is :" + hit.collider.gameObject.tag);
 				
 				// get the time tracker from the object or its parent(s)
 				ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
@@ -79,21 +67,50 @@ public class ExplodeBox : BasicTimeTracker
 				}
 			}
 			
-			if(GameObject.Find("ItemContainer") != null)
+			foreach(var player in gameController.PastPlayers)
 			{
-				GameObject[] allPlayer;// since it kills the player when the item is inside the inventory it kills 
-				// all of them breaking the symmetry 
-				allPlayer = GameObject.FindGameObjectsWithTag("Player");
-				foreach (GameObject p in allPlayer)
+				if(player.ItemID.Current == ID)
 				{
-					p.SetActive(false);
-					p.FlagDestroy = true;
+					Debug.Log("Past Player is currently holding a item that is a explodeBox");
+					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
+					loc.x = player.transform.position.x;
+					loc.y = player.transform.position.y;					
+					player.FlagDestroy = true;
 				}
-				Debug.Log("found the itemcontainer");
-				//gameController.player.gameObject.SetActive(false); 
-				//GameObject.PlayerController.SetActive = false;
 			}
-
+			if(gameController.player.ItemID.Current == ID)
+			{
+				Debug.Log("Currently the player has the explosebox in their inventory"); 
+				gameController.player.FlagDestroy = true;
+				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
+				loc.x = gameController.player.transform.position.x;
+				loc.y = gameController.player.transform.position.y;	
+			}
+			
+			
+			GameObject newExplode = new GameObject();  // creates the new object to hold the explosion radius 
+			newExplode.transform.position = loc; // and set it to the last loc it was at (player or actual loc of the box) 
+			
+			newExplode.transform.parent = gameController.explosionObject.transform;  // throws the new object under the explosionObject object 
+			newExplode.AddComponent<LineRenderer>(); // add the linerenderer 
+			LineRenderer newExplodeRadius = newExplode.GetComponentInChildren<LineRenderer>(); // sets up the linerenderer for the actual radius 
+			
+			
+			newExplodeRadius.useWorldSpace = false; 
+			newExplodeRadius.positionCount = 361; // all of the degrees plus one to make the circle 
+			Vector3 [] explosionCircle = new Vector3[361];
+			for (int x = 0; x < 361; x++)
+			{
+				var rad = Mathf.Deg2Rad * (x * 360f / 360);
+				explosionCircle[x] = new Vector3(Mathf.Sin(rad) * distance, Mathf.Cos(rad) * distance, 0); 
+			}
+		
+		
+			newExplodeRadius.SetPositions(explosionCircle);
+			newExplodeRadius.loop = true; // make it connect at the end 
+			
+			
+			
 			FlagDestroy = true; // mark object for destruction in time
         }
     }
