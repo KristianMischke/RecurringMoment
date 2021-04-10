@@ -18,6 +18,18 @@ public class TimeVariable<T> where T : IEquatable<T>
         Current = currentDefault;
     }
 
+    public void Copy(TimeVariable<T> other, bool copyName=false)
+    {
+        if (copyName)
+        {
+            CurrentName = other.CurrentName;
+            HistoryName = other.HistoryName;
+        }
+
+        History = other.History;
+        Current = other.Current;
+    }
+    
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         // NOTE: behavior for how current/history are stored is ill-defined for templated type T
