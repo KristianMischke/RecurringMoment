@@ -224,6 +224,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                         }
                     }
                 }
+
+                // break the loop if we found an object bc we can only pick up one object
+                if (isFound)
+                {
+                    break;
+                }
             }
 			
 			// this is when he grabs a object and it shows up in the screen 
