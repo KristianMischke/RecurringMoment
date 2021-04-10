@@ -37,12 +37,12 @@ public class CameraTracker : MonoBehaviour
     {
         if (gameController.TimeStep > 0)
         {
+            Vector2 playerPos = gameController.GetSnapshotValue<Vector2>(gameController.player, gameController.TimeStep,
+                gameController.player.Position.CurrentName);
             //Follow the player's position
             this.transform.position = new Vector3(
-                Mathf.Clamp(gameController.player.transform.position.x, relativeMin.x + startPos.x,
-                    relativeMax.x + startPos.x),
-                Mathf.Clamp(gameController.player.transform.position.y, relativeMin.y + startPos.y,
-                    relativeMax.y + startPos.y),
+                Mathf.Clamp(playerPos.x, relativeMin.x + startPos.x, relativeMax.x + startPos.x),
+                Mathf.Clamp(playerPos.y, relativeMin.y + startPos.y, relativeMax.y + startPos.y),
                 -10);
         }
     }
