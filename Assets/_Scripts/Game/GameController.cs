@@ -46,6 +46,8 @@ public class GameController : MonoBehaviour
 	
 	public GameObject playerItem;
 	public Sprite tempImage; 
+	public GameObject explosionObject; 
+	
 
     public IEnumerable<PlayerController> PastPlayers
     {
