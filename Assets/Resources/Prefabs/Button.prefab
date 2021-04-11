@@ -156,7 +156,6 @@ GameObject:
   - component: {fileID: 9097899968673112750}
   - component: {fileID: -7029755965318898212}
   - component: {fileID: 4124366473047098373}
-  - component: {fileID: -3430835826565830900}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -218,6 +217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bc906fc6f8272841b8ec711ac7e585c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameController: {fileID: 0}
   PressedArt: {fileID: 978344200368935894}
   NormalArt: {fileID: 978344198901258342}
   collisionCount: 1
@@ -236,19 +236,6 @@ MonoBehaviour:
   matchBoxCollider: 0
   matchSpriteRenderer: 0
   gridSize: 0.5
---- !u!114 &-3430835826565830900
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 978344200410513007}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ccad08ef78c81642999d2097290744b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameController: {fileID: 0}
 --- !u!1 &978344200753596272
 GameObject:
   m_ObjectHideFlags: 0

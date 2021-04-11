@@ -11,7 +11,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public int ID { get; protected set; }
 
     public TimeVector Position { get; protected set; }
-    protected TimeBool ItemForm { get; } = new TimeBool("ItemForm");
+    protected bool ItemForm = false;
 
     public bool FlagDestroy { get; set; }
 
@@ -36,9 +36,8 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         if (!_isItemable) return false;
         
-        ItemForm.Current = state;
-        ItemForm.History = state;
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        ItemForm = state;
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
         return true;
     }
     
@@ -48,7 +47,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         if (otherTracker != null)
         {
             Position.Copy(otherTracker.Position);
-            ItemForm.Copy(otherTracker.ItemForm);
+            ItemForm = otherTracker.ItemForm;
 
             _shouldPoolObject = otherTracker._shouldPoolObject;
             _isItemable = otherTracker._isItemable;
@@ -73,33 +72,33 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual void GameUpdate()
     {
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
     }
 
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
-        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(ItemForm), ItemForm, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.LoadSnapshot(snapshotDictionary);
+        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
         Position.LoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
     }
 
     public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
         
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
     }
 }
