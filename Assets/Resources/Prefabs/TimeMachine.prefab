@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.16, y: -0.13873}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 2.8175678, y: 0.67185473}
   m_Pivot: {x: 0.5, y: 0.50000054}
 --- !u!222 &9133160306145081769
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -191,7 +191,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4711500497092203541}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.75, y: 2.7, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.27, y: 0.27, z: 1}
   m_Children: []
   m_Father: {fileID: 4711500496456351492}
@@ -295,7 +295,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.67, y: 1.3}
+  m_Offset: {x: 0, y: 1.3}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -322,14 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   renderer: {fileID: 0}
   timeText: {fileID: 546507666380530687}
-  HistoryActivated: 0
-  HistoryOccupied: 0
-  HistoryActivatedTimeStep: -1
-  HistoryCountdown: -1
-  CurrentlyActivated: 0
-  CurrentlyOccupied: 0
-  CurrentActivatedTimeStep: -1
-  CurrentCountdown: -1
+  isFoldable: 0
 --- !u!114 &2188584014909302519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,7 +374,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.466, y: 3.79}
+  m_AnchoredPosition: {x: 0, y: 3.375}
   m_SizeDelta: {x: 2.8458996, y: 0.39439714}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1098245022433300787
