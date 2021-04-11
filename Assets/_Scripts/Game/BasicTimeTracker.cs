@@ -11,13 +11,14 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public int ID { get; protected set; }
 
     public TimeVector Position { get; protected set; }
-    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
+    protected bool ItemForm = false;
+    protected bool PrevItemForm = false;
 
     public bool FlagDestroy { get; set; }
 
     public virtual bool ShouldPoolObject => _shouldPoolObject;
-    [SerializeField] private bool _shouldPoolObject;
-    [SerializeField] private bool _isItemable; // can the player hold this as an item?    
+    [SerializeField] protected bool _shouldPoolObject;
+    [SerializeField] protected bool _isItemable; // can the player hold this as an item?    
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -36,10 +37,26 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         if (!_isItemable) return false;
         
-        ItemForm.Current = state;
-        ItemForm.History = state;
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        ItemForm = state;
         return true;
+    }
+    
+    public virtual void CopyTimeTrackerState(ITimeTracker other)
+    {
+        BasicTimeTracker otherTracker = other as BasicTimeTracker;
+        if (otherTracker != null)
+        {
+            Position.Copy(otherTracker.Position);
+            ItemForm = otherTracker.ItemForm;
+            PrevItemForm = otherTracker.PrevItemForm;
+
+            _shouldPoolObject = otherTracker._shouldPoolObject;
+            _isItemable = otherTracker._isItemable;
+        }
+        else
+        {
+            gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(BasicTimeTracker)}");
+        }
     }
 
     public virtual void OnPoolInstantiate() { }
@@ -54,35 +71,44 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
     }
 
+    private void UpdateShow()
+    {
+        gameObject.SetActive((ItemForm != PrevItemForm || !ItemForm) && !FlagDestroy);
+    }
+
     public virtual void GameUpdate()
     {
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        UpdateShow();
     }
 
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
-        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(ItemForm), ItemForm, force);
+        PrevItemForm = ItemForm;
+        UpdateShow();
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.LoadSnapshot(snapshotDictionary);
+        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
+        PrevItemForm = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, nameof(ItemForm));
         Position.LoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        UpdateShow();
     }
 
     public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
+        PrevItemForm = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, nameof(ItemForm));
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
-        
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+
+        UpdateShow();
     }
 }

@@ -75,6 +75,12 @@ public interface ITimeTracker : ICustomObject
     ///                     into an object</param>
     /// <returns>True if operation was successful</returns>
     bool SetItemState(bool state); //TODO: rename to TrySetItemState?
+
+    /// <summary>
+    ///     Copy the state from another ITimeTracker object to this object
+    /// </summary>
+    /// <param name="other">the object to copy from</param>
+    void CopyTimeTrackerState(ITimeTracker other);
     
     /// <summary>
     ///     Method called by <see cref="GameController"/> to save a snapshot of this objects time-tracked variables

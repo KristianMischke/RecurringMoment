@@ -32,13 +32,102 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     //Whether or not a machine is able to be converted into item form
     public bool isFoldable = false;
+
+    public void CopyTimeTrackerState(ITimeTracker other)
+    {
+        TimeMachineController otherTM = other as TimeMachineController;
+        if (otherTM != null)
+        {
+            Activated.Copy(otherTM.Activated);
+            Occupied.Copy(otherTM.Occupied);
+            ActivatedTimeStep.Copy(otherTM.ActivatedTimeStep);
+            Countdown.Copy(otherTM.Countdown);
+            
+            Position.Copy(otherTM.Position);
+            ItemForm.Copy(otherTM.ItemForm);
+            
+            isFoldable = otherTM.isFoldable;
+        }
+        else
+        {
+            gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(TimeMachineController)}");
+        }
+    }
     
     public bool SetItemState(bool state)
     {
-        if(state)
-            if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied or activated (or not foldable), cannot move it
+        if (state) // trying to turn into an item
+        {
+            // time machine is occupied or activated (or not foldable), cannot move it
+            if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0)
                 return false;
+        }
+        else // trying to turn back into time machine
+        {
+            gameObject.SetActive(true);
+            // ensure the time machine is touching the level platform
+            BoxCollider2D collider = GetComponent<BoxCollider2D>();
+            RaycastHit2D[] raycastHits = Physics2D.RaycastAll((Vector2)transform.position + collider.offset, Vector2.down);
+            
+            for (int i = 0; i < raycastHits.Length; i++)
+            {
+                GameObject hitObject = raycastHits[i].collider.gameObject;
+                ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
+                if (hitObject == gameObject || hitTimeTracker is PlayerController) continue;
 
+                // cannot place time machine ontop of ITimeTracker
+                if (hitTimeTracker != null)
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+
+                // cannot place time machine further than collider distance (e.g. when jumping)
+                if (Mathf.Abs(raycastHits[i].point.y - transform.position.y) > collider.size.y)
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+
+                bool CheckSides(RaycastHit2D[] sideHits)
+                {
+                    foreach (var sideHit in sideHits)
+                    {
+                        if (sideHit.collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms"))
+                        {
+                            // if we hit a platform to the side that is inside our collider, fail placement
+                            if (Mathf.Abs(sideHit.point.x - transform.position.x) < collider.size.x)
+                            {
+                                return false;
+                            }
+                            break;
+                        }
+                    }
+
+                    return true;
+                }
+                
+                // ensure the time machine is not obstructed on either side
+                if (!CheckSides(Physics2D.RaycastAll((Vector2)transform.position + collider.offset, Vector2.left)))
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+                if (!CheckSides(Physics2D.RaycastAll((Vector2)transform.position + collider.offset, Vector2.right)))
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+                
+                // Machine is placed on the ground, so align to the ground platform
+                if (hitObject.layer == LayerMask.NameToLayer("LevelPlatforms"))
+                {
+                    Position.Current = raycastHits[i].point;
+                    break;
+                }
+            }
+        }
+            
         ItemForm.Current = state;
         ItemForm.History = state;
         gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
