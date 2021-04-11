@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a472f8b2dd285d42b4810b84db0ca9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _shouldPoolObject: 0
+  _shouldPoolObject: 1
   _isItemable: 0
   radius: 0
   lifetime: 12

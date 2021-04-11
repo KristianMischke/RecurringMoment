@@ -423,6 +423,7 @@ public class GameController : MonoBehaviour
         explosionObject.Init(this, newID);
         explosionObject.FlagDestroy = false;
         AllReferencedObjects[newID] = TimeTrackerObjects[newID] = explosionObject;
+        HistoryStartById[newID] = TimeStep;
         
         // set initial variables
         explosionObject.Position.Current = location;
@@ -763,7 +764,27 @@ public class GameController : MonoBehaviour
         // load player snapshot from current state (at the timestep of the spawnState)
         int playerStartFrame = currentState.historyStartById[player.ID];
         player.ForceLoadSnapshot(currentState.snapshotHistoryById[player.ID][spawnState.timeStep - playerStartFrame]);
-            
+
+        // pool objects not yet created/active
+        for(int id = 0; id < NextID; id++)
+        {
+            // destroy if not found in history (i.e. was created this frame, or if it starts after the spawn time)
+            bool destroy = !HistoryStartById.TryGetValue(id, out var startTime) || startTime > spawnState.timeStep; 
+            if (destroy && TimeTrackerObjects.TryGetValue(id, out var timeTracker))
+            {
+                if(timeTracker.ShouldPoolObject)
+                {
+                    SaveObjectToPool(timeTracker);
+                    TimeTrackerObjects.Remove(id);
+                    AllReferencedObjects.Remove(id);
+                }
+                else
+                {
+                    timeTracker.gameObject.SetActive(false);
+                }                
+            }
+        }
+        
         currentState.DeepCopy(spawnState);
         LoadSnapshotFull(TimeStep, false, true);
         SetPause(false);

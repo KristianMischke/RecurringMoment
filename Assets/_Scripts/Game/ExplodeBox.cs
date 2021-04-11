@@ -70,8 +70,6 @@ public class ExplodeBox : BasicTimeTracker
                 {
                     if (hit.collider.gameObject == this.gameObject) continue; // skip if we hit our own collider
                     
-                    Debug.Log("The collider hit is :" + hit.collider.gameObject.tag);
-
                     // block the explosion if it hits a platform
                     bool blockExplosion = hit.collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms");
 
@@ -111,7 +109,7 @@ public class ExplodeBox : BasicTimeTracker
 			}
 			if(gameController.player.ItemID.Current == ID)
 			{
-				Debug.Log("Currently the player has the explosebox in their inventory"); 
+				Debug.Log("Currently the player has the explodeBox in their inventory"); 
 				gameController.player.FlagDestroy = true;
 				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
 				loc = gameController.player.transform.position;
