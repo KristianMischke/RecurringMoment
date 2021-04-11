@@ -87,6 +87,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private bool jump;
     private bool isActivating, historyActivating;
 
+    public bool facingRight = true; 
+    
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
 
@@ -186,11 +188,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         if (ItemID.Current != -1)
         {
-            gameController.DropItem(ItemID.Current);
-            ItemID.Current = -1;
-            ItemID.History = -1;
-			gameController.playerItem.SetActive(false); 
-			gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+            if (gameController.DropItem(ItemID.Current)) // check to see if we successfully drop the item
+            {
+                ItemID.Current = -1;
+                ItemID.History = -1;
+                gameController.playerItem.SetActive(false);
+                gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+            }
         }
         else
         {
@@ -264,10 +268,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        Animator.SetBool(Walking, _rigidbody.velocity != Vector2.zero);
-        if (_rigidbody.velocity != Vector2.zero)
+        Animator.SetBool(Walking, Rigidbody.velocity != Vector2.zero);
+        
+        if (Rigidbody.velocity.x != 0)
         {
-            SpriteRenderer.flipX = _rigidbody.velocity.x > 0;
+            facingRight = Rigidbody.velocity.x > 0;
+            SpriteRenderer.flipX = facingRight;
         }
     }
 
