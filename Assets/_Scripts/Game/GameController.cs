@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEditor.Animations;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
+using Vector2 = UnityEngine.Vector2;
 
 public class TimeAnomalyException : Exception
 {
@@ -27,6 +29,7 @@ public class GameController : MonoBehaviour
 
     public const string TYPE_BOX = "MoveableBox";
     public const string TYPE_EXPLOAD_BOX = "ExplodeBox";
+    public const string TYPE_EXPLOSION = "Explosion";
     public const string TYPE_PLAYER = "Player";
     public const string TYPE_TIME_MACHINE = "TimeMachine";
 
@@ -46,8 +49,6 @@ public class GameController : MonoBehaviour
 	
 	public GameObject playerItem;
 	public Sprite tempImage; 
-	public GameObject explosionObject; 
-	
 
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -98,6 +99,9 @@ public class GameController : MonoBehaviour
         
         ExplodeBox explodeBox = timeTracker as ExplodeBox;
         if (explodeBox != null) return TYPE_EXPLOAD_BOX;
+        
+        Explosion explosion = timeTracker as Explosion;
+        if (explosion != null) return TYPE_EXPLOSION;
         
         BasicTimeTracker basicTimeTracker = timeTracker as BasicTimeTracker;
         if (basicTimeTracker != null)
@@ -271,6 +275,7 @@ public class GameController : MonoBehaviour
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
         timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");
+        timeTrackerPrefabs[TYPE_EXPLOSION] = Resources.Load<GameObject>("Prefabs/Explosion");
         timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
         timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
 
@@ -285,6 +290,7 @@ public class GameController : MonoBehaviour
         
         CreatePool(TYPE_BOX);
         CreatePool(TYPE_EXPLOAD_BOX);
+        CreatePool(TYPE_EXPLOSION);
         CreatePool(TYPE_PLAYER);
         CreatePool(TYPE_TIME_MACHINE);
         //------
@@ -405,6 +411,24 @@ public class GameController : MonoBehaviour
         {
             pool.Release(timeTracker);
         }
+    }
+
+    public void CreateExplosion(Vector2 location, float radius)
+    {
+        int newID = NextID++;
+        Explosion explosionObject = AcquireTimeTracker<Explosion>(TYPE_EXPLOSION);
+
+        // Init and add to trackers
+        Log($"{newID.ToString()}.Init()");
+        explosionObject.Init(this, newID);
+        explosionObject.FlagDestroy = false;
+        AllReferencedObjects[newID] = TimeTrackerObjects[newID] = explosionObject;
+        
+        // set initial variables
+        explosionObject.Position.Current = location;
+        explosionObject.destroyStep = TimeStep + explosionObject.lifetime;
+        explosionObject.radius = radius;
+        explosionObject.DrawExplosion();
     }
 
     void Update()

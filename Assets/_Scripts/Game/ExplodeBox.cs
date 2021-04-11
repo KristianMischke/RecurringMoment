@@ -78,9 +78,9 @@ public class ExplodeBox : BasicTimeTracker
                     // get the time tracker from the object or its parent(s)
                     ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
 
-                    bool canDestroy = timeTracker is PlayerController ||
+                    bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
                                       timeTracker.gameObject.CompareTag("ExplodeWall") ||
-                                      timeTracker.gameObject.CompareTag("Guard"); 
+                                      timeTracker.gameObject.CompareTag("Guard")); 
                     
                     if (canDestroy)
                     {
@@ -105,8 +105,7 @@ public class ExplodeBox : BasicTimeTracker
 				{
 					Debug.Log("Past Player is currently holding a item that is a explodeBox");
 					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
-					loc.x = player.transform.position.x;
-					loc.y = player.transform.position.y;					
+					loc = player.transform.position;
 					player.FlagDestroy = true;
 				}
 			}
@@ -115,31 +114,10 @@ public class ExplodeBox : BasicTimeTracker
 				Debug.Log("Currently the player has the explosebox in their inventory"); 
 				gameController.player.FlagDestroy = true;
 				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
-				loc.x = gameController.player.transform.position.x;
-				loc.y = gameController.player.transform.position.y;	
+				loc = gameController.player.transform.position;
 			}
 			
-			
-			GameObject newExplode = new GameObject();  // creates the new object to hold the explosion radius 
-			newExplode.transform.position = loc; // and set it to the last loc it was at (player or actual loc of the box) 
-			
-			newExplode.transform.parent = gameController.explosionObject.transform;  // throws the new object under the explosionObject object 
-			newExplode.AddComponent<LineRenderer>(); // add the linerenderer 
-			LineRenderer newExplodeRadius = newExplode.GetComponentInChildren<LineRenderer>(); // sets up the linerenderer for the actual radius 
-			
-			
-			newExplodeRadius.useWorldSpace = false; 
-			newExplodeRadius.positionCount = 361; // all of the degrees plus one to make the circle 
-			Vector3 [] explosionCircle = new Vector3[361];
-			for (int x = 0; x < 361; x++)
-			{
-				var rad = Mathf.Deg2Rad * (x * 360f / 360);
-				explosionCircle[x] = new Vector3(Mathf.Sin(rad) * distance, Mathf.Cos(rad) * distance, 0); 
-			}
-		
-		
-			newExplodeRadius.SetPositions(explosionCircle);
-			newExplodeRadius.loop = true; // make it connect at the end 
+			gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
 
 			FlagDestroy = true; // mark object for destruction in time
         }
@@ -202,4 +180,12 @@ public class ExplodeBox : BasicTimeTracker
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
     }
+    
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+	    Gizmos.color = Color.red;
+	    Gizmos.DrawWireSphere(transform.position, distance);
+    }
+#endif
 }
