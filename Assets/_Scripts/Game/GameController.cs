@@ -413,7 +413,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void CreateExplosion(Vector2 location, float radius)
+    public Explosion CreateExplosion(Vector2 location, float radius)
     {
         int newID = NextID++;
         Explosion explosionObject = AcquireTimeTracker<Explosion>(TYPE_EXPLOSION);
@@ -430,6 +430,7 @@ public class GameController : MonoBehaviour
         explosionObject.destroyStep = TimeStep + explosionObject.lifetime;
         explosionObject.radius = radius;
         explosionObject.DrawExplosion();
+        return explosionObject;
     }
 
     void Update()
@@ -595,8 +596,12 @@ public class GameController : MonoBehaviour
             int id = kvp.Key;
             var history = kvp.Value;
 
+            // already destroyed if it was marked destroyed last frame AND this frame
+            bool alreadyDestroyed =
+                history.Get<bool>(timeStep - 1, FLAG_DESTROY) && history.Get<bool>(timeStep, FLAG_DESTROY);
+
             TimeTrackerObjects.TryGetValue(id, out var timeTracker);
-            if (!history.Get<bool>(timeStep, FLAG_DESTROY)
+            if (!alreadyDestroyed
                 && timeTracker != null
                 && !timeTracker.ShouldPoolObject)
             {
@@ -609,7 +614,7 @@ public class GameController : MonoBehaviour
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
-            if (relativeSnapshotIndex >= 0 && !history.Get<bool>(timeStep, FLAG_DESTROY))
+            if (relativeSnapshotIndex >= 0 && !alreadyDestroyed)
             {
                 AcquireAndInitPooledTimeTracker(ObjectTypeByID[id], id);
             }
@@ -847,7 +852,10 @@ public class GameController : MonoBehaviour
 
                         int startTimeStep = HistoryStartById[id];
                         int relativeSnapshotIndex = i - startTimeStep;
-                        if (relativeSnapshotIndex >= 0 && (!history.Get<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY)))
+                        
+                        // was destroyed this step if was NOT destroyed last frame and IS destroyed this frame 
+                        bool destroyedThisStep = !history.Get<bool>(i-1, FLAG_DESTROY) && history.Get<bool>(i, FLAG_DESTROY);
+                        if (relativeSnapshotIndex >= 0 && (!history.Get<bool>(i, FLAG_DESTROY) || column.Contains(FLAG_DESTROY) || destroyedThisStep))
                         {
                             row.Add(history[i].Get<object>(field)?.ToString() ?? "");
                         }
@@ -948,14 +956,14 @@ public class GameController : MonoBehaviour
         newPlayer.CopyTimeTrackerState(this.player);
 
         // if the player is holding an item, clone it
-        if (this.player.ItemID.Current >= 0 && TimeTrackerObjects.TryGetValue(this.player.ItemID.Current, out var playerItem))
+        if (this.player.ItemID >= 0 && TimeTrackerObjects.TryGetValue(this.player.ItemID, out var playerItem))
         {
             playerItem.FlagDestroy = true;
             SaveSnapshot(AnimateFrame-1, playerItem);
 
             ITimeTracker newPlayerItem = AcquireAndInitPooledTimeTracker(ObjectTypeByID[playerItem.ID], NextID++);
             newPlayerItem.CopyTimeTrackerState(playerItem);
-            newPlayer.ItemID.Current = newPlayerItem.ID; // update the new player's item id to match the cloned item id
+            newPlayer.ItemID = newPlayerItem.ID; // update the new player's item id to match the cloned item id
             SaveSnapshot(timeTravelStep, newPlayerItem);
         }
         

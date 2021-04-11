@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
 
-    public TimeInt ItemID = new TimeInt("itemID");
+    public int ItemID = -1;
     
     //apply in fixed update
     private float verticalInput, horizontalInput;
@@ -186,12 +186,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 		Sprite itemImage = gameController.tempImage; 
 		bool isFound = false;
 
-        if (ItemID.Current != -1)
+        if (ItemID != -1)
         {
-            if (gameController.DropItem(ItemID.Current)) // check to see if we successfully drop the item
+            if (gameController.DropItem(ItemID)) // check to see if we successfully drop the item
             {
-                ItemID.Current = -1;
-                ItemID.History = -1;
+                ItemID = -1;
+                ItemID = -1;
                 gameController.playerItem.SetActive(false);
                 gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
             }
@@ -212,7 +212,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                         if (timeMachine.SetItemState(true))
                         {
                             isFound = true;
-                            ItemID.Current = timeMachine.ID;
+                            ItemID = timeMachine.ID;
                             itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                             Debug.Log("The name of the sprite is : " + itemImage.name);
                         }
@@ -222,7 +222,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                         if (basicTimeTracker.SetItemState(true))
                         {
                             isFound = true;
-                            ItemID.Current = basicTimeTracker.ID;
+                            ItemID = basicTimeTracker.ID;
                             itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                             Debug.Log("The name of the sprite is : " + itemImage.name);
                         }
@@ -262,7 +262,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         jump = false;
         isActivating = false;
         historyActivating = false;
-        ItemID.Current = ItemID.History = -1;
+        ItemID = ItemID = -1;
         DidTimeTravel = false;
     }
 
@@ -374,7 +374,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         Position.SaveSnapshot(snapshotDictionary, force);
         Velocity.SaveSnapshot(snapshotDictionary, force);
-        ItemID.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(ItemID), ItemID, force);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
@@ -386,7 +386,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        ItemID.LoadSnapshot(snapshotDictionary);
+        ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -405,7 +405,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        ItemID.ForceLoadSnapshot(snapshotDictionary);
+        ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 

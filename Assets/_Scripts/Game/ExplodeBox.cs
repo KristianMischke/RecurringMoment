@@ -10,6 +10,8 @@ public class ExplodeBox : BasicTimeTracker
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
 
+	private int explosionID = -1;
+	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
@@ -29,7 +31,7 @@ public class ExplodeBox : BasicTimeTracker
 		if (otherBox != null)
 		{
 			Position.Copy(otherBox.Position);
-			ItemForm.Copy(otherBox.ItemForm);
+			ItemForm = otherBox.ItemForm;
 
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
@@ -49,11 +51,14 @@ public class ExplodeBox : BasicTimeTracker
 		base.OnPoolRelease();
 		requiredActivatables.Clear();
 		requiredActivatableIDs.Clear();
+		prevActivatableString = null;
+		explosionID = -1;
 	}
 
 	public override void GameUpdate()
     {
-        if (AllActivated())
+	    // if we are activated AND we haven't already created an explosion object
+        if (AllActivated() && explosionID == -1)
         {
 	        bool isInPlayerInv = false;
 	        Vector2 loc = transform.position;
@@ -99,7 +104,7 @@ public class ExplodeBox : BasicTimeTracker
 			
 			foreach(var player in gameController.PastPlayers)
 			{
-				if(player.ItemID.Current == ID)
+				if(player.ItemID == ID)
 				{
 					Debug.Log("Past Player is currently holding a item that is a explodeBox");
 					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
@@ -107,7 +112,7 @@ public class ExplodeBox : BasicTimeTracker
 					player.FlagDestroy = true;
 				}
 			}
-			if(gameController.player.ItemID.Current == ID)
+			if(gameController.player.ItemID == ID)
 			{
 				Debug.Log("Currently the player has the explodeBox in their inventory"); 
 				gameController.player.FlagDestroy = true;
@@ -115,8 +120,9 @@ public class ExplodeBox : BasicTimeTracker
 				loc = gameController.player.transform.position;
 			}
 			
-			gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
-
+			Explosion explosion = gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
+			explosionID = explosion.ID;
+			
 			FlagDestroy = true; // mark object for destruction in time
         }
     }
@@ -166,17 +172,20 @@ public class ExplodeBox : BasicTimeTracker
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
+	    snapshotDictionary.Set(nameof(explosionID), explosionID, force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.LoadSnapshot(snapshotDictionary);
 		LoadActivatables(snapshotDictionary);
+		explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
+	    explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     
 #if UNITY_EDITOR
