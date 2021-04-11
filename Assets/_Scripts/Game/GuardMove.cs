@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GuardMove : MonoBehaviour
 {
-    public float distLeft = 0f, distRight = 0f, speed = 0f;
+    public float distLeft = 1f, distRight = 1f, speed = 1f;
     public bool movingRight = false;
     Vector2 startPos;
     float left, right;
