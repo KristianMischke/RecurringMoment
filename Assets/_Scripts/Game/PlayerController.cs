@@ -162,6 +162,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         gameController.RetryLevel();
     }
 
+    public void OnRespawn(InputValue inputValue)
+    {
+        if (gameController.player != this) return;
+
+        gameController.RespawnLatest();
+    }
+
     private bool queueGrab = false;
     private static readonly int Walking = Animator.StringToHash("Walking");
 
@@ -216,6 +223,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                             Debug.Log("The name of the sprite is : " + itemImage.name);
                         }
                     }
+                }
+
+                // break the loop if we found an object bc we can only pick up one object
+                if (isFound)
+                {
+                    break;
                 }
             }
 			

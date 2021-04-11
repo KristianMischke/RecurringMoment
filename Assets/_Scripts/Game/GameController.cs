@@ -46,6 +46,8 @@ public class GameController : MonoBehaviour
 	
 	public GameObject playerItem;
 	public Sprite tempImage; 
+	public GameObject explosionObject; 
+	
 
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -647,7 +649,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private T GetSnapshotValue<T>(ITimeTracker timeTracker, int timeStep, string parameter, T defaultValue = default)
+    public T GetSnapshotValue<T>(ITimeTracker timeTracker, int timeStep, string parameter, T defaultValue = default)
     {
         if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
         {
