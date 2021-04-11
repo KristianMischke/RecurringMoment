@@ -2,34 +2,57 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shoot : MonoBehaviour
+public class Guard_AI : MonoBehaviour
 {
+
+    public float distLeft = 1f, distRight = 1f, moveSpeed = 1f;
+    public bool movingRight = false;
     public GameObject bullet;
     public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f, bulletLife = 1f;
     public GameObject gameController;
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
-    [HideInInspector]
-    public bool seen = false;
-    float minDist;
-    float dist = 0f, toFire = 0f;
-
+    Vector2 startPos;
+    float left, right, minDist, toFire = 0f, dist =0f;
+    bool wall = false, seen = false;
     GameObject closest;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        startPos = gameObject.transform.position;
+        left = startPos.x - distLeft;
+        right = startPos.x + distRight;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!seen)
+        {
 
-        if(Detected())
+            if (movingRight)
+            {
+                gameObject.transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
+                if (gameObject.transform.position.x >= right || wall)
+                {
+                    movingRight = false;
+                }
+            }
+            else
+            {
+                gameObject.transform.Translate(Vector2.right * moveSpeed * Time.deltaTime * -1.0f);
+                if (gameObject.transform.position.x <= left || wall)
+                {
+                    movingRight = true;
+                }
+            }
+
+        }
+        if (Detected())
         {
             toFire -= Time.deltaTime;
-            if(toFire <= 0)
+            if (toFire <= 0)
             {
                 Blast(closest.GetComponent<CapsuleCollider2D>());
                 toFire = fireRateSeconds;
@@ -39,9 +62,19 @@ public class Shoot : MonoBehaviour
         {
             toFire = fireRateSeconds;
         }
-        
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        foreach (var h in collision.contacts)
+        {
+            if ((h.normal.x == 1 && !movingRight) || (h.normal.x == -1 && movingRight) && h.normal.y == 0)
+            {
+                movingRight = !movingRight;
+                break;
+            }
+        }
+    }
 
     void Blast(Collider2D target)
     {
@@ -53,7 +86,7 @@ public class Shoot : MonoBehaviour
 
     }
 
-    bool Detected()
+        bool Detected()
     {
 
         minDist = Mathf.Infinity;
@@ -67,7 +100,7 @@ public class Shoot : MonoBehaviour
             angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
             angle = Mathf.Abs(angle);
 
-            if (dist < minDist && (angle <= 45 || angle >= 135))
+            if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
             {
                 minDist = dist;
                 closest = p.gameObject;
@@ -78,14 +111,14 @@ public class Shoot : MonoBehaviour
         direc = gameController.GetComponent<GameController>().player.transform.position - gameObject.transform.position;
         angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
         angle = Mathf.Abs(angle);
-        if (dist < minDist && (angle <= 45 || angle >= 135))
+        if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
         {
             minDist = dist;
             closest = gameController.GetComponent<GameController>().player.gameObject;
         }
-        if(!seen && (minDist <= range))
+        if (!seen && (minDist <= range))
         {
-            StartCoroutine(Alerted()) ;
+            StartCoroutine(Alerted());
         }
         seen = (minDist <= range);
         return seen;
@@ -96,7 +129,7 @@ public class Shoot : MonoBehaviour
     {
 
         transform.GetChild(0).gameObject.SetActive(true);
-        for(int i = 0; i < 45; i++)
+        for (int i = 0; i < 45; i++)
         {
             yield return null;
         }
