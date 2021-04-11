@@ -297,6 +297,33 @@ public class GameController : MonoBehaviour
         timeMachines.Clear();
         TimeTrackerObjects.Clear();
         AllReferencedObjects.Clear();
+		
+		
+		// getting the pauseMenu set up here - assuming that it is active when it starts 
+		pauseScreen = GameObject.Find("PauseMenu"); 
+		pauseScreen.SetActive(false); 
+		Button[] pauseButton;
+		pauseButton = pauseScreen.GetComponentsInChildren<Button>();
+		foreach (Button butt in pauseButton)
+		{
+			if (butt.gameObject.name == "Resume")
+			{
+				butt.onClick.AddListener(Resume);
+			}
+			if (butt.gameObject.name == "Restart")
+			{
+				butt.onClick.AddListener(Retry);
+			}
+			if (butt.gameObject.name == "QuitScene")
+			{
+				butt.onClick.AddListener(QuitScene);
+			}
+			if (butt.gameObject.name == "QuitDesktop")
+			{
+				butt.onClick.AddListener(QuitDesktop);
+			}
+		}			
+		
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -432,13 +459,20 @@ public class GameController : MonoBehaviour
 		Time.timeScale = actualTimeChange; // this is for the menu whenever it gets changed (also since I didn't want to make retry level has the same thing and potentially break something
     }
 	
-	public void Quit()
+	public void QuitScene()
     {
+		Debug.Log("This is quit");
 		Time.timeScale = actualTimeChange; 
         SceneManager.LoadScene(0); // the current starting scene so this might change if the scenes are altered... sry about that 
 		
     }
 
+	public void QuitDesktop()
+	{
+		Debug.Log("This is quit-Desktop");
+		Time.timeScale = actualTimeChange;
+		Application.Quit(); 
+	}
 
 
     private void FixedUpdate()
