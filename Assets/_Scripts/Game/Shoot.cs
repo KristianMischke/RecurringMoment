@@ -15,7 +15,6 @@ public class Shoot : MonoBehaviour
     float dist = 0f, toFire = 0f;
 
     GameObject closest;
-    
 
     // Start is called before the first frame update
     void Start()
@@ -58,20 +57,28 @@ public class Shoot : MonoBehaviour
     {
 
         minDist = Mathf.Infinity;
+        float angle = 0f;
+        Vector3 direc = Vector3.zero;
         //RaycastHit2D hit = new RaycastHit2D();
         foreach (var p in gameController.GetComponent<GameController>().PastPlayers)
         {
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
-            
-            if (dist < minDist)
+            direc = p.transform.position - gameObject.transform.position;
+            angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
+            angle = Mathf.Abs(angle);
+
+            if (dist < minDist && (angle <= 45 || angle >= 135))
             {
                 minDist = dist;
                 closest = p.gameObject;
             }
         }
+
         dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().player.transform.position));
-       
-        if (dist < minDist)
+        direc = gameController.GetComponent<GameController>().player.transform.position - gameObject.transform.position;
+        angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
+        angle = Mathf.Abs(angle);
+        if (dist < minDist && (angle <= 45 || angle >= 135))
         {
             minDist = dist;
             closest = gameController.GetComponent<GameController>().player.gameObject;

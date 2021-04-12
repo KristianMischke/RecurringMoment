@@ -527,7 +527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -8.5
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_LocalPosition.z
@@ -791,6 +791,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: gameController
+      value: 
+      objectReference: {fileID: 1516892654}
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: mainUIcanvas
+      value: 
+      objectReference: {fileID: 1705154292}
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distLeft
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: distRight
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: moveSpeed
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3847492432805043212, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
+      propertyPath: movingRight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525160, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.08
@@ -853,29 +877,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
       propertyPath: m_Name
-      value: guard
+      value: Guard
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
---- !u!1 &2051039932 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9128684925753525166, guid: 2e7b58ec48b19574e91ef3afa209e343, type: 3}
-  m_PrefabInstance: {fileID: 2051039931}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2051039933
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2051039932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3515764d23fc72148b36583605591278, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _shouldPoolObject: 0
-  _isItemable: 0
 --- !u!1 &2076756055
 GameObject:
   m_ObjectHideFlags: 0
@@ -1180,7 +1185,7 @@ PrefabInstance:
       objectReference: {fileID: 209799011}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: nextLevel
-      value: Alpha_Level11
+      value: Alpha_Level08
       objectReference: {fileID: 0}
     - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
       propertyPath: mainUICanvas

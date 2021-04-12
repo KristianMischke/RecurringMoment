@@ -10,6 +10,8 @@ public class ExplodeBox : BasicTimeTracker
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
 
+	private int explosionID = -1;
+	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
@@ -18,12 +20,8 @@ public class ExplodeBox : BasicTimeTracker
 		requiredActivatableIDs.Clear();
 		foreach (var activatable in requiredActivatables)
 		{
-			var customObj = activatable.gameObject.GetComponent<ICustomObject>();
-			Assert.IsNotNull(customObj, "[ExplodeBox] in order for the box to be activated after time travel," +
-			                              $"the activatables must inherit from {nameof(ICustomObject)}.\n" +
-			                              $"If they don't to be tracked in time, consider adding {nameof(IndestructableObject)} to them");
-			
-			requiredActivatableIDs.Add(customObj.ID);
+			Assert.IsNotNull(activatable);
+			requiredActivatableIDs.Add(activatable.ID);
 		}
 	}
 
@@ -33,7 +31,7 @@ public class ExplodeBox : BasicTimeTracker
 		if (otherBox != null)
 		{
 			Position.Copy(otherBox.Position);
-			ItemForm.Copy(otherBox.ItemForm);
+			ItemForm = otherBox.ItemForm;
 
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
@@ -47,48 +45,84 @@ public class ExplodeBox : BasicTimeTracker
 			gameController.LogError($"Cannot copy state from {other.GetType()} to {nameof(ExplodeBox)}");
 		}
 	}
-	
+
+	public override void OnPoolRelease()
+	{
+		base.OnPoolRelease();
+		requiredActivatables.Clear();
+		requiredActivatableIDs.Clear();
+		prevActivatableString = null;
+		explosionID = -1;
+	}
+
 	public override void GameUpdate()
     {
-        if (AllActivated())
+	    // if we are activated AND we haven't already created an explosion object
+        if (AllActivated() && explosionID == -1)
         {
-			Vector2 loc = transform.position;
+	        bool isInPlayerInv = false;
+	        Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
-			
-			List<RaycastHit2D> hits = new List<RaycastHit2D>();
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.up, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.down, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.left, distance)); 
-			hits.AddRange(Physics2D.RaycastAll(loc, Vector2.right, distance)); 
-			
-			// gets the diagonal angles as well
-			float angle = 45.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
-			angle = 135.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 225.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
-			angle = 315.0f;
-			hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance)); 
 
-			foreach(var hit in hits)
+			// changed it so that it goes through the whole circle so that it hits everything hopefully
+			for (int angle = 0; angle < 360; angle++)
 			{
-				Debug.Log("The collider hit is :" + hit.collider.gameObject.tag);
+				List<RaycastHit2D> hits = new List<RaycastHit2D>();
+				hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
+				Debug.DrawRay(loc, GetDirectionVector2D(angle), Color.white);
 				
-				// get the time tracker from the object or its parent(s)
-				ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
-				
-				if (timeTracker != null && timeTracker.gameObject.CompareTag("ExplodeWall"))
+				foreach(var hit in hits)
+                {
+                    if (hit.collider.gameObject == this.gameObject) continue; // skip if we hit our own collider
+                    
+                    // block the explosion if it hits a platform
+                    bool blockExplosion = hit.collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms");
+
+                    // get the time tracker from the object or its parent(s)
+                    ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
+
+                    bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
+                                      timeTracker.gameObject.CompareTag("ExplodeWall") ||
+                                      timeTracker is Guard_AI); 
+                    
+                    if (canDestroy)
+                    {
+                	    timeTracker.FlagDestroy = true;
+                    }
+                    else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
+                    {
+                	    hit.collider.gameObject.SetActive(false);
+                	    Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
+                    }
+
+                    if (blockExplosion) // break the hits loop if we encountered a platform, this works because hits are in order of ray projection
+                    {
+                	    break;
+                    }
+                }
+			}
+			
+			foreach(var player in gameController.PastPlayers)
+			{
+				if(player.ItemID == ID)
 				{
-					timeTracker.FlagDestroy = true;
-				}
-				else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
-				{
-					hit.collider.gameObject.SetActive(false);
-					Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
+					Debug.Log("Past Player is currently holding a item that is a explodeBox");
+					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
+					loc = player.transform.position;
+					player.FlagDestroy = true;
 				}
 			}
-
+			if(gameController.player.ItemID == ID)
+			{
+				Debug.Log("Currently the player has the explodeBox in their inventory"); 
+				gameController.player.FlagDestroy = true;
+				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
+				loc = gameController.player.transform.position;
+			}
+			
+			Explosion explosion = gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
+			explosionID = explosion.ID;
+			
 			FlagDestroy = true; // mark object for destruction in time
         }
     }
@@ -124,8 +158,7 @@ public class ExplodeBox : BasicTimeTracker
 		    {
 			    if (int.TryParse(stringID, out int id))
 			    {
-				    var activatableBehaviour = gameController.GetObjectByID(id)?.gameObject
-					    .GetComponent<ActivatableBehaviour>();
+				    var activatableBehaviour = gameController.GetObjectByID(id) as ActivatableBehaviour;
 				    Assert.IsNotNull(activatableBehaviour);
 				    requiredActivatables.Add(activatableBehaviour);
 				    requiredActivatableIDs.Add(id);
@@ -138,17 +171,37 @@ public class ExplodeBox : BasicTimeTracker
     {
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
-	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs));
+	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
+	    snapshotDictionary.Set(nameof(explosionID), explosionID, force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.LoadSnapshot(snapshotDictionary);
 		LoadActivatables(snapshotDictionary);
+		explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
+	    explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
+    
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+	    Gizmos.color = Color.red;
+	    Gizmos.DrawWireSphere(transform.position, distance);
+
+	    Gizmos.color = Color.magenta;
+	    foreach (var activatable in requiredActivatables)
+	    {
+		    if (activatable != null)
+		    {
+			    Gizmos.DrawLine(transform.position, activatable.gameObject.transform.position);
+		    }
+	    }
+    }
+#endif
 }

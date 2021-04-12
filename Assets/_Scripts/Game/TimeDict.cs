@@ -92,6 +92,7 @@ public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
     {
         if (!valueHistory.TryGetValue(timeStep, out T result))
         {
+            result = default;
             // timeStep key not found directly, so try to find prior value
 
             KeyValuePair<int, T>? priorRecord = null;
