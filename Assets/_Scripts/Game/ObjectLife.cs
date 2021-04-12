@@ -46,7 +46,11 @@ public class ObjectLife : MonoBehaviour
         if (playerController != null)
         {
             playerController.FlagDestroy = true; // NOTE: probably want to move this to the "critical" section for time variable manipulation
-            Debug.Log("ouch");
+        }
+        else if (collision.gameObject.transform.parent != null && collision.gameObject.transform.parent.CompareTag("ExplodeWall"))
+        {
+            collision.GetComponentInParent<BasicTimeTracker>().FlagDestroy = true;
+            Destroy(gameObject);
         }
         else if(collision.GetType() ==typeof(BoxCollider2D) && !(collision.isTrigger))
         {
