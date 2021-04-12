@@ -813,6 +813,14 @@ public class GameController : MonoBehaviour
         currentState.DeepCopy(spawnState);
         LoadSnapshotFull(TimeStep, false, true);
         SetPause(false);
+        
+        // HACK: to reset player's item on respawn
+        playerItem.SetActive(player.ItemID != -1); // shows the screen to the player
+        if (player.ItemID != -1)
+        {
+            playerItem.GetComponentInChildren<Image>().sprite = GetTimeTrackerByID(player.ItemID).gameObject
+                .GetComponentInChildren<SpriteRenderer>().sprite;
+        }
     }
 
     public void ShowRetryPopup(TimeAnomalyException e)
