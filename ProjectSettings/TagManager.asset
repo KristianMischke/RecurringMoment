@@ -6,6 +6,7 @@ TagManager:
   tags:
   - TriggerObject
   - ExplodeWall
+  - Guard
   layers:
   - Default
   - TransparentFX
