@@ -31,6 +31,8 @@ public class Guard_AI : BasicTimeTracker
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
+    public override bool ShouldPoolObject => false;
+
     public override void GameUpdate()
     {
         base.GameUpdate();

@@ -83,7 +83,7 @@ public class ExplodeBox : BasicTimeTracker
 
                     bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
                                       timeTracker.gameObject.CompareTag("ExplodeWall") ||
-                                      timeTracker.gameObject.CompareTag("Guard")); 
+                                      timeTracker is Guard_AI); 
                     
                     if (canDestroy)
                     {
