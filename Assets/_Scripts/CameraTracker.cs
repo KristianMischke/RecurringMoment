@@ -59,7 +59,7 @@ public class CameraTracker : MonoBehaviour
         upper += (Vector3)relativeMax;
 
         Vector2 size = upper - lower;
-        Vector3 center = gameController.TimeStep > 0 ? (Vector3)startPos: transform.position;
+        Vector3 center = gameController != null && gameController.TimeStep > 0 ? (Vector3)startPos: transform.position;
         center += (Vector3)relativeMax/2 + (Vector3)relativeMin/2;
         Gizmos.DrawWireCube(center, size);
     }
