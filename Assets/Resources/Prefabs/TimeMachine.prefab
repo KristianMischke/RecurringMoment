@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0
+  m_text: TM
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ec3d122c3a4daad4e9818c4cbb18684e, type: 2}
   m_sharedMaterial: {fileID: -2184966347906079638, guid: ec3d122c3a4daad4e9818c4cbb18684e, type: 2}
@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4280587566
-  m_fontColor: {r: 0.18109, g: 0.5849056, b: 0.14070842, a: 1}
+    rgba: 4286051714
+  m_fontColor: {r: 0.51129836, g: 0.9622642, b: 0.46751517, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -320,7 +320,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f340de2f17c1824a9134f04b95292c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  renderer: {fileID: 0}
+  renderer: {fileID: 4711500497092203543}
+  tempFoldableText: {fileID: 0}
   timeText: {fileID: 546507666380530687}
   isFoldable: 0
 --- !u!114 &2188584014909302519

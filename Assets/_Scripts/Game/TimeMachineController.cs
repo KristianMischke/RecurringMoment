@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEditor;
 
+[ExecuteInEditMode]
 public class TimeMachineController : MonoBehaviour, ITimeTracker
 {
     public const int TIME_MACHINE_COUNTDOWN = 200;
@@ -222,7 +223,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
         else
         {
-            timeText.text = "";
+            timeText.text = isFoldable ? "FOLD" : "TM";                
         }
     }
 
