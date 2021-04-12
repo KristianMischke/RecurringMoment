@@ -16,6 +16,8 @@ public class Guard_AI : MonoBehaviour
     float left, right, minDist, toFire = 0f, dist =0f;
     bool wall = false, seen = false;
     GameObject closest;
+    
+    private SpriteRenderer _spriteRenderer;
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +25,7 @@ public class Guard_AI : MonoBehaviour
         startPos = gameObject.transform.position;
         left = startPos.x - distLeft;
         right = startPos.x + distRight;
+        _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -30,7 +33,8 @@ public class Guard_AI : MonoBehaviour
     {
         if (!seen)
         {
-
+            _spriteRenderer.flipX = movingRight;
+            
             if (movingRight)
             {
                 gameObject.transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
