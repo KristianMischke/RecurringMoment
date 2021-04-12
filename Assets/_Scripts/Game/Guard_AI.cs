@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class Guard_AI : BasicTimeTracker
 {
 
@@ -139,5 +142,18 @@ public class Guard_AI : BasicTimeTracker
         }
         transform.GetChild(0).gameObject.SetActive(false);
 
+    }
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        if (EditorApplication.isPlaying)
+        {
+            Gizmos.DrawLine(new Vector3(left, startPos.y, 0), new Vector3(right, startPos.y, 0));
+        }
+        else
+        {
+            Gizmos.DrawLine(new Vector3(transform.position.x - distLeft, transform.position.y, 0), new Vector3(transform.position.x + distRight, transform.position.y, 0));
+        }
     }
 }
