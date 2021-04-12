@@ -567,8 +567,9 @@ public class GameController : MonoBehaviour
         }
 
         int thisTimeStep = TimeStep;
+        PreSaveValidateTimeAnomalies();
         SaveSnapshotFull(TimeStep);
-        ValidateTimeAnomalies();
+        PostSaveValidateTimeAnomalies();
         TimeStep++;
         FurthestTimeStep = Mathf.Max(TimeStep, FurthestTimeStep);
         player.ClearActivate();
@@ -870,7 +871,28 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void ValidateTimeAnomalies()
+    private void PreSaveValidateTimeAnomalies()
+    {
+        string symmetryBrokenTitle = "Symmetry Broken!";   
+        
+        // ensure that past player's paths of motion are uninterrupted
+        foreach (PlayerController p in PastPlayers)
+        {
+            //string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
+            //string currentColliderState = p.GetCollisionStateString(); 
+            //if (historyColliderState != currentColliderState)
+            //{
+            //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
+            //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            //}
+            Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
+            if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
+            {
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
+            }
+        }
+    }
+    private void PostSaveValidateTimeAnomalies()
     {
         // check if past player(s) died
         foreach (PlayerController p in PastPlayers)
@@ -899,23 +921,6 @@ public class GameController : MonoBehaviour
             {
                 throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!");
             }
-        }
-
-        // ensure that past player's paths of motion are uninterrupted
-        foreach (PlayerController p in PastPlayers)
-        {
-            //string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
-            //string currentColliderState = p.GetCollisionStateString(); 
-            //if (historyColliderState != currentColliderState)
-            //{
-            //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
-            //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
-            //}
-             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
-             if (Vector2.Distance(historyPosition, p.Position.Get) > POSITION_ANOMALY_ERROR)
-             {
-                 throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
-             }
         }
     }
 
