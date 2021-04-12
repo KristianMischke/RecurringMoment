@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -146,6 +148,7 @@ public class Guard_AI : BasicTimeTracker
 
     }
 
+#if UNITY_EDITOR
     public void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
@@ -158,4 +161,5 @@ public class Guard_AI : BasicTimeTracker
             Gizmos.DrawLine(new Vector3(transform.position.x - distLeft, transform.position.y, 0), new Vector3(transform.position.x + distRight, transform.position.y, 0));
         }
     }
+#endif
 }
