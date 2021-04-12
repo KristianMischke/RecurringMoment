@@ -193,6 +193,15 @@ public class ExplodeBox : BasicTimeTracker
     {
 	    Gizmos.color = Color.red;
 	    Gizmos.DrawWireSphere(transform.position, distance);
+
+	    Gizmos.color = Color.magenta;
+	    foreach (var activatable in requiredActivatables)
+	    {
+		    if (activatable != null)
+		    {
+			    Gizmos.DrawLine(transform.position, activatable.gameObject.transform.position);
+		    }
+	    }
     }
 #endif
 }

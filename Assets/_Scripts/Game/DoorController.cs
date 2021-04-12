@@ -52,4 +52,18 @@ public class DoorController : MonoBehaviour
 
         return valid;
     }
+    
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.magenta;
+        foreach (var activatable in requiredActivatables)
+        {
+            if (activatable != null)
+            {
+                Gizmos.DrawLine(transform.position, activatable.gameObject.transform.position);
+            }
+        }
+    }
+#endif
 }
