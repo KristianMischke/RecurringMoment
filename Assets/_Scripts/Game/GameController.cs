@@ -553,6 +553,11 @@ public class GameController : MonoBehaviour
         {
             if (AllReferencedObjects.TryGetValue(i, out var obj))
             {
+                var timeTracker = obj as ITimeTracker;
+                if (timeTracker != null && GetSnapshotValue<bool>(timeTracker, TimeStep, FLAG_DESTROY))
+                {
+                    continue; // skip destroyed time trackers (i.e. this skips non-pooled time trackers)
+                }
                 obj.GameUpdate();
             }
         }
@@ -808,6 +813,14 @@ public class GameController : MonoBehaviour
         currentState.DeepCopy(spawnState);
         LoadSnapshotFull(TimeStep, false, true);
         SetPause(false);
+        
+        // HACK: to reset player's item on respawn
+        playerItem.SetActive(player.ItemID != -1); // shows the screen to the player
+        if (player.ItemID != -1)
+        {
+            playerItem.GetComponentInChildren<Image>().sprite = GetTimeTrackerByID(player.ItemID).gameObject
+                .GetComponentInChildren<SpriteRenderer>().sprite;
+        }
     }
 
     public void ShowRetryPopup(TimeAnomalyException e)

@@ -83,7 +83,7 @@ public class ExplodeBox : BasicTimeTracker
 
                     bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
                                       timeTracker.gameObject.CompareTag("ExplodeWall") ||
-                                      timeTracker.gameObject.CompareTag("Guard")); 
+                                      timeTracker is Guard_AI); 
                     
                     if (canDestroy)
                     {
@@ -193,6 +193,15 @@ public class ExplodeBox : BasicTimeTracker
     {
 	    Gizmos.color = Color.red;
 	    Gizmos.DrawWireSphere(transform.position, distance);
+
+	    Gizmos.color = Color.magenta;
+	    foreach (var activatable in requiredActivatables)
+	    {
+		    if (activatable != null)
+		    {
+			    Gizmos.DrawLine(transform.position, activatable.gameObject.transform.position);
+		    }
+	    }
     }
 #endif
 }

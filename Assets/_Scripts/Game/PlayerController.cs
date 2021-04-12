@@ -264,7 +264,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 			if(isFound == true)
 			{
 				gameController.playerItem.SetActive(true); // shows the screen to the player 
-				gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage; 
+				gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
 				Debug.Log("The name of the sprite is : " + itemImage.name);
 			}
         }
