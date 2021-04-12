@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Guard_AI : MonoBehaviour
+public class Guard_AI : BasicTimeTracker
 {
 
     public float distLeft = 1f, distRight = 1f, moveSpeed = 1f;
@@ -28,9 +28,9 @@ public class Guard_AI : MonoBehaviour
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void GameUpdate()
     {
+        base.GameUpdate();
         if (!seen)
         {
             _spriteRenderer.flipX = movingRight;
@@ -90,7 +90,7 @@ public class Guard_AI : MonoBehaviour
 
     }
 
-        bool Detected()
+    bool Detected()
     {
 
         minDist = Mathf.Infinity;

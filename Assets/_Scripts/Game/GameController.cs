@@ -30,6 +30,7 @@ public class GameController : MonoBehaviour
     public const string TYPE_EXPLOSION = "Explosion";
     public const string TYPE_PLAYER = "Player";
     public const string TYPE_TIME_MACHINE = "TimeMachine";
+    public const string TYPE_GUARD = "Guard";
 
     public Dictionary<string, GameObject> timeTrackerPrefabs = new Dictionary<string, GameObject>();
     
@@ -75,6 +76,12 @@ public class GameController : MonoBehaviour
         
         ExplodeBox explodeBox = gameObject.GetComponent<ExplodeBox>();
         if (explodeBox != null) return explodeBox;
+
+        Explosion explosion = gameObject.GetComponent<Explosion>();
+        if (explosion != null) return explosion;
+        
+        Guard_AI guardAI = gameObject.GetComponent<Guard_AI>();
+        if (guardAI != null) return guardAI;
         
         BasicTimeTracker basicTimeTracker = gameObject.GetComponent<BasicTimeTracker>();
         if (basicTimeTracker != null) return basicTimeTracker;
@@ -100,6 +107,9 @@ public class GameController : MonoBehaviour
         
         Explosion explosion = timeTracker as Explosion;
         if (explosion != null) return TYPE_EXPLOSION;
+        
+        Guard_AI guardAI = timeTracker as Guard_AI;
+        if (guardAI != null) return TYPE_GUARD;
         
         BasicTimeTracker basicTimeTracker = timeTracker as BasicTimeTracker;
         if (basicTimeTracker != null)
@@ -276,6 +286,7 @@ public class GameController : MonoBehaviour
         timeTrackerPrefabs[TYPE_EXPLOSION] = Resources.Load<GameObject>("Prefabs/Explosion");
         timeTrackerPrefabs[TYPE_PLAYER] = Resources.Load<GameObject>("Prefabs/Player");
         timeTrackerPrefabs[TYPE_TIME_MACHINE] = Resources.Load<GameObject>("Prefabs/TimeMachine");
+        timeTrackerPrefabs[TYPE_GUARD] = Resources.Load<GameObject>("Prefabs/Guard");
 
         void CreatePool(string type)
         {
@@ -291,6 +302,7 @@ public class GameController : MonoBehaviour
         CreatePool(TYPE_EXPLOSION);
         CreatePool(TYPE_PLAYER);
         CreatePool(TYPE_TIME_MACHINE);
+        CreatePool(TYPE_GUARD);
         //------
         
         timeMachines.Clear();
@@ -332,12 +344,13 @@ public class GameController : MonoBehaviour
 
         // Gather non-TimeTracker Objects, but still ones we need IDs for
         GatherSceneObjects<ActivatableBehaviour>();
-        GatherSceneObjects<IndestructableObject>();
+        GatherSceneObjects<IndestructableObject>(); // always do generic type last
         
         // Gather other TimeTracker Objects
         GatherSceneObjects<TimeMachineController>();
         GatherSceneObjects<ExplodeBox>();
-        GatherSceneObjects<BasicTimeTracker>();
+        GatherSceneObjects<Guard_AI>();
+        GatherSceneObjects<BasicTimeTracker>(); // always do generic type last
 
         //TODO: assert nextLevel is a valid level
 

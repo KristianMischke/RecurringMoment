@@ -261,6 +261,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac481ecdbf7075342a930ff69de1d6c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _shouldPoolObject: 0
+  _isItemable: 0
   distLeft: 1
   distRight: 1
   moveSpeed: 1
