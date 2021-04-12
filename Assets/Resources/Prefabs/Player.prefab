@@ -195,7 +195,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 1
   m_AngularDrag: 0.05
   m_GravityScale: 3
   m_Material: {fileID: 6200000, guid: 7eb7c9b8337d9804888e7f82b71c8222, type: 2}
@@ -216,10 +216,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GrabCollider: {fileID: 5323333000555512028}
-  maxHorizontalSpeed: 20
-  jumpMultiplier: 20
-  movementMultiplier: 25
+  maxHorizontalSpeed: 15
+  jumpMultiplier: 25
+  movementMultiplier: 35
   isGrounded: 0
+  ItemID: -1
+  facingRight: 1
 --- !u!114 &4052834050897800091
 MonoBehaviour:
   m_ObjectHideFlags: 0

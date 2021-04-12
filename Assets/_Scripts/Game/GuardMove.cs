@@ -10,12 +10,15 @@ public class GuardMove : MonoBehaviour
     float left, right;
     bool wall = false;
 
+    private SpriteRenderer _spriteRenderer;
+
     // Start is called before the first frame update
     void Start()
     {
         startPos = gameObject.transform.position;
         left = startPos.x - distLeft;
         right = startPos.x + distRight;
+	_spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -23,6 +26,8 @@ public class GuardMove : MonoBehaviour
     {
         if (!(gameObject.GetComponent<Shoot>().seen))
         {
+
+	    _spriteRenderer.flipX = movingRight;
 
             if (movingRight)
             {
