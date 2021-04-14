@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/Alpha_00_MainMenu.unity
     guid: 15fb7f4709f1fcd4397494f564bdd210
   - enabled: 1
+    path: Assets/Scenes/Alpha_00_Credits.unity
+    guid: b33512b72de4fef45b5c581a06575c37
+  - enabled: 1
+    path: Assets/Scenes/Alpha_00_SceneSelect.unity
+    guid: b1de7b371e3eac444a3cec9eea21b55c
+  - enabled: 1
     path: Assets/Scenes/Alpha_01_IntroDoorButton.unity
     guid: e57cc11099477154292fcddd8f920d97
   - enabled: 1

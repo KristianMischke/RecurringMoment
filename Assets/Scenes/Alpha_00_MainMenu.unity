@@ -294,6 +294,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 201424815, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 7260056098143476387, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -696,6 +700,10 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
+      propertyPath: TransitionToLevel
+      value: Alpha_00_Credits
+      objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -17
@@ -977,6 +985,10 @@ PrefabInstance:
     - target: {fileID: 1682546709, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_FlipX
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
+      propertyPath: TransitionToLevel
+      value: Alpha_01_IntroDoorButton
       objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716726, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_Size.y
@@ -1841,6 +1853,10 @@ PrefabInstance:
     - target: {fileID: 1682546709, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_FlipX
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
+      propertyPath: TransitionToLevel
+      value: Alpha_00_SceneSelect
       objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_LocalPosition.x

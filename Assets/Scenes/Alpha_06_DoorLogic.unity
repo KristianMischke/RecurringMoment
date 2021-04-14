@@ -362,6 +362,10 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
+      propertyPath: TransitionToLevel
+      value: Alpha_07_ThingsExplode
+      objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -26
@@ -633,7 +637,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 10.5
       objectReference: {fileID: 0}
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -701,7 +705,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15.5
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 978344200410513004, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1024,6 +1028,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1270022035, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7260056099010255572, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

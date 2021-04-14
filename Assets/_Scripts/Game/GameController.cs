@@ -4,6 +4,9 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
@@ -397,7 +400,9 @@ public class GameController : MonoBehaviour
         foreach (var levelEnd in LevelEnds)
         {
             Assert.IsFalse(string.IsNullOrEmpty(levelEnd.TransitionToLevel), $"Scene name is empty for LevelEnd object!");
-            Assert.IsTrue(SceneManager.GetSceneByName(levelEnd.TransitionToLevel).IsValid(), $"Scene name {levelEnd.TransitionToLevel} is invalid!");
+#if UNITY_EDITOR
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<SceneAsset>($"Assets/Scenes/{levelEnd.TransitionToLevel}.unity"), $"Scene name {levelEnd.TransitionToLevel} is invalid!");
+#endif
         }
 
         // get rewind indicator object
