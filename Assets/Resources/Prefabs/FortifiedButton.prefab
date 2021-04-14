@@ -11,6 +11,10 @@ PrefabInstance:
       propertyPath: collisionCount
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 978344199677081340, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 978344199677081343, guid: 3b5e52eb97b145e45ae133e8a7ebbf8e, type: 3}
       propertyPath: m_Color.r
       value: 1

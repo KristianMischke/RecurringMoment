@@ -104,7 +104,7 @@ public class Guard_AI : BasicTimeTracker
         float angle = 0f;
         Vector3 direc = Vector3.zero;
         //RaycastHit2D hit = new RaycastHit2D();
-        foreach (var p in gameController.GetComponent<GameController>().PastPlayers)
+        foreach (var p in gameController.GetComponent<GameController>().AllPlayers)
         {
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
             direc = p.transform.position - gameObject.transform.position;
@@ -117,16 +117,7 @@ public class Guard_AI : BasicTimeTracker
                 closest = p.gameObject;
             }
         }
-
-        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().player.transform.position));
-        direc = gameController.GetComponent<GameController>().player.transform.position - gameObject.transform.position;
-        angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
-        angle = Mathf.Abs(angle);
-        if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
-        {
-            minDist = dist;
-            closest = gameController.GetComponent<GameController>().player.gameObject;
-        }
+        
         if (!seen && (minDist <= range))
         {
             StartCoroutine(Alerted());
