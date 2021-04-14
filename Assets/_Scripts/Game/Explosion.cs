@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
+
+
 public class Explosion : BasicTimeTracker
 {
 	public float radius;
 	public int lifetime;
+	
+	public ParticleSystem blastZone;
+	public CircleCollider2D explosionArea;
 	
 	private LineRenderer _lineRenderer;
 
@@ -29,6 +34,25 @@ public class Explosion : BasicTimeTracker
 
 	public void DrawExplosion()
 	{
+		// stting up the particle system instead 
+		 blastZone = GetComponent<ParticleSystem>();
+		 explosionArea = GetComponent<CircleCollider2D>(); 
+		 explosionArea.radius = radius; 
+		 
+		 var em = blastZone.emission;
+		 em.enabled = true;
+		 em.type = ParticleSystemEmissionType.Time;
+		 em.SetBursts(
+		 new ParticleSystem.Burst[]{
+			 new ParticleSystem.Burst(0.0f, 100),
+			 new ParticleSystem.Burst(1.0f, 200)
+		 }
+		 ); 
+		 
+		 
+		
+		
+		
 		LineRenderer.startColor = Color.red;
 		LineRenderer.endColor = Color.red;
 		
