@@ -6,22 +6,22 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Alpha__MainMenu.unity
+    path: Assets/Scenes/Alpha_00_MainMenu.unity
     guid: 15fb7f4709f1fcd4397494f564bdd210
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level01.unity
+    path: Assets/Scenes/Alpha_01_IntroDoorButton.unity
     guid: e57cc11099477154292fcddd8f920d97
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level02.unity
+    path: Assets/Scenes/Alpha_02_TwoButtonPassthrough.unity
     guid: 25343e5be0ba43148aedb4e10f5a4163
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level03.unity
+    path: Assets/Scenes/Alpha_03_BoxesAndGates.unity
     guid: 994b65b46f19cf549aa0fa86c88906c8
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level04.unity
+    path: Assets/Scenes/Alpha_04_DoubleButtonTravel.unity
     guid: 45fdf30bf4d6520438a230c563b436c3
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level05.unity
+    path: Assets/Scenes/Alpha_05_RetrieveTheBox.unity
     guid: ddd5e3b478fd7f34ebb1485d0a7714e4
   - enabled: 1
     path: Assets/Scenes/Alpha_Level06.unity
@@ -36,7 +36,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Alpha_Level09.unity
     guid: 70b63f25a7dcc21488c84a943c4d6767
   - enabled: 1
-    path: Assets/Scenes/Alpha_Level11.unity
+    path: Assets/Scenes/Alpha_06_DoorLogic.unity
     guid: 0d010f956733d3d44a5d1273152b7eff
   - enabled: 1
     path: Assets/Scenes/Alpha_Level12.unity
