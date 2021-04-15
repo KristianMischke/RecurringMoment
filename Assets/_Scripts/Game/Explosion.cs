@@ -44,8 +44,8 @@ public class Explosion : BasicTimeTracker
 		 em.type = ParticleSystemEmissionType.Time;
 		 em.SetBursts(
 		 new ParticleSystem.Burst[]{
-			 new ParticleSystem.Burst(0.0f, 100),
-			 new ParticleSystem.Burst(1.0f, 200)
+			 new ParticleSystem.Burst(0.0f, 500),
+			 //new ParticleSystem.Burst(0.00005f, 500)
 		 }
 		 ); 
 		 
