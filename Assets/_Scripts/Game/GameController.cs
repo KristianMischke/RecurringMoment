@@ -35,19 +35,20 @@ public class GameController : MonoBehaviour
     public const string TYPE_TIME_MACHINE = "TimeMachine";
     public const string TYPE_GUARD = "Guard";
 
+    public const int SCENE_LOCKED = -1;
+    public const int SCENE_READY = 0;
+
     public Dictionary<string, GameObject> timeTrackerPrefabs = new Dictionary<string, GameObject>();
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
     public List<LevelEnd> LevelEnds = new List<LevelEnd>();
 
-    public bool DontTrackTime = false;
     // visuals
     private Image rewindIndicator;
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
-
 
 
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
@@ -644,6 +645,22 @@ public class GameController : MonoBehaviour
             {
                 if (levelEnd.BoxCollider2D.IsTouching(player.CapsuleCollider))
                 {
+                    // store level stats for scene select screen
+                    float prevBest = PlayerPrefs.GetFloat($"{SceneManager.GetActiveScene().name}_time", defaultValue:float.PositiveInfinity);
+                    float thisTime = TimeStep * Time.fixedDeltaTime;
+                    if (thisTime < prevBest)
+                    {
+                        PlayerPrefs.SetFloat($"{SceneManager.GetActiveScene().name}_time", thisTime);
+                    }
+
+                    int numPlays = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}");
+                    PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}", numPlays + 1);
+                    
+                    int nextSceneNumPlays = PlayerPrefs.GetInt($"{levelEnd.TransitionToLevel}", defaultValue:SCENE_LOCKED);
+                    if (nextSceneNumPlays == SCENE_LOCKED)
+                    {
+                        PlayerPrefs.SetInt($"{levelEnd.TransitionToLevel}", SCENE_READY);
+                    }
                     SceneManager.LoadScene(levelEnd.TransitionToLevel);
                 }
             }
@@ -834,11 +851,6 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshotFull(int timeStep)
     {
-        if (DontTrackTime) // If we are not tracking time on this level, then early exit (e.g. the start screen)
-        {
-            return;
-        }
-        
         for (int i = 0; i < NextID; i++)
         {
             if (TimeTrackerObjects.TryGetValue(i, out var timeTracker))
