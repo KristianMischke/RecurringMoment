@@ -39,6 +39,7 @@ public class Explosion : BasicTimeTracker
 		 explosionArea = GetComponent<CircleCollider2D>(); 
 		 explosionArea.radius = radius; 
 		 
+		 /**
 		 var em = blastZone.emission;
 		 em.enabled = true;
 		 em.type = ParticleSystemEmissionType.Time;
@@ -49,7 +50,7 @@ public class Explosion : BasicTimeTracker
 		 }
 		 ); 
 		 
-		 
+		 **/
 		
 		
 		
