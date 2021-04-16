@@ -190,7 +190,7 @@ GameObject:
   - component: {fileID: 1293573137317505772}
   - component: {fileID: 3847492432805043212}
   m_Layer: 0
-  m_Name: Guard
+  m_Name: guard
   m_TagString: Guard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -225,8 +225,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.06924343, y: 0.05}
-  m_Size: {x: 1.4463177, y: 2.11}
+  m_Offset: {x: 0.06924343, y: 0.3}
+  m_Size: {x: 1.4463177, y: 2.66}
   m_Direction: 0
 --- !u!50 &1293573137317505772
 Rigidbody2D:

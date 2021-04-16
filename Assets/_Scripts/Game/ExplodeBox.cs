@@ -102,22 +102,15 @@ public class ExplodeBox : BasicTimeTracker
                 }
 			}
 			
-			foreach(var player in gameController.PastPlayers)
+			foreach(var player in gameController.AllPlayers)
 			{
 				if(player.ItemID == ID)
 				{
-					Debug.Log("Past Player is currently holding a item that is a explodeBox");
+					Debug.Log($"Player {player.ID} is currently holding a item that is a explodeBox");
 					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
 					loc = player.transform.position;
 					player.FlagDestroy = true;
 				}
-			}
-			if(gameController.player.ItemID == ID)
-			{
-				Debug.Log("Currently the player has the explodeBox in their inventory"); 
-				gameController.player.FlagDestroy = true;
-				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
-				loc = gameController.player.transform.position;
 			}
 			
 			Explosion explosion = gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion

@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 5489453490819716727}
   - component: {fileID: 5489453490819716726}
   - component: {fileID: 5489453490819716724}
-  - component: {fileID: 5489453490819716725}
+  - component: {fileID: 298136408167728742}
   m_Layer: 0
   m_Name: LevelEnd
   m_TagString: Untagged
@@ -126,7 +126,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -157,7 +157,7 @@ MonoBehaviour:
   matchBoxCollider: 0
   matchSpriteRenderer: 0
   gridSize: 0.5
---- !u!114 &5489453490819716725
+--- !u!114 &298136408167728742
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -166,7 +166,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 5489453490819716731}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20c56685866a1fb4188f0f9a838c062d, type: 3}
+  m_Script: {fileID: 11500000, guid: e2a3233dc8133a94bb42fac34c0b8be6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gizmoColor: {r: 1, g: 0.89993685, b: 0.042452812, a: 1}
+  gizmoColor: {r: 1, g: 1, b: 0, a: 1}
+  TransitionToLevel: 

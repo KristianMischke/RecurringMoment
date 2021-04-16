@@ -4,6 +4,9 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
@@ -36,8 +39,9 @@ public class GameController : MonoBehaviour
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
-    public BoxCollider2D levelEndObject;
-    public string nextLevel;
+    public List<LevelEnd> LevelEnds = new List<LevelEnd>();
+
+    public bool DontTrackTime = false;
     // visuals
     private Image rewindIndicator;
     public TMP_Text timerText;
@@ -54,8 +58,6 @@ public class GameController : MonoBehaviour
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
 	
-
-
     public IEnumerable<PlayerController> PastPlayers
     {
         get
@@ -68,6 +70,15 @@ public class GameController : MonoBehaviour
                     yield return playerController;
                 }
             }
+        }
+    }
+
+    public IEnumerable<PlayerController> AllPlayers
+    {
+        get
+        {
+            yield return player;
+            foreach(var p in PastPlayers) yield return p;
         }
     }
 
@@ -386,7 +397,15 @@ public class GameController : MonoBehaviour
         GatherSceneObjects<Guard_AI>();
         GatherSceneObjects<BasicTimeTracker>(); // always do generic type last
 
-        //TODO: assert nextLevel is a valid level
+        // get all level end transition objects, and make sure they have valid scenes attached
+        LevelEnds.AddRange(FindObjectsOfType<LevelEnd>());
+        foreach (var levelEnd in LevelEnds)
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(levelEnd.TransitionToLevel), $"Scene name is empty for LevelEnd object!");
+#if UNITY_EDITOR
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<SceneAsset>($"Assets/Scenes/{levelEnd.TransitionToLevel}.unity"), $"Scene name {levelEnd.TransitionToLevel} is invalid!");
+#endif
+        }
 
         // get rewind indicator object
         rewindIndicator = GameObject.Find("RewindIndicator").GetComponent<Image>();
@@ -618,10 +637,16 @@ public class GameController : MonoBehaviour
             IsPresent = true;
         }
 
-        if (levelEndObject.IsTouching(player.CapsuleCollider))
+        // check if players exit the level
+        foreach(var levelEnd in LevelEnds)
         {
-            //NOTE: in the future, we may want past players to be able to have some slight assymetry by being able to progress to the next level
-            SceneManager.LoadScene(nextLevel);
+            foreach (var player in AllPlayers)
+            {
+                if (levelEnd.BoxCollider2D.IsTouching(player.CapsuleCollider))
+                {
+                    SceneManager.LoadScene(levelEnd.TransitionToLevel);
+                }
+            }
         }
 
         for (int i = 0; i < NextID; i++)
@@ -809,6 +834,11 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshotFull(int timeStep)
     {
+        if (DontTrackTime) // If we are not tracking time on this level, then early exit (e.g. the start screen)
+        {
+            return;
+        }
+        
         for (int i = 0; i < NextID; i++)
         {
             if (TimeTrackerObjects.TryGetValue(i, out var timeTracker))
