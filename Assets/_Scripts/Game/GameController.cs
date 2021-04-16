@@ -44,13 +44,11 @@ public class GameController : MonoBehaviour
     public PlayerController player;
     public List<LevelEnd> LevelEnds = new List<LevelEnd>();
 
-    public bool DontTrackTime = false;
     // visuals
     private Image rewindIndicator;
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
-
 
 
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
@@ -853,11 +851,6 @@ public class GameController : MonoBehaviour
 
     void SaveSnapshotFull(int timeStep)
     {
-        if (DontTrackTime) // If we are not tracking time on this level, then early exit (e.g. the start screen)
-        {
-            return;
-        }
-        
         for (int i = 0; i < NextID; i++)
         {
             if (TimeTrackerObjects.TryGetValue(i, out var timeTracker))

@@ -1619,7 +1619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c77a087bde36974e9d406a6ae1671e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowAtLevel: Alpha_03_BoxesAndGates
+  ShowAtLevel: Alpha_02_TwoButtonPassthrough
 --- !u!1001 &978344199354846058
 PrefabInstance:
   m_ObjectHideFlags: 0
