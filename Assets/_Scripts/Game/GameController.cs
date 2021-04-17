@@ -989,6 +989,13 @@ public class GameController : MonoBehaviour
             RetryLevel();
             return;
         }
+        
+        // Remove popup if it exists
+        var retryPopups = FindObjectsOfType<RetryPopup>();
+        foreach (var popup in retryPopups)
+        {
+            Destroy(popup.gameObject); //TODO: destroying and recreating not the best idea long term... pool popup? make generic popup class?
+        }
 
         // load player snapshot from current state (at the timestep of the spawnState)
         int playerStartFrame = currentState.historyStartById[player.ID];
