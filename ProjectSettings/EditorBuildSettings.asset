@@ -30,6 +30,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Alpha_05_RetrieveTheBox.unity
     guid: ddd5e3b478fd7f34ebb1485d0a7714e4
   - enabled: 1
+    path: Assets/Scenes/Alpha_06_DoorLogic.unity
+    guid: 0d010f956733d3d44a5d1273152b7eff
+  - enabled: 1
     path: Assets/Scenes/Alpha_07_ThingsExplode.unity
     guid: 1e2421817ed2c334ab8ccec1e77f19fb
   - enabled: 1
@@ -39,17 +42,17 @@ EditorBuildSettings:
     path: Assets/Scenes/Alpha_09_KillTheGuard.unity
     guid: 28d4d8c54bebf6541a996134f6599f31
   - enabled: 1
-    path: Assets/Scenes/Alpha_13_DoubleExplode.unity
-    guid: 70b63f25a7dcc21488c84a943c4d6767
-  - enabled: 1
-    path: Assets/Scenes/Alpha_06_DoorLogic.unity
-    guid: 0d010f956733d3d44a5d1273152b7eff
+    path: Assets/Scenes/Alpha_10_FriendlyHelper.unity
+    guid: 15c691c9075aeb34fbfd3f05af7ceb06
   - enabled: 1
     path: Assets/Scenes/Alpha_11_BoxTravel.unity
     guid: ee7cb6c84d7c7414e99397f1c8d7bee2
   - enabled: 1
     path: Assets/Scenes/Alpha_12_FoldBoxTravel.unity
     guid: 4d9fb1ec9b0f5e84bbf83d44fa9d4be8
+  - enabled: 1
+    path: Assets/Scenes/Alpha_13_DoubleExplode.unity
+    guid: 70b63f25a7dcc21488c84a943c4d6767
   - enabled: 1
     path: Assets/Scenes/Alpha_14_GoBackAgain.unity
     guid: dfee0cac115490549a8b3650ba4126cd
