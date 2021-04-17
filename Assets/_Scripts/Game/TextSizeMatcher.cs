@@ -9,16 +9,33 @@ using UnityEditor;
 [ExecuteInEditMode]
 public class TextSizeMatcher : MonoBehaviour
 {
+
+    [SerializeField] private bool isCanvas;
+    [SerializeField] private bool matchBoxCollider;
+    [SerializeField] private float gridSize;
+
+
     private BoxCollider2D _boxCollider;
     public BoxCollider2D BoxCollider2D
     {
 	get
 	{
-	    if(_boxCollider == null)
+	    if(isCanvas == false)
 	    {
-		_boxCollider = GetComponent<BoxCollider2D>();
+		if(_boxCollider == null)
+		{
+		    _boxCollider = GetComponent<BoxCollider2D>();
+		}
+		return _boxCollider;
 	    }
-	    return _boxCollider;
+	    else
+	    {
+		if(_boxCollider == null)
+		{
+		    _boxCollider = GetComponentInChildren<BoxCollider2D>();
+		}
+		return _boxCollider;
+	    }
 	}
     }
 
@@ -34,9 +51,6 @@ public class TextSizeMatcher : MonoBehaviour
 	    return _rectTransform;
 	}
     }
-
-    [SerializeField] private bool matchBoxCollider;
-    [SerializeField] private float gridSize;
 
     private void Start()
     {
