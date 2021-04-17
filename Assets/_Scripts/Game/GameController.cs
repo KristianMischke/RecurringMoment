@@ -475,7 +475,7 @@ public class GameController : MonoBehaviour
         return default;
     }
 
-    private void SaveObjectToPool(ITimeTracker timeTracker)
+    public void SaveObjectToPool(ITimeTracker timeTracker)
     {
         if (!ObjectTypeByID.TryGetValue(timeTracker.ID, out string type))
         {
@@ -513,10 +513,11 @@ public class GameController : MonoBehaviour
     /// <param name="timeEvent"></param>
     public void ExecuteEvent(TimeEvent timeEvent)
     {
-        Log($"ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
+        
         ITimeTracker timeTracker = GetTimeTrackerByID(timeEvent.SourceID);
         if (timeTracker == null) // cannot find source object
         {
+            Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
             {
                 throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
@@ -524,6 +525,7 @@ public class GameController : MonoBehaviour
         }
         else
         {
+            Log($"ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             timeTracker.ExecutePastEvent(timeEvent);   
         }
     }
@@ -532,8 +534,7 @@ public class GameController : MonoBehaviour
     {
         int newID = NextID++;
         Explosion explosionObject = AcquireTimeTracker<Explosion>(TYPE_EXPLOSION);
-
-        // Init and add to trackers
+        
         Log($"{newID.ToString()}.Init()");
         explosionObject.Init(this, newID);
         explosionObject.FlagDestroy = false;
