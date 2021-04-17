@@ -237,6 +237,23 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             SpriteRenderer.flipX = _rigidbody.velocity.x > 0;
         }
+        if (gameController.player != this)
+        {
+            Color temp = SpriteRenderer.color;
+            temp.r = 0.5f;
+            temp.g = 0.5f;
+            temp.b = 0.5f;
+            SpriteRenderer.color = temp;
+        }
+        else
+        {
+            Color temp = SpriteRenderer.color;
+            temp.r = 1.0f;
+            temp.g = 1.0f;
+            temp.b = 1.0f;
+            SpriteRenderer.color = temp;
+        }
+
     }
 
     void FixedUpdate()
@@ -301,7 +318,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
-        
+
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
     }
