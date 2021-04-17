@@ -10,8 +10,6 @@ public class ExplodeBox : BasicTimeTracker
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
 
-	private int explosionID = -1;
-	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
@@ -52,13 +50,12 @@ public class ExplodeBox : BasicTimeTracker
 		requiredActivatables.Clear();
 		requiredActivatableIDs.Clear();
 		prevActivatableString = null;
-		explosionID = -1;
 	}
 
 	public override void GameUpdate()
     {
 	    // if we are activated AND we haven't already created an explosion object
-        if (AllActivated() && explosionID == -1)
+        if (AllActivated())
         {
 	        bool isInPlayerInv = false;
 	        Vector2 loc = transform.position;
@@ -113,8 +110,7 @@ public class ExplodeBox : BasicTimeTracker
 				}
 			}
 			
-			Explosion explosion = gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
-			explosionID = explosion.ID;
+			gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
 			
 			FlagDestroy = true; // mark object for destruction in time
         }
@@ -165,20 +161,17 @@ public class ExplodeBox : BasicTimeTracker
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
-	    snapshotDictionary.Set(nameof(explosionID), explosionID, force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.LoadSnapshot(snapshotDictionary);
 		LoadActivatables(snapshotDictionary);
-		explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
-	    explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     
 #if UNITY_EDITOR

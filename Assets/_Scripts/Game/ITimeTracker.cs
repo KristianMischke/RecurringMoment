@@ -81,6 +81,12 @@ public interface ITimeTracker : ICustomObject
     /// </summary>
     /// <param name="other">the object to copy from</param>
     void CopyTimeTrackerState(ITimeTracker other);
+
+    /// <summary>
+    ///     Execute a past event as given by the <see cref="GameController"/>
+    /// </summary>
+    /// <param name="timeEvent">The event this object should execute</param>
+    void ExecutePastEvent(TimeEvent timeEvent);
     
     /// <summary>
     ///     Method called by <see cref="GameController"/> to save a snapshot of this objects time-tracked variables
