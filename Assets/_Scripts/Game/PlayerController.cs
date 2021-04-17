@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public bool DidTimeTravel { get; set; }
     
-    /* TODO: TimeBool to track if the player is grounded (use to determine if past player is in valid location
+    /* TODO: TimeBool to track if the player is grounded (use to determine if Doppelganger is in valid location
      *       This is important in case player is standing on ground that moves/is destroyed
     */
     
@@ -285,7 +285,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
                     throw new TimeAnomalyException("Time Anomaly!",
-                        $"Past player could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
+                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
                 }
             }
         } // end PLAYER_GRAB
@@ -296,6 +296,15 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 ItemID = -1;
             }
         } // end PLAYER_DROP
+        else if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
+        {
+            TimeMachineController timeMachine = gameController.GetTimeTrackerByID(timeEvent.TargetID) as TimeMachineController;
+
+            if (timeMachine == null || !timeMachine.IsTouching(gameObject))
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+            }
+        } // end TIME_TRAVEL
     }
 
     public void ClearActivate()

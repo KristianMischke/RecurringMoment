@@ -513,9 +513,19 @@ public class GameController : MonoBehaviour
     /// <param name="timeEvent"></param>
     public void ExecuteEvent(TimeEvent timeEvent)
     {
-        ITimeTracker timeTracker = GetTimeTrackerByID(timeEvent.SourceID);
         Log($"ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
-        timeTracker.ExecutePastEvent(timeEvent);
+        ITimeTracker timeTracker = GetTimeTrackerByID(timeEvent.SourceID);
+        if (timeTracker == null) // cannot find source object
+        {
+            if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
+            }
+        }
+        else
+        {
+            timeTracker.ExecutePastEvent(timeEvent);   
+        }
     }
     
     public Explosion CreateExplosion(Vector2 location, float radius)
@@ -738,7 +748,10 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    didActivate = timeMachine.Activate(out timeTravelStep);
+                    if (timeMachine.Activate(out timeTravelStep))
+                    {
+                        AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);
+                    }
                     break;
                 }
             }
@@ -1091,7 +1104,7 @@ public class GameController : MonoBehaviour
     {
         string symmetryBrokenTitle = "Symmetry Broken!";   
         
-        // ensure that past player's paths of motion are uninterrupted
+        // ensure that Doppelganger's paths of motion are uninterrupted
         foreach (PlayerController p in PastPlayers)
         {
             //string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
@@ -1099,27 +1112,17 @@ public class GameController : MonoBehaviour
             //if (historyColliderState != currentColliderState)
             //{
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
-            //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            //    throw new TimeAnomalyException("Doppelganger was unable to follow his previous path of motion!");
             //}
             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
             if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!");
             }
         }
     }
     private void PostSaveValidateTimeAnomalies()
     {
-        // check if past player(s) died
-        foreach (PlayerController p in PastPlayers)
-        {
-            if (GetSnapshotValue<bool>(p, TimeStep, FLAG_DESTROY) && !p.DidTimeTravel)
-            {
-                // player is destroyed & not timetravelling
-                throw new TimeAnomalyException("Oh No!", "Past Player was killed!");
-            }
-        }
-
         string symmetryBrokenTitle = "Symmetry Broken!";        
         
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended

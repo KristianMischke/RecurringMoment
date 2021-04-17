@@ -10,6 +10,7 @@ public struct TimeEvent
         PLAYER_DROP,
         EXPLODE,
         GUARD_SHOOT,
+        TIME_TRAVEL,
         
         COUNT
     }
