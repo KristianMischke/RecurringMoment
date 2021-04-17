@@ -16,7 +16,7 @@ public class TextToggle : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-	if(other.gameObject.CompareTag("Player"))
+	if(other == gameController.player.CapsuleCollider)
 	{
 	    gameObject.GetComponent<TextMeshProUGUI>().enabled = true;
 	}
@@ -24,7 +24,7 @@ public class TextToggle : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
-	if(other.gameObject.CompareTag("Player"))
+	if(other == gameController.player.CapsuleCollider)
 	{
 	    gameObject.GetComponent<TextMeshProUGUI>().enabled = false;	
 	}	
