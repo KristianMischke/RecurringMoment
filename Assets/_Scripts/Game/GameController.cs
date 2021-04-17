@@ -27,6 +27,7 @@ public class GameController : MonoBehaviour
     public const int TIME_SKIP_ANIMATE_FPS = 10;
     public const int TIME_TRAVEL_REWIND_MULT = 10;
     public const float POSITION_ANOMALY_ERROR = 0.75f;
+    public const float POSITION_CLEAR_FUTURE_THRESHOLD = 0.02f;
 
     public const string TYPE_BOX = "MoveableBox";
     public const string TYPE_EXPLOAD_BOX = "ExplodeBox";
@@ -148,6 +149,7 @@ public class GameController : MonoBehaviour
         public Dictionary<int, TimeDict> snapshotHistoryById = new Dictionary<int, TimeDict>();
         public Dictionary<int, string> objectTypeByID = new Dictionary<int, string>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
+        public Dictionary<int, List<TimeEvent>> eventsByTimeStep = new Dictionary<int, List<TimeEvent>>();
         public int timeStep = 0;
         public int furthestTimeStep = 0;
         public int skipTimeStep = -1;
@@ -181,6 +183,12 @@ public class GameController : MonoBehaviour
             foreach (var kvp in other.snapshotHistoryById)
             {
                 snapshotHistoryById[kvp.Key] = new TimeDict(kvp.Value);
+            }
+            
+            eventsByTimeStep.Clear();
+            foreach (var kvp in other.eventsByTimeStep)
+            {
+                eventsByTimeStep[kvp.Key] = new List<TimeEvent>(kvp.Value);
             }
 
             objectTypeByID = new Dictionary<int, string>(other.objectTypeByID);
@@ -222,6 +230,8 @@ public class GameController : MonoBehaviour
 
     private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
 
+    private Dictionary<int, List<TimeEvent>> EventsByTimeStep => currentState.eventsByTimeStep;
+    
     public int TimeStep
     {
         get => currentState.timeStep;
@@ -465,7 +475,7 @@ public class GameController : MonoBehaviour
         return default;
     }
 
-    private void SaveObjectToPool(ITimeTracker timeTracker)
+    public void SaveObjectToPool(ITimeTracker timeTracker)
     {
         if (!ObjectTypeByID.TryGetValue(timeTracker.ID, out string type))
         {
@@ -478,12 +488,53 @@ public class GameController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Adds a new event to the time event "queue". Expected to be called by <see cref="ITimeTracker"/> in their
+    ///     <see cref="ITimeTracker.GameUpdate()"/> method.
+    /// </summary>
+    /// <param name="sourceID">The item that spawned the event</param>
+    /// <param name="eventType">The type of event spawned</param>
+    /// <param name="targetID">The optional target of the event</param>
+    /// <param name="otherData">Any additional data needed for the event</param>
+    public void AddEvent(int sourceID, TimeEvent.EventType eventType, int targetID = -1, string otherData = null)
+    {
+        if (!EventsByTimeStep.TryGetValue(TimeStep, out var events))
+        {
+            events = EventsByTimeStep[TimeStep] = new List<TimeEvent>();
+        }
+    
+        Log($"AddEvent({sourceID}, {eventType.ToString()}, {targetID}, {otherData})");
+        events.Add(new TimeEvent(sourceID, eventType, targetID, otherData));
+    }
+
+    /// <summary>
+    ///     Method that executes the events stored in the structure. Called in <see cref="DoTimeStep"/>
+    /// </summary>
+    /// <param name="timeEvent"></param>
+    public void ExecuteEvent(TimeEvent timeEvent)
+    {
+        
+        ITimeTracker timeTracker = GetTimeTrackerByID(timeEvent.SourceID);
+        if (timeTracker == null) // cannot find source object
+        {
+            Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
+            if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
+            }
+        }
+        else
+        {
+            Log($"ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
+            timeTracker.ExecutePastEvent(timeEvent);   
+        }
+    }
+    
     public Explosion CreateExplosion(Vector2 location, float radius)
     {
         int newID = NextID++;
         Explosion explosionObject = AcquireTimeTracker<Explosion>(TYPE_EXPLOSION);
-
-        // Init and add to trackers
+        
         Log($"{newID.ToString()}.Init()");
         explosionObject.Init(this, newID);
         explosionObject.FlagDestroy = false;
@@ -623,6 +674,7 @@ public class GameController : MonoBehaviour
     public void DoTimeStep()
     {
         LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
+        LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
 
         if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
         
@@ -666,6 +718,14 @@ public class GameController : MonoBehaviour
             }
         }
 
+        if (EventsByTimeStep.TryGetValue(TimeStep, out var events))
+        {
+            foreach (var timeEvent in events)
+            {
+                ExecuteEvent(timeEvent);
+            }
+        }
+        
         for (int i = 0; i < NextID; i++)
         {
             if (AllReferencedObjects.TryGetValue(i, out var obj))
@@ -689,7 +749,10 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    didActivate = timeMachine.Activate(out timeTravelStep);
+                    if (timeMachine.Activate(out timeTravelStep))
+                    {
+                        AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);
+                    }
                     break;
                 }
             }
@@ -828,23 +891,47 @@ public class GameController : MonoBehaviour
 
         return defaultValue;
     }
+    public void SetSnapshotValue<T>(ITimeTracker timeTracker, int timeStep, string parameter, T value, bool force=false, bool clearFuture=false) where T : IEquatable<T>
+    {
+        if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
+        {
+            history.Set<T>(timeStep, parameter, value, force, clearFuture);
+        }
+    }
 
+    public string GetUserFriendlyName(int id)
+    {
+        string objectType = ObjectTypeByID.TryGetValue(id, out var result) ? result : null;
+
+        switch (objectType)
+        {
+            case TYPE_TIME_MACHINE: return "Time Machine";
+            case TYPE_BOX: return "Crate";
+            case TYPE_EXPLOAD_BOX: return "Explosives";
+            
+            case TYPE_GUARD: return "Guard";
+            case TYPE_PLAYER: return "Player";
+            case TYPE_EXPLOSION: return "Explosion";
+            default: return "Unknown Object";
+        }
+    }
     public string GetObjectTypeByID(int id) => ObjectTypeByID.TryGetValue(id, out var result) ? result : null;
     public ICustomObject GetObjectByID(int id) => AllReferencedObjects.TryGetValue(id, out var result) ? result : null;
     public ITimeTracker GetTimeTrackerByID(int id) => TimeTrackerObjects.TryGetValue(id, out var result) ? result : null;
     
-    public bool DropItem(int id)
+    public bool DropItem(PlayerController droppingPlayer, int targetID)
     {
-        if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
+        if (TimeTrackerObjects.TryGetValue(targetID, out var timeTracker))
         {
-            Log($"Drop Item {id.ToString()}");
-            Vector2 offset = new Vector2(player.facingRight ? 1.2f : -1.2f, 0); 
-            timeTracker.Position.Current = player.Position.Get + offset;
+            Log($"Drop Item {targetID.ToString()}");
+            Vector2 offset = new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0); 
+            timeTracker.Position.Current = droppingPlayer.Position.Get + offset;
+
             return timeTracker.SetItemState(false);
         }
         else
         {
-            LogError($"could not drop item {id.ToString()}");
+            LogError($"could not drop item {targetID.ToString()}");
             return false;
         }
     }
@@ -901,6 +988,13 @@ public class GameController : MonoBehaviour
         {
             RetryLevel();
             return;
+        }
+        
+        // Remove popup if it exists
+        var retryPopups = FindObjectsOfType<RetryPopup>();
+        foreach (var popup in retryPopups)
+        {
+            Destroy(popup.gameObject); //TODO: destroying and recreating not the best idea long term... pool popup? make generic popup class?
         }
 
         // load player snapshot from current state (at the timestep of the spawnState)
@@ -1018,7 +1112,7 @@ public class GameController : MonoBehaviour
     {
         string symmetryBrokenTitle = "Symmetry Broken!";   
         
-        // ensure that past player's paths of motion are uninterrupted
+        // ensure that Doppelganger's paths of motion are uninterrupted
         foreach (PlayerController p in PastPlayers)
         {
             //string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
@@ -1026,27 +1120,17 @@ public class GameController : MonoBehaviour
             //if (historyColliderState != currentColliderState)
             //{
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
-            //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            //    throw new TimeAnomalyException("Doppelganger was unable to follow his previous path of motion!");
             //}
             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
             if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!");
             }
         }
     }
     private void PostSaveValidateTimeAnomalies()
     {
-        // check if past player(s) died
-        foreach (PlayerController p in PastPlayers)
-        {
-            if (GetSnapshotValue<bool>(p, TimeStep, FLAG_DESTROY) && !p.DidTimeTravel)
-            {
-                // player is destroyed & not timetravelling
-                throw new TimeAnomalyException("Oh No!", "Past Player was killed!");
-            }
-        }
-
         string symmetryBrokenTitle = "Symmetry Broken!";        
         
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended

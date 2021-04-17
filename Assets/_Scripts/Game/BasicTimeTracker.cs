@@ -12,13 +12,12 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public TimeVector Position { get; protected set; }
     protected bool ItemForm = false;
-    protected bool PrevItemForm = false;
 
     public bool FlagDestroy { get; set; }
 
     public virtual bool ShouldPoolObject => _shouldPoolObject;
     [SerializeField] protected bool _shouldPoolObject;
-    [SerializeField] protected bool _isItemable; // can the player hold this as an item?    
+    [SerializeField] protected bool _isItemable; // can the player hold this as an item?
 
     private Collider2D _collider2d;
     public Collider2D Collider2D
@@ -40,7 +39,11 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         ItemForm = state;
         return true;
     }
-    
+
+    public virtual void ExecutePastEvent(TimeEvent timeEvent)
+    {
+    }
+
     public virtual void CopyTimeTrackerState(ITimeTracker other)
     {
         BasicTimeTracker otherTracker = other as BasicTimeTracker;
@@ -48,7 +51,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         {
             Position.Copy(otherTracker.Position);
             ItemForm = otherTracker.ItemForm;
-            PrevItemForm = otherTracker.PrevItemForm;
 
             _shouldPoolObject = otherTracker._shouldPoolObject;
             _isItemable = otherTracker._isItemable;
@@ -68,12 +70,12 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         
-        Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
+        Position = new TimeVector("Position", x => transform.position = x, () => transform.position, canClearFuturePosition:true);
     }
 
     private void UpdateShow()
     {
-        gameObject.SetActive((ItemForm != PrevItemForm || !ItemForm) && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
     }
 
     public virtual void GameUpdate()
@@ -84,19 +86,15 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
-        snapshotDictionary.Set(nameof(ItemForm), ItemForm, force);
-        PrevItemForm = ItemForm;
+        snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
         UpdateShow();
+        
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
-        PrevItemForm = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, nameof(ItemForm));
-        Position.LoadSnapshot(snapshotDictionary);
-        Position.Current = Position.History;
 
         UpdateShow();
     }
@@ -105,7 +103,6 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
-        PrevItemForm = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, nameof(ItemForm));
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
 

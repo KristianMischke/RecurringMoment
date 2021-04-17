@@ -77,7 +77,11 @@ public class Explosion : BasicTimeTracker
 		// if the game is past or at the frame we disappear, destroy us 
 		if (gameController.TimeStep >= destroyStep)
 		{
+			// HACK: remove this object from the history
+			gameController.SetSnapshotValue(this, 0, GameController.FLAG_DESTROY, true, true, true);
+			
 			FlagDestroy = true;
+			gameController.SaveObjectToPool(this); // manually save to pool, because we aren't going to save it in time
 		}
 	}
 
