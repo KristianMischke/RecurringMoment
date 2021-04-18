@@ -11,7 +11,7 @@ public class ExplodeBox : BasicTimeTracker
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
-	[SerializeField] private string label;
+	[SerializeField] public string label;
 
 	[SerializeField] private TMP_Text labelText;
 	
