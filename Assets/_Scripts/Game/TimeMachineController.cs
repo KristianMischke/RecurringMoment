@@ -12,6 +12,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
     private GameController gameController;
 
+    [SerializeField] private AudioClip _timeTravelSound;
+
     // art related
     public SpriteRenderer renderer;
     public TMP_Text timeText;
@@ -146,6 +148,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
             ActivatedTimeStep.Current = -1;
             Activated.Current = false;
+	    AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
         }
         else
         {

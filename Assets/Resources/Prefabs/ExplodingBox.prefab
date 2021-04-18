@@ -17,6 +17,7 @@ MonoBehaviour:
   requiredActivatableIDs: 
   requiredActivatables: []
   distance: 3.5
+  _clip: {fileID: 8300000, guid: d0784fe87d434384eb6cba44f72fbe5c, type: 3}
 --- !u!1001 &1837105157904715410
 PrefabInstance:
   m_ObjectHideFlags: 0

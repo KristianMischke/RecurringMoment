@@ -320,8 +320,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f340de2f17c1824a9134f04b95292c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _timeTravelSound: {fileID: 8300000, guid: ac7883a689a2b3f47a860658326c880e, type: 3}
   renderer: {fileID: 4711500497092203543}
-  tempFoldableText: {fileID: 0}
   timeText: {fileID: 546507666380530687}
   isFoldable: 0
 --- !u!114 &2188584014909302519
