@@ -70,7 +70,8 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
-        
+
+        prevFlagDestroy = false;
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position, canClearFuturePosition:true);
     }
 
@@ -87,7 +88,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
         prevFlagDestroy = FlagDestroy;
-        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
+        snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force, clearFuture:true);
         snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
         UpdateShow();
         
@@ -96,7 +97,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+        //FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         prevFlagDestroy = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, GameController.FLAG_DESTROY);
 
         UpdateShow();
