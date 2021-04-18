@@ -617,7 +617,7 @@ public class GameController : MonoBehaviour
             player.gameObject.SetActive(false);
             AnimateFrame -= TIME_TRAVEL_REWIND_MULT;
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
-            LoadSnapshotFull(AnimateFrame, true, forceLoad:AnimateFrame == TimeStep);
+            LoadSnapshotFull(AnimateFrame, true, forceLoad:true);
             Physics2D.Simulate(Time.fixedDeltaTime); // needed to update rigidbodies after loading
 
             if (AnimateFrame == TimeStep) // we are done rewinding
@@ -678,7 +678,6 @@ public class GameController : MonoBehaviour
 
     public void DoTimeStep()
     {
-        LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
         LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
 
         if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;

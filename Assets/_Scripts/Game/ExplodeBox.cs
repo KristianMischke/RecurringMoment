@@ -172,6 +172,8 @@ public class ExplodeBox : BasicTimeTracker
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
+	    snapshotDictionary.Set(nameof(distance), distance, force:force);
+	    snapshotDictionary.Set(nameof(label), label, force:force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -183,6 +185,9 @@ public class ExplodeBox : BasicTimeTracker
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
+	    
+	    distance = snapshotDictionary.Get<float>(nameof(distance));
+	    label = snapshotDictionary.Get<string>(nameof(label));
     }
     
 #if UNITY_EDITOR

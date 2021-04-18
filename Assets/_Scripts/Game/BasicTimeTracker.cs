@@ -14,6 +14,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     protected bool ItemForm = false;
 
     public bool FlagDestroy { get; set; }
+    public bool prevFlagDestroy;
 
     public virtual bool ShouldPoolObject => _shouldPoolObject;
     [SerializeField] protected bool _shouldPoolObject;
@@ -73,9 +74,9 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position, canClearFuturePosition:true);
     }
 
-    private void UpdateShow()
+    protected virtual void UpdateShow()
     {
-        gameObject.SetActive(!ItemForm && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !(FlagDestroy && prevFlagDestroy));
     }
 
     public virtual void GameUpdate()
@@ -85,6 +86,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
 
     public virtual void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
+        prevFlagDestroy = FlagDestroy;
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
         UpdateShow();
@@ -95,6 +97,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+        prevFlagDestroy = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, GameController.FLAG_DESTROY);
 
         UpdateShow();
     }
@@ -102,6 +105,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
     public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+        prevFlagDestroy = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, GameController.FLAG_DESTROY);
         ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
