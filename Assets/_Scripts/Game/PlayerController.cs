@@ -317,9 +317,18 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
             }
         } // end TIME_TRAVEL
+        else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+        {
+            TimeMachineController timeMachine = gameController.GetTimeTrackerByID(timeEvent.TargetID) as TimeMachineController;
+
+            if (timeMachine == null || !timeMachine.IsTouching(gameObject))
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+            }
+        } // end ACTIVATE_TIME_MACHINE
     }
 
     public void ClearActivate()

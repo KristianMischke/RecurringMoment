@@ -8,9 +8,10 @@ public struct TimeEvent
         
         PLAYER_GRAB,
         PLAYER_DROP,
-        EXPLODE,
-        GUARD_SHOOT,
+        //EXPLODE,
+        //GUARD_SHOOT,
         TIME_TRAVEL,
+        ACTIVATE_TIME_MACHINE,
         
         COUNT
     }

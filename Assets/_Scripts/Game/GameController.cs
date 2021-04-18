@@ -521,6 +521,10 @@ public class GameController : MonoBehaviour
             Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
             {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!");
+            }
+            if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+            {
                 throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
             }
         }
@@ -755,7 +759,14 @@ public class GameController : MonoBehaviour
                     targetTimeMachine = timeMachine;
                     if (timeMachine.Activate(out timeTravelStep))
                     {
-                        AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);
+                        if (timeTravelStep == -1)
+                        {
+                            AddEvent(player.ID, TimeEvent.EventType.ACTIVATE_TIME_MACHINE, timeMachine.ID);
+                        }
+                        else
+                        {
+                            AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);                            
+                        }
                     }
                     break;
                 }
