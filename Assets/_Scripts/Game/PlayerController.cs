@@ -185,7 +185,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	public void OnPause(InputValue inputValue)
 	{
 		Debug.Log("Pressed the escape key"); 
-		gameController.userPause = true; 
+		gameController.ToggleUserPause(); 
 	}
 	
     //------

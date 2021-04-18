@@ -557,9 +557,25 @@ public class GameController : MonoBehaviour
         }
     }
 
-	
+
+    public void ToggleUserPause()
+    {
+        if(userPause)
+        {
+            Resume();
+        }
+        else
+        {
+            pauseScreen.SetActive(true); 
+            actualTimeChange = Time.timeScale; 
+            Time.timeScale = 0f; // stops the time (I think... hopefully) 
+            userPause = true;
+        }
+    }
+    
 	public void Resume()
-	{
+    {
+        userPause = false;
 		pauseScreen.SetActive(false);
 		Time.timeScale = actualTimeChange;
 	}
@@ -588,22 +604,10 @@ public class GameController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (paused)
+        if (paused || userPause)
         {
-						
             return;
         }
-		
-		if(userPause)
-		{
-			Debug.Log("Pausing Now - halting time and other things  so will need to do a while loop I believe");
-			pauseScreen.SetActive(true); 
-			actualTimeChange = Time.timeScale; 
-			Time.timeScale = 0f; // stops the time (I think... hopefully) 
-			
-			userPause = false;
-			return; 
-		}
 
         rewindIndicator.enabled = AnimateRewind;
         
