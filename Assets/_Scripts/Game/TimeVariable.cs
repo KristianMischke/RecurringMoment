@@ -82,12 +82,15 @@ public class TimeVector : TimeVariable<Vector2>
     private readonly Action<Vector2> _setter;
     private readonly Func<Vector2> _getter;
 
+    private bool _canClearFuturePosition;
+    
     private Vector2 _current;
 
-    public TimeVector(string name, Action<Vector2> setter = null, Func<Vector2> getter = null) : base(name)
+    public TimeVector(string name, Action<Vector2> setter = null, Func<Vector2> getter = null, bool canClearFuturePosition = false) : base(name)
     {
         _setter = setter;
         _getter = getter;
+        _canClearFuturePosition = canClearFuturePosition;
     }
 
     public override Vector2 Current
@@ -117,9 +120,16 @@ public class TimeVector : TimeVariable<Vector2>
     
     public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
     {
-        Vector2 temp = Current;
-        snapshotDictionary.Set(CurrentName, temp, force);
+        bool clearPositionFuture = false;
+        if (_canClearFuturePosition)
+        {
+            clearPositionFuture = Vector2.Distance(Current, History) >
+                                  GameController.POSITION_CLEAR_FUTURE_THRESHOLD;
+        }
         
-        snapshotDictionary.Set(HistoryName, temp == Vector2.negativeInfinity ? History : temp, force);
+        Vector2 temp = Current;
+        snapshotDictionary.Set(CurrentName, temp, force, clearPositionFuture);
+        
+        snapshotDictionary.Set(HistoryName, temp == Vector2.negativeInfinity ? History : temp, force, clearPositionFuture);
     }
 }
