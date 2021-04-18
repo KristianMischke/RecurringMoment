@@ -223,7 +223,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                        itemImage = timeTracker.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
                         Debug.Log("The name of the sprite is : " + itemImage.name);
                     }
                 }

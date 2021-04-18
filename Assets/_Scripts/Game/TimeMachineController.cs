@@ -15,6 +15,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     // art related
     public SpriteRenderer renderer;
     public TMP_Text timeText;
+    public GameObject TextBubbleHint;
 
     public TimeBool Activated = new TimeBool("Activated");
     public TimeBool Occupied = new TimeBool("Occupied");
@@ -74,7 +75,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             {
                 GameObject hitObject = raycastHits[i].collider.gameObject;
                 ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
-                if (hitObject == gameObject || hitTimeTracker is PlayerController) continue;
+                if (hitObject == gameObject || hitTimeTracker is PlayerController || hitTimeTracker == this) continue;
 
                 // cannot place time machine ontop of ITimeTracker
                 if (hitTimeTracker != null)
@@ -213,6 +214,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             renderer.color = new Color(1f, 1f, 1f);
         }
+
+        TextBubbleHint.SetActive(isFoldable);
 
         int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
         int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
