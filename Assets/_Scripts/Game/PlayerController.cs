@@ -173,6 +173,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private bool queueGrab = false;
     private static readonly int Walking = Animator.StringToHash("Walking");
+    private static readonly int Jumping = Animator.StringToHash("Jumping");
+    private static readonly int Grounded = Animator.StringToHash("Grounded");
 
     public void OnGrab(InputValue inputValue)
     {
@@ -331,8 +333,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        Animator.SetBool(Walking, Rigidbody.velocity != Vector2.zero);
         
+        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0);
+	Animator.SetBool(Grounded, isGrounded);
+	Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+
         if (Rigidbody.velocity.x != 0)
         {
             facingRight = Rigidbody.velocity.x > 0;
@@ -359,9 +364,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void FixedUpdate()
     {
-        if (this != gameController.player) return; // don't update physics from inputs if not main player
-        
+
         UpdateIsGrounded();
+
+        if (this != gameController.player) return; // don't update physics from inputs if not main player
+
         if (jump)
         {
             Rigidbody.AddForce(Vector2.up * jumpMultiplier, ForceMode2D.Impulse);
