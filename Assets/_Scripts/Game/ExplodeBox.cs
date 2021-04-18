@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+[ExecuteInEditMode]
 public class ExplodeBox : BasicTimeTracker
 {
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
+	[SerializeField] private string label;
 
+	[SerializeField] private TMP_Text labelText;
+	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
@@ -34,6 +39,7 @@ public class ExplodeBox : BasicTimeTracker
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
 
+			label = otherBox.label;
 			distance = otherBox.distance;
 			requiredActivatableIDs.AddRange(otherBox.requiredActivatableIDs);
 			requiredActivatables.AddRange(otherBox.requiredActivatables);
@@ -52,8 +58,13 @@ public class ExplodeBox : BasicTimeTracker
 		prevActivatableString = null;
 	}
 
+	public void Update()
+	{
+		labelText.text = label ?? "";
+	}
+
 	public override void GameUpdate()
-    {
+	{
 	    // if we are activated AND we haven't already created an explosion object
         if (AllActivated())
         {

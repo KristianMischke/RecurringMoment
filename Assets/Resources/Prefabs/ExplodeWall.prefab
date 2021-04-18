@@ -27,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1921221333070053912}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.33000183, y: -0.07999992, z: 0}
+  m_LocalPosition: {x: -5.7, y: -3.74, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7033443879693436386}
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 6.5, y: 1}
+  m_Size: {x: 2, y: 5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -102,13 +102,13 @@ BoxCollider2D:
     border: {x: 0.41, y: 0.41, z: 0.41, w: 0.41}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 5, y: 5}
-    newSize: {x: 6.5, y: 1}
+    newSize: {x: 2, y: 5}
     adaptiveTilingThreshold: 0.5
     drawMode: 2
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 6.5, y: 1}
+  m_Size: {x: 2, y: 5}
   m_EdgeRadius: 0
 --- !u!114 &1921221333070053914
 MonoBehaviour:
@@ -124,7 +124,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   matchBoxCollider: 0
   matchSpriteRenderer: 1
-  gridSize: 0.5
+  matchRectTransform: 0
+  gridSize: 0.25
 --- !u!1 &7033443879693436389
 GameObject:
   m_ObjectHideFlags: 0

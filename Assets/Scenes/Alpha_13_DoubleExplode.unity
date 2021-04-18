@@ -912,26 +912,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1921221333070053913, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -5.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921221333070053913, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -3.74
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921221333070053914, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: gridSize
-      value: 0.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921221333070053915, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_Size.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921221333070053915, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_Size.y
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 7033443879693436386, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11.2
@@ -979,22 +959,6 @@ PrefabInstance:
     - target: {fileID: 7033443879693436389, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
       propertyPath: m_Name
       value: ExplodeWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 7174698671461852213, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_SpriteTilingProperty.newSize.y
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7174698671461852213, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_Size.y
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7174698671461852213, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_SpriteTilingProperty.newSize.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7174698671461852213, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
-      propertyPath: m_Size.x
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
