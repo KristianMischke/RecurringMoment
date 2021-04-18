@@ -21,7 +21,11 @@ public class Guard_AI : BasicTimeTracker
     float left, right, minDist, toFire = 0f, dist =0f;
     bool wall = false, seen = false;
     GameObject closest;
+    private bool _alertState = false;
     
+    [SerializeField] private AudioClip _blastSound;
+    [SerializeField] private AudioClip _alertSound;
+
     private SpriteRenderer _spriteRenderer;
 
     // Start is called before the first frame update
@@ -60,17 +64,23 @@ public class Guard_AI : BasicTimeTracker
             }
 
         }
-        if (Detected())
+        if (_alertState)
         {
             toFire -= Time.deltaTime;
             if (toFire <= 0)
             {
-                Blast(closest.GetComponent<CapsuleCollider2D>());
-                toFire = fireRateSeconds;
+		if(Detected())
+		{
+                     Blast(closest.GetComponent<CapsuleCollider2D>());
+		     AudioSource.PlayClipAtPoint(_blastSound, Camera.main.transform.position, 0.1f);
+                     toFire = fireRateSeconds;
+		}
+		_alertState = false;
             }
         }
         else
         {
+	    _alertState = Detected();
             toFire = fireRateSeconds;
         }
     }
@@ -129,7 +139,7 @@ public class Guard_AI : BasicTimeTracker
 
     IEnumerator Alerted()
     {
-
+	AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
         for (int i = 0; i < 45; i++)
         {
