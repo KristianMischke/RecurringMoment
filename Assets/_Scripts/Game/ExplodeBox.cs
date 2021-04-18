@@ -9,6 +9,8 @@ public class ExplodeBox : BasicTimeTracker
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
+	[SerializeField] private AudioClip _clip;
+
 
 	public override void Init(GameController gameController, int id)
 	{
@@ -55,8 +57,11 @@ public class ExplodeBox : BasicTimeTracker
 	public override void GameUpdate()
     {
 	    // if we are activated AND we haven't already created an explosion object
+
         if (AllActivated())
         {
+
+		AudioSource.PlayClipAtPoint(_clip, Camera.main.transform.position, 1f);
 	        bool isInPlayerInv = false;
 	        Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
