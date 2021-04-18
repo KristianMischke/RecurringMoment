@@ -8,6 +8,7 @@ using TMPro;
 using UnityEditor;
 #endif
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
 
@@ -928,9 +929,16 @@ public class GameController : MonoBehaviour
         if (TimeTrackerObjects.TryGetValue(targetID, out var timeTracker))
         {
             Log($"Drop Item {targetID.ToString()}");
-            Vector2 offset = new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0); 
-            timeTracker.Position.Current = droppingPlayer.Position.Get + offset;
+            Vector2 dropPos = droppingPlayer.Position.Get + new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0);
+            
+            RaycastHit2D raycastHit = Physics2D.Raycast(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f, LayerMask.NameToLayer("LevelPlatforms"));
+            if (raycastHit.collider != null)
+            {
+                // set drop position to halfway between player and collision
+                dropPos = (raycastHit.point + droppingPlayer.Position.Get) / 2;
+            }
 
+            timeTracker.Position.Current = dropPos;
             return timeTracker.SetItemState(false);
         }
         else
