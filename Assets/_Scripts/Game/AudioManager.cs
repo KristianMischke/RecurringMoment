@@ -1,86 +1,78 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    
+    private static AudioManager instance;
+
     [SerializeField] private AudioClip menuMusic;
     [SerializeField] private AudioClip stageMusic;
     [SerializeField] private AudioClip guardMusic;
 
-    [SerializeField] private AudioSource source;    
-
-    static private AudioManager instance;
+    [SerializeField] private AudioSource source;
 
     private void Awake()
     {
-	if(instance == null)
-	{
-	    instance = this;
-	    DontDestroyOnLoad(this.gameObject);
-	}
-	else
-	{
-	    Destroy(this);
-	    return;
-	}
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+            PlayMenuMusic();
+        }
+        else
+        {
+            Destroy(this);
+        }
     }
 
-    private void Start()
+    public static void PlayMenuMusic()
     {
-	PlayMenuMusic();
+        if (instance != null)
+        {
+            if (instance.source != null)
+            {
+                instance.source.Stop();
+                instance.source.clip = instance.menuMusic;
+                instance.source.Play();
+            }
+        }
     }
 
-    static public void PlayMenuMusic()
+    public static void PlayStageMusic()
     {
-	if(instance != null)
-	{
-	    if(instance.source != null)
-	    {
-		instance.source.Stop();
-		instance.source.clip = instance.menuMusic;
-		instance.source.Play();
-	    }
-	}
+        if (instance != null)
+        {
+            if (instance.source != null)
+            {
+                instance.source.Stop();
+                instance.source.clip = instance.stageMusic;
+                instance.source.Play();
+            }
+        }
     }
 
-    static public void PlayStageMusic()
+    public static void PlayGuardMusic()
     {
-	if(instance != null)
-	{
-	    if(instance.source != null)
-	    {
-		instance.source.Stop();
-		instance.source.clip = instance.stageMusic;
-		instance.source.Play();
-	    }
-	}
+        if (instance != null)
+        {
+            if (instance.source != null)
+            {
+                instance.source.Stop();
+                instance.source.clip = instance.guardMusic;
+                instance.source.Play();
+            }
+        }
     }
 
-    static public void PlayGuardMusic()
+    public static void GenericPlayMusic(AudioClip clip)
     {
-	if(instance != null)
-	{
-	    if(instance.source != null)
-	    {
-		instance.source.Stop();
-		instance.source.clip = instance.guardMusic;
-		instance.source.Play();
-	    }
-	}
-    }
-
-    static public void GenericPlayMusic(AudioClip clip)
-    {
-	if(instance != null)
-	{
-	    if(instance.source != null)
-	    {
-		instance.source.Stop();
-		instance.source.clip = clip;
-		instance.source.Play();
-	    }
-	}
+        if (instance != null)
+        {
+            if (instance.source != null && instance.source.clip != clip)
+            {
+                instance.source.Stop();
+                instance.source.clip = clip;
+                instance.source.Play();
+            }
+        }
     }
 }
