@@ -640,8 +640,8 @@ public class GameController : MonoBehaviour
                 
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
-                OccupiedTimeMachine.IsAnimating = true;
-                SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.IsAnimating), true);
+                OccupiedTimeMachine.IsAnimatingOpenClose = true;
+                SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.IsAnimatingOpenClose), true);
                 OccupiedTimeMachine.animator.SetBool(TimeMachineController.AnimateOpen, true);
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
