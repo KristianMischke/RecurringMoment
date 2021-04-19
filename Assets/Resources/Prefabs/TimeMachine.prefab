@@ -413,6 +413,9 @@ MonoBehaviour:
   timeText: {fileID: 546507666380530687}
   TextBubbleHint: {fileID: 5834820164530720931}
   animator: {fileID: 5294768808561599294}
+  foldSpriteIcon: {fileID: 21300000, guid: f7f88205d27b1af4599ab7a0feecf411, type: 3}
+  IsAnimating: 0
+  playerID: -1
   isFoldable: 0
 --- !u!114 &2188584014909302519
 MonoBehaviour:

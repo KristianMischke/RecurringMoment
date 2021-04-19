@@ -41,6 +41,13 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         return true;
     }
 
+    public virtual void GetItemSpriteProperties(out Sprite sprite, out Color color)
+    {
+        var sr = GetComponentInChildren<SpriteRenderer>();
+        sprite = sr.sprite;
+        color = sr.color;
+    }
+
     public virtual void ExecutePastEvent(TimeEvent timeEvent)
     {
     }

@@ -77,6 +77,12 @@ public interface ITimeTracker : ICustomObject
     bool SetItemState(bool state); //TODO: rename to TrySetItemState?
 
     /// <summary>
+    ///     Retrieves a sprite to show in the player's item slot
+    /// </summary>
+    /// <returns></returns>
+    void GetItemSpriteProperties(out Sprite sprite, out Color color);
+
+    /// <summary>
     ///     Copy the state from another ITimeTracker object to this object
     /// </summary>
     /// <param name="other">the object to copy from</param>
