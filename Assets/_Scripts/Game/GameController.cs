@@ -636,6 +636,9 @@ public class GameController : MonoBehaviour
                 
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
+                OccupiedTimeMachine.IsAnimating = true;
+                SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.IsAnimating), true);
+                OccupiedTimeMachine.animator.SetBool(TimeMachineController.AnimateOpen, true);
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
                 
@@ -680,8 +683,11 @@ public class GameController : MonoBehaviour
         paused = newPaused;
     }
 
+    private TimeEvent timeTravelQueueEvent = new TimeEvent();
     public void DoTimeStep()
     {
+        timeTravelQueueEvent = new TimeEvent(); // clear time travel event, we want to receive it in GameUpdate()
+        
         LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
 
         if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
@@ -747,7 +753,6 @@ public class GameController : MonoBehaviour
             }
         }
 
-        int timeTravelStep = -1;
         bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
         if (player.IsActivating && !ActivatedLastFrame)
@@ -757,16 +762,9 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    if (timeMachine.Activate(out timeTravelStep))
+                    if (timeMachine.Activate(player))
                     {
-                        if (timeTravelStep == -1)
-                        {
-                            AddEvent(player.ID, TimeEvent.EventType.ACTIVATE_TIME_MACHINE, timeMachine.ID);
-                        }
-                        else
-                        {
-                            AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);                            
-                        }
+                        AddEvent(player.ID, TimeEvent.EventType.ACTIVATE_TIME_MACHINE, timeMachine.ID);
                     }
                     break;
                 }
@@ -787,8 +785,10 @@ public class GameController : MonoBehaviour
         FurthestTimeStep = Mathf.Max(TimeStep, FurthestTimeStep);
         player.ClearActivate();
 
-        if (timeTravelStep >= 0)
+        if (timeTravelQueueEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
         {
+            int timeTravelStep = int.Parse(timeTravelQueueEvent.OtherData);
+            targetTimeMachine = GetObjectByID(timeTravelQueueEvent.TargetID) as TimeMachineController;
             DoTimeTravel(timeTravelStep, targetTimeMachine, player);
         }
     }
@@ -1184,6 +1184,12 @@ public class GameController : MonoBehaviour
         return result;
     }
 
+    public void QueueTimeTravel(TimeEvent timeEvent)
+    {
+        timeTravelQueueEvent = timeEvent;
+        AddEvent(timeEvent.SourceID, timeEvent.Type, timeEvent.TargetID, timeEvent.OtherData);
+    }
+    
     public void DoTimeTravel(int timeTravelStep, TimeMachineController timeMachine, PlayerController player)
     {
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
@@ -1233,6 +1239,8 @@ public class GameController : MonoBehaviour
             timeMachine.ActivatedTimeStep.Current = -1;
             timeMachine.Activated.Current = false;
             timeMachine.Occupied.Current = false;
+
+            timeMachine.playerID = -1;
             SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
         }
 
