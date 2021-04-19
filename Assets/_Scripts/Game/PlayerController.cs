@@ -108,6 +108,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public bool ShouldPoolObject => true;
     
     public bool SetItemState(bool state) => false;
+    public void GetItemSpriteProperties(out Sprite sprite, out Color color)
+    {
+        sprite = null;
+        color = Color.magenta;
+    }
     
     public void CopyTimeTrackerState(ITimeTracker other)
     {
@@ -228,9 +233,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        var sr = timeTracker.gameObject.GetComponentInChildren<SpriteRenderer>(); 
-                        itemImage = sr.sprite;
-                        itemColor = sr.color;
+                        timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
                         Debug.Log("The name of the sprite is : " + itemImage.name);
                         
                         ExplodeBox explodeBox = timeTracker as ExplodeBox;

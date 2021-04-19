@@ -24,8 +24,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public TMP_Text timeText;
     public GameObject TextBubbleHint;
     public Animator animator;
+    public Sprite foldSpriteIcon;
 
-    public bool IsAnimating = false;
+    public bool IsAnimatingOpenClose = false;
+    public bool IsAnimatingFold = false;
+    public bool IsAnimatingUnfold = false;
     public int playerID = -1;
     public TimeBool Activated = new TimeBool("Activated");
     public TimeBool Occupied = new TimeBool("Occupied");
@@ -45,10 +48,16 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     //Whether or not a machine is able to be converted into item form
     public bool isFoldable = false;
     
+    private static readonly int MainTex = Shader.PropertyToID("_MainTex");
     private static readonly int MainColor = Shader.PropertyToID("_MainColor");
     
     public static readonly int AnimateOpen = Animator.StringToHash("AnimateOpen");
-    public bool IsAnimClosed => animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineClosed_Temp");
+    public static readonly int AnimIsFoldable = Animator.StringToHash("IsFoldable");
+    public static readonly int AnimIsItem = Animator.StringToHash("IsItem");
+    public static readonly int AnimateFolding = Animator.StringToHash("AnimateFolding");
+    public static readonly int AnimateUnfolding = Animator.StringToHash("AnimateUnfolding");
+    public bool IsAnimClosedState => animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineClosed_Temp") || animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldClosed_Temp");
+    public bool IsAnimFoldedState => animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFolded");
     
     public void CopyTimeTrackerState(ITimeTracker other)
     {
@@ -64,7 +73,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             ItemForm = otherTM.ItemForm;
 
             playerID = otherTM.playerID;
-            IsAnimating = otherTM.IsAnimating;
+            IsAnimatingOpenClose = otherTM.IsAnimatingOpenClose;
+            IsAnimatingFold = otherTM.IsAnimatingFold;
+            IsAnimatingUnfold = otherTM.IsAnimatingUnfold;
             
             isFoldable = otherTM.isFoldable;
         }
@@ -74,6 +85,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
     
+    //TODO: need way to handle TimeMachine folding before coming item!
     public bool SetItemState(bool state)
     {
         if (state) // trying to turn into an item
@@ -81,6 +93,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             // time machine is occupied or activated (or not foldable), cannot move it
             if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0)
                 return false;
+
+            IsAnimatingFold = true;
+            animator.SetBool(AnimateFolding, true);
         }
         else // trying to turn back into time machine
         {
@@ -146,11 +161,20 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                     break;
                 }
             }
+
+            IsAnimatingUnfold = true;
+            animator.SetBool(AnimateUnfolding, true);
         }
             
         ItemForm = state;
-        gameObject.SetActive(!ItemForm && !FlagDestroy);
+        gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
         return true;
+    }
+    
+    public virtual void GetItemSpriteProperties(out Sprite sprite, out Color color)
+    {
+        sprite = isFoldable ? foldSpriteIcon : renderer.sprite;
+        color = isFoldable ? Color.white : renderer.color;
     }
 
     /// <summary>
@@ -165,7 +189,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
-            IsAnimating = true;
+            IsAnimatingOpenClose = true;
             playerID = playerController.ID;
             animator.SetBool(AnimateOpen, true);
             return false;
@@ -200,10 +224,13 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        if (IsAnimating && IsAnimClosed)
+        animator.SetBool(AnimIsFoldable, isFoldable);
+        animator.SetBool(AnimIsItem, ItemForm && !IsAnimatingFold);
+        
+        if (IsAnimatingOpenClose && IsAnimClosedState)
         {
             // stop animation, could be present or past TimeMachine
-            IsAnimating = false;
+            IsAnimatingOpenClose = false;
             animator.SetBool(AnimateOpen, false);
 
             if (playerID != -1) // execute time travel bc we have a playerID
@@ -217,7 +244,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 _source.Stop();
             }
         }
-        else if (IsAnimating)
+        else if (IsAnimatingOpenClose)
         {
             if (playerID != -1) // keep player on TimeMachine (TODO: player enter anim)
             {
@@ -225,6 +252,19 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
                 player.Velocity.Current = Vector2.zero;
             }
+        }
+
+        if (IsAnimClosedState)
+        {
+            IsAnimatingUnfold = false;
+            animator.SetBool(AnimateUnfolding, false);
+        }
+        
+        if (IsAnimFoldedState && IsAnimatingFold)
+        {
+            gameObject.SetActive(false);
+            IsAnimatingFold = false;
+            animator.SetBool(AnimateFolding, false);
         }
         
         if (Countdown.Current > 0)
@@ -276,6 +316,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
         if (Occupied.AnyTrue)
         {
             propertyBlock.SetColor(MainColor, new Color(0f, 1f, 0f));
@@ -330,7 +371,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
-        snapshotDictionary.Set(nameof(IsAnimating), IsAnimating); // don't force animations?!
+        snapshotDictionary.Set(nameof(IsAnimatingOpenClose), IsAnimatingOpenClose); // don't force animations?!
+        snapshotDictionary.Set(nameof(IsAnimatingFold), IsAnimatingFold);
+        snapshotDictionary.Set(nameof(IsAnimatingUnfold), IsAnimatingUnfold);
         snapshotDictionary.Set(nameof(playerID), playerID, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
@@ -344,10 +387,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
 
-        gameObject.SetActive(!ItemForm && !FlagDestroy);
+        gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
 
-        IsAnimating |= snapshotDictionary.Get<bool>(nameof(IsAnimating));
-        animator.SetBool(AnimateOpen, IsAnimating);
+        IsAnimatingOpenClose |= snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
+        animator.SetBool(AnimateOpen, IsAnimatingOpenClose);
+        IsAnimatingFold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
+        animator.SetBool(AnimateFolding, IsAnimatingFold);
+        IsAnimatingUnfold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
+        animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
         
         Occupied.Current &= Activated.History;
     }
@@ -364,10 +411,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
         
-        IsAnimating = snapshotDictionary.Get<bool>(nameof(IsAnimating));
-        animator.SetBool(AnimateOpen, IsAnimating);
+        IsAnimatingOpenClose = snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
+        animator.SetBool(AnimateOpen, IsAnimatingOpenClose);
+        IsAnimatingFold = snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
+        animator.SetBool(AnimateFolding, IsAnimatingFold);
+        IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
+        animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
         playerID = snapshotDictionary.Get<int>(nameof(playerID));
         
-        gameObject.SetActive(!ItemForm && !FlagDestroy);
+        gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
     }
 }
