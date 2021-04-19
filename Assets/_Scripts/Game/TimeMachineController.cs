@@ -217,6 +217,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 _source.Stop();
             }
         }
+        else if (IsAnimating)
+        {
+            if (playerID != -1) // keep player on TimeMachine (TODO: player enter anim)
+            {
+                PlayerController player = gameController.GetObjectByID(playerID) as PlayerController;
+                player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
+                player.Velocity.Current = Vector2.zero;
+            }
+        }
         
         if (Countdown.Current > 0)
         {
