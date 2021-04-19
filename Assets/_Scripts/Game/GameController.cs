@@ -558,7 +558,11 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = $"Test Timer:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#if UNITY_EDITOR
+            timerText.text = $"Total Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#else
+            timerText.text = $"Total Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#endif
         }
     }
 
