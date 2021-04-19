@@ -38,7 +38,13 @@ public class CameraTracker : MonoBehaviour
         if (gameController.TimeStep > 0)
         {
             Vector2 playerPos = gameController.GetSnapshotValue<Vector2>(gameController.player, gameController.TimeStep,
-                gameController.player.Position.CurrentName);
+                gameController.player.Position.CurrentName, defaultValue:Vector2.positiveInfinity);
+
+            if (float.IsPositiveInfinity(playerPos.x) && float.IsPositiveInfinity(playerPos.y))
+            {
+                playerPos = gameController.player.Position.Current;
+            }
+            
             //Follow the player's position
             this.transform.position = new Vector3(
                 Mathf.Clamp(playerPos.x, relativeMin.x + startPos.x, relativeMax.x + startPos.x),
@@ -59,7 +65,7 @@ public class CameraTracker : MonoBehaviour
         upper += (Vector3)relativeMax;
 
         Vector2 size = upper - lower;
-        Vector3 center = gameController.TimeStep > 0 ? (Vector3)startPos: transform.position;
+        Vector3 center = gameController != null && gameController.TimeStep > 0 ? (Vector3)startPos: transform.position;
         center += (Vector3)relativeMax/2 + (Vector3)relativeMin/2;
         Gizmos.DrawWireCube(center, size);
     }

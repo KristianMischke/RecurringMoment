@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEditor;
+using UnityEngine.PlayerLoop;
 
 [ExecuteInEditMode]
 public class TimeMachineController : MonoBehaviour, ITimeTracker
@@ -12,10 +13,20 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
     private GameController gameController;
 
+    [SerializeField] private AudioClip _timeTravelSound;
+    [SerializeField] private AudioClip _startupSound;
+    [SerializeField] private AudioClip _activeSound;
+
+    private AudioSource _source;
+
     // art related
     public SpriteRenderer renderer;
     public TMP_Text timeText;
+    public GameObject TextBubbleHint;
+    public Animator animator;
 
+    public bool IsAnimating = false;
+    public int playerID = -1;
     public TimeBool Activated = new TimeBool("Activated");
     public TimeBool Occupied = new TimeBool("Occupied");
     public TimeInt ActivatedTimeStep = new TimeInt("ActivatedTimeStep");
@@ -25,7 +36,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public int ID { get; private set; }
     public TimeVector Position { get; private set; }
-    private TimeBool ItemForm { get; } = new TimeBool("ItemForm");
+    private bool ItemForm = false;
 
     public bool FlagDestroy { get; set; }
     public bool ShouldPoolObject => true;
@@ -33,7 +44,12 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     //Whether or not a machine is able to be converted into item form
     public bool isFoldable = false;
-
+    
+    private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+    
+    public static readonly int AnimateOpen = Animator.StringToHash("AnimateOpen");
+    public bool IsAnimClosed => animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineClosed_Temp");
+    
     public void CopyTimeTrackerState(ITimeTracker other)
     {
         TimeMachineController otherTM = other as TimeMachineController;
@@ -45,7 +61,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             Countdown.Copy(otherTM.Countdown);
             
             Position.Copy(otherTM.Position);
-            ItemForm.Copy(otherTM.ItemForm);
+            ItemForm = otherTM.ItemForm;
+
+            playerID = otherTM.playerID;
+            IsAnimating = otherTM.IsAnimating;
             
             isFoldable = otherTM.isFoldable;
         }
@@ -74,7 +93,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             {
                 GameObject hitObject = raycastHits[i].collider.gameObject;
                 ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
-                if (hitObject == gameObject || hitTimeTracker is PlayerController) continue;
+                if (hitObject == gameObject || hitTimeTracker is PlayerController || hitTimeTracker == this) continue;
 
                 // cannot place time machine ontop of ITimeTracker
                 if (hitTimeTracker != null)
@@ -129,31 +148,35 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             }
         }
             
-        ItemForm.Current = state;
-        ItemForm.History = state;
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        ItemForm = state;
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
         return true;
     }
 
-    public bool Activate(out int timeTravelDestStep)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="playerController"></param>
+    /// <returns>true if the machine is now active. false otherwise (i.e. false if fail, and false if now animating to time travel</returns>
+    public bool Activate(PlayerController playerController)
     {
-        timeTravelDestStep = -1;
-
         if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
             return false;
 
-        if (Activated.AnyTrue) // time machine is active, so deactivate and do timetravel
+        if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
-            timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
-            ActivatedTimeStep.Current = -1;
-            Activated.Current = false;
+            IsAnimating = true;
+            playerID = playerController.ID;
+            animator.SetBool(AnimateOpen, true);
+            return false;
         }
-        else
-        {
-            Countdown.Current = TIME_MACHINE_COUNTDOWN;
-        }
-
+            
+        Countdown.Current = TIME_MACHINE_COUNTDOWN;
         return true;
+    }
+
+    public void ExecutePastEvent(TimeEvent timeEvent)
+    {
     }
 
     public void BackToPresent()
@@ -176,9 +199,42 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
 
     public void GameUpdate()
-    {   
+    {
+        if (IsAnimating && IsAnimClosed)
+        {
+            // stop animation, could be present or past TimeMachine
+            IsAnimating = false;
+            animator.SetBool(AnimateOpen, false);
+
+            if (playerID != -1) // execute time travel bc we have a playerID
+            {
+                int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
+                ActivatedTimeStep.Current = -1;
+                Activated.Current = false;
+                gameController.QueueTimeTravel(new TimeEvent(playerID, TimeEvent.EventType.TIME_TRAVEL, ID,
+                    timeTravelDestStep.ToString()));
+                AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
+                _source.Stop();
+            }
+        }
+        else if (IsAnimating)
+        {
+            if (playerID != -1) // keep player on TimeMachine (TODO: player enter anim)
+            {
+                PlayerController player = gameController.GetObjectByID(playerID) as PlayerController;
+                player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
+                player.Velocity.Current = Vector2.zero;
+            }
+        }
+        
         if (Countdown.Current > 0)
         {
+	        if(!(_source.isPlaying))
+	        {
+		        _source.Stop();
+		        _source.clip = _startupSound;
+		        _source.Play();
+	        }
             Countdown.Current--;
         }
 
@@ -189,27 +245,20 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
             Activated.Current = true;
             ActivatedTimeStep.Current = gameController.TimeStep;
+
+	        _source.Stop();
+	        _source.clip = _activeSound;
+	        _source.Play();
         }
     }
 
     public void Start()
     {
-        renderer = GetComponentInChildren<SpriteRenderer>();
+	    _source = GetComponent<AudioSource>();
     }
     public void Update()
     {
-        if (Occupied.AnyTrue)
-        {
-            renderer.color = new Color(0.8f, 0.8f, 1f);
-        }
-        else if (Activated.AnyTrue)
-        {
-            renderer.color = new Color(1f, 1f, 0.8f);
-        }
-        else
-        {
-            renderer.color = new Color(1f, 1f, 1f);
-        }
+        TextBubbleHint.SetActive(isFoldable);
 
         int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
         int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
@@ -225,6 +274,25 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             timeText.text = isFoldable ? "FOLD" : "TM";                
         }
+        
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        if (Occupied.AnyTrue)
+        {
+            propertyBlock.SetColor(MainColor, new Color(0f, 1f, 0f));
+        }
+        else if (Activated.AnyTrue)
+        {
+            propertyBlock.SetColor(MainColor, new Color(1f, 0f, 0f));
+        }
+        else if (displayCountdown >= 0)
+        {
+            propertyBlock.SetColor(MainColor, new Color(1f, 0.7f, 0f));
+        }
+        else
+        {
+            propertyBlock.SetColor(MainColor, new Color(1f, 1f, 0f));
+        }
+        renderer.SetPropertyBlock(propertyBlock);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -250,7 +318,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         
-        Position = new TimeVector("Position", x => transform.position = x, () => transform.position);
+        Position = new TimeVector("Position", x => transform.position = x, () => transform.position, true);
     }
 
     public void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force=false)
@@ -261,7 +329,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Countdown.SaveSnapshot(snapshotDictionary, force);
         
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
-        ItemForm.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
+        snapshotDictionary.Set(nameof(IsAnimating), IsAnimating); // don't force animations?!
+        snapshotDictionary.Set(nameof(playerID), playerID, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
@@ -273,11 +343,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Countdown.LoadSnapshot(snapshotDictionary);
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.LoadSnapshot(snapshotDictionary);
-        Position.LoadSnapshot(snapshotDictionary);
-        Position.Current = Position.History;
 
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
+
+        IsAnimating |= snapshotDictionary.Get<bool>(nameof(IsAnimating));
+        animator.SetBool(AnimateOpen, IsAnimating);
         
         Occupied.Current &= Activated.History;
     }
@@ -290,10 +360,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Countdown.ForceLoadSnapshot(snapshotDictionary);
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
-        ItemForm.ForceLoadSnapshot(snapshotDictionary);
+        ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
         Position.ForceLoadSnapshot(snapshotDictionary);
         Position.Current = Position.History;
         
-        gameObject.SetActive(!ItemForm.AnyTrue && !FlagDestroy);
+        IsAnimating = snapshotDictionary.Get<bool>(nameof(IsAnimating));
+        animator.SetBool(AnimateOpen, IsAnimating);
+        playerID = snapshotDictionary.Get<int>(nameof(playerID));
+        
+        gameObject.SetActive(!ItemForm && !FlagDestroy);
     }
 }

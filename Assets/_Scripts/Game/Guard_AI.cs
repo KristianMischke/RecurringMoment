@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -12,14 +14,17 @@ public class Guard_AI : BasicTimeTracker
     public bool movingRight = false;
     public GameObject bullet;
     public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f, bulletLife = 1f;
-    public GameObject gameController;
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
     Vector2 startPos;
     float left, right, minDist, toFire = 0f, dist =0f;
     bool wall = false, seen = false;
     GameObject closest;
+    private bool _alertState = false;
     
+    [SerializeField] private AudioClip _blastSound;
+    [SerializeField] private AudioClip _alertSound;
+
     private SpriteRenderer _spriteRenderer;
 
     // Start is called before the first frame update
@@ -58,17 +63,23 @@ public class Guard_AI : BasicTimeTracker
             }
 
         }
-        if (Detected())
+        if (_alertState)
         {
             toFire -= Time.deltaTime;
             if (toFire <= 0)
             {
-                Blast(closest.GetComponent<CapsuleCollider2D>());
-                toFire = fireRateSeconds;
+		if(Detected())
+		{
+                     Blast(closest.GetComponent<CapsuleCollider2D>());
+		     AudioSource.PlayClipAtPoint(_blastSound, Camera.main.transform.position, 0.1f);
+                     toFire = fireRateSeconds;
+		}
+		_alertState = false;
             }
         }
         else
         {
+	    _alertState = Detected();
             toFire = fireRateSeconds;
         }
     }
@@ -102,7 +113,7 @@ public class Guard_AI : BasicTimeTracker
         float angle = 0f;
         Vector3 direc = Vector3.zero;
         //RaycastHit2D hit = new RaycastHit2D();
-        foreach (var p in gameController.GetComponent<GameController>().PastPlayers)
+        foreach (var p in gameController.GetComponent<GameController>().AllPlayers)
         {
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
             direc = p.transform.position - gameObject.transform.position;
@@ -115,16 +126,7 @@ public class Guard_AI : BasicTimeTracker
                 closest = p.gameObject;
             }
         }
-
-        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().player.transform.position));
-        direc = gameController.GetComponent<GameController>().player.transform.position - gameObject.transform.position;
-        angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
-        angle = Mathf.Abs(angle);
-        if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
-        {
-            minDist = dist;
-            closest = gameController.GetComponent<GameController>().player.gameObject;
-        }
+        
         if (!seen && (minDist <= range))
         {
             StartCoroutine(Alerted());
@@ -136,7 +138,7 @@ public class Guard_AI : BasicTimeTracker
 
     IEnumerator Alerted()
     {
-
+	AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
         for (int i = 0; i < 45; i++)
         {
@@ -146,6 +148,7 @@ public class Guard_AI : BasicTimeTracker
 
     }
 
+#if UNITY_EDITOR
     public void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
@@ -158,4 +161,5 @@ public class Guard_AI : BasicTimeTracker
             Gizmos.DrawLine(new Vector3(transform.position.x - distLeft, transform.position.y, 0), new Vector3(transform.position.x + distRight, transform.position.y, 0));
         }
     }
+#endif
 }

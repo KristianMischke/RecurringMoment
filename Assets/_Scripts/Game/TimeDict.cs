@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.PlayerLoop;
 
 
 public class TimeDict
@@ -17,7 +18,7 @@ public class TimeDict
         }
         
         public T Get<T>(string key) => _timeDict.Get<T>(_timeStep, key);
-        public void Set<T>(string key, T value, bool force=false) where T : IEquatable<T> => _timeDict.Set(_timeStep, key, value, force);
+        public void Set<T>(string key, T value, bool force=false, bool clearFuture=false) where T : IEquatable<T> => _timeDict.Set(_timeStep, key, value, force, clearFuture);
     }
     
     private Dictionary<string, IVariableTimeline> _dict = new Dictionary<string, IVariableTimeline>();
@@ -50,14 +51,14 @@ public class TimeDict
         return result;
     }
     
-    public void Set<T>(int timeStep, string key, T value, bool force=false) where T : IEquatable<T>
+    public void Set<T>(int timeStep, string key, T value, bool force=false, bool clearFuture=false) where T : IEquatable<T>
     {
         if (!_dict.TryGetValue(key, out var timeline))
         {
             timeline = _dict[key] = new VariableTimeline<T>();
         }
 
-        timeline.SetRaw(timeStep, value, force);
+        timeline.SetRaw(timeStep, value, force, clearFuture);
     }
 
     // index a vertical slice of the time dictionary at a given timeStep
@@ -67,7 +68,7 @@ public class TimeDict
 public interface IVariableTimeline
 {
     object GetRaw(int timeStep);
-    void SetRaw(int timeStep, object value, bool force=false);
+    void SetRaw(int timeStep, object value, bool force=false, bool clearFuture=false);
     IVariableTimeline Copy();
 }
 
@@ -77,6 +78,7 @@ public interface IVariableTimeline
 public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
 {
     private SortedList<int, T> valueHistory;
+    private int maxTimeStep = -1;
     
     public VariableTimeline()
     {
@@ -117,12 +119,24 @@ public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
         return result;
     }
 
-    public void Set(int timeStep, T value, bool force = false)
+    public void Set(int timeStep, T value, bool force = false, bool clearFuture = false)
     {
         // only store deltas in the timeline (or force the value)
         if (force || !value.Equals(Get(timeStep)))
         {
             valueHistory[timeStep] = value;
+            if (timeStep > maxTimeStep)
+            {
+                maxTimeStep = timeStep;
+            }
+
+            if (clearFuture) // if we need to clear all future values, remove them
+            {
+                for (int i = timeStep+1; i <= maxTimeStep; i++)
+                {
+                    valueHistory.Remove(i);
+                }
+            }
         }   
     }
 
@@ -134,6 +148,6 @@ public class VariableTimeline<T> : IVariableTimeline where T : IEquatable<T>
 
     // implement interface for abstracting the templated type
     public object GetRaw(int timeStep) => Get(timeStep);
-    public void SetRaw(int timeStep, object value, bool force=false) => Set(timeStep, (T)value, force);
+    public void SetRaw(int timeStep, object value, bool force=false, bool clearFuture = false) => Set(timeStep, (T)value, force, clearFuture);
     public IVariableTimeline Copy() => new VariableTimeline<T>(this);
 }

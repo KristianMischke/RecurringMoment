@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -94,7 +95,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public bool DidTimeTravel { get; set; }
     
-    /* TODO: TimeBool to track if the player is grounded (use to determine if past player is in valid location
+    /* TODO: TimeBool to track if the player is grounded (use to determine if Doppelganger is in valid location
      *       This is important in case player is standing on ground that moves/is destroyed
     */
     
@@ -105,7 +106,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public TimeBool ItemForm { get; } = null;
     public bool FlagDestroy { get; set; }
     public bool ShouldPoolObject => true;
-
+    
     public bool SetItemState(bool state) => false;
     
     public void CopyTimeTrackerState(ITimeTracker other)
@@ -172,8 +173,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     private bool queueGrab = false;
-    private bool prevQueueGrab = false;
     private static readonly int Walking = Animator.StringToHash("Walking");
+    private static readonly int Jumping = Animator.StringToHash("Jumping");
+    private static readonly int Grounded = Animator.StringToHash("Grounded");
 
     public void OnGrab(InputValue inputValue)
     {
@@ -181,53 +183,31 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         
         queueGrab = true;
     }
+	
+	
+	public void OnPause(InputValue inputValue)
+	{
+		Debug.Log("Pressed the escape key"); 
+		gameController.ToggleUserPause(); 
+	}
+	
     //------
 
     private void DoGrab()
     {
-        // to get the sprite 
-        Sprite itemImage = gameController.tempImage; 
-        bool isFound = false;
+        if (gameController.player != this) return; // only current player can initiate grab with this method
         
-        if (gameController.player != this)
+        // to get the sprite 
+        Sprite itemImage = gameController.tempImage;
+        Color itemColor = Color.white;
+        string itemLabel = "";
+        bool isFound = false;
+
+        if (ItemID != -1) // not -1 means it is a valid item, so we ARE holding something
         {
-            if (ItemID != -1) // only check grabbing (not dropping) for past players
+            if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
-                List<Collider2D> contacts = new List<Collider2D>();
-                GrabCollider.GetContacts(contacts);
-                foreach (var contact in contacts)
-                {
-                    if (contact.gameObject == gameObject) continue;
-
-                    ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-                    if (timeTracker != null && timeTracker.ID == ItemID)
-                    {
-                        isFound = true;
-                    }
-
-                    // break the loop if we found an object bc we can only pick up one object
-                    if (isFound)
-                    {
-                        break;
-                    }
-                }
-
-                if (!isFound)
-                {
-                    gameController.LogError($"Player {ID} could not grab {ItemID}");
-                    throw new TimeAnomalyException("Oh No!",
-                        $"Past player could not grab {gameController.GetObjectTypeByID(ItemID)}");
-                }
-            }
-
-            return; // exit early because this is for the past player
-        }
-
-        if (ItemID != -1)
-        {
-            if (gameController.DropItem(ItemID)) // check to see if we successfully drop the item
-            {
-                ItemID = -1;
+                gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
                 ItemID = -1;
                 gameController.playerItem.SetActive(false);
                 gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
@@ -248,8 +228,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                        var sr = timeTracker.gameObject.GetComponentInChildren<SpriteRenderer>(); 
+                        itemImage = sr.sprite;
+                        itemColor = sr.color;
                         Debug.Log("The name of the sprite is : " + itemImage.name);
+                        
+                        ExplodeBox explodeBox = timeTracker as ExplodeBox;
+                        if (explodeBox != null)
+                        {
+                            itemLabel = explodeBox.label;
+                        }
                     }
                 }
 
@@ -263,11 +251,86 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 			// this is when he grabs a object and it shows up in the screen 
 			if(isFound == true)
 			{
+                gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
 				gameController.playerItem.SetActive(true); // shows the screen to the player 
-				gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+                Image playerItemImage = gameController.playerItem.GetComponentInChildren<Image>(); 
+                playerItemImage.sprite = itemImage;
+                playerItemImage.color = itemColor;
+                TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
+                playerItemLabel.text = itemLabel ?? "";
 				Debug.Log("The name of the sprite is : " + itemImage.name);
 			}
         }
+    }
+    
+    public void ExecutePastEvent(TimeEvent timeEvent)
+    {
+        if(gameController.player == this) gameController.LogError($"ExecutePastEvent on current player!");
+        
+        if (timeEvent.Type == TimeEvent.EventType.PLAYER_GRAB)
+        {
+            bool isFound = false;
+            if (gameController.player != this)
+            {
+                if (ItemID != -1)
+                {
+                    gameController.LogError($"Trying to grab {timeEvent.TargetID} when already holding {ItemID}!");
+                }
+            
+                List<Collider2D> contacts = new List<Collider2D>();
+                GrabCollider.GetContacts(contacts);
+                foreach (var contact in contacts)
+                {
+                    if (contact.gameObject == gameObject) continue;
+
+                    ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
+                    if (timeTracker != null && timeTracker.ID == timeEvent.TargetID)
+                    {
+                        isFound = true;
+                    }
+
+                    // break the loop if we found the object bc we can only pick up one object
+                    if (isFound)
+                    {
+                        timeTracker.SetItemState(true);
+                        ItemID = timeEvent.TargetID;
+                        break;
+                    }
+                }
+
+                if (!isFound)
+                {
+                    gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
+                    throw new TimeAnomalyException("Time Anomaly!",
+                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
+                }
+            }
+        } // end PLAYER_GRAB
+        else if (timeEvent.Type == TimeEvent.EventType.PLAYER_DROP)
+        {
+            if (gameController.DropItem(this, timeEvent.TargetID)) // check to see if we successfully drop the item
+            {
+                ItemID = -1;
+            }
+        } // end PLAYER_DROP
+        else if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
+        {
+            TimeMachineController timeMachine = gameController.GetTimeTrackerByID(timeEvent.TargetID) as TimeMachineController;
+
+            if (timeMachine == null || !timeMachine.IsTouching(gameObject))
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
+            }
+        } // end TIME_TRAVEL
+        else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+        {
+            TimeMachineController timeMachine = gameController.GetTimeTrackerByID(timeEvent.TargetID) as TimeMachineController;
+
+            if (timeMachine == null || !timeMachine.IsTouching(gameObject))
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+            }
+        } // end ACTIVATE_TIME_MACHINE
     }
 
     public void ClearActivate()
@@ -290,25 +353,46 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         DidTimeTravel = false;
 
         queueGrab = false;
-        prevQueueGrab = false;
     }
 
     private void Update()
     {
-        Animator.SetBool(Walking, Rigidbody.velocity != Vector2.zero);
         
+        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0);
+	Animator.SetBool(Grounded, isGrounded);
+	Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+
         if (Rigidbody.velocity.x != 0)
         {
             facingRight = Rigidbody.velocity.x > 0;
             SpriteRenderer.flipX = facingRight;
         }
+        if (gameController.player != this)
+        {
+            Color temp = SpriteRenderer.color;
+            temp.r = 0.5f;
+            temp.g = 0.5f;
+            temp.b = 0.5f;
+            SpriteRenderer.color = temp;
+        }
+        else
+        {
+            Color temp = SpriteRenderer.color;
+            temp.r = 1.0f;
+            temp.g = 1.0f;
+            temp.b = 1.0f;
+            SpriteRenderer.color = temp;
+        }
+
     }
 
     void FixedUpdate()
     {
-        if (this != gameController.player) return; // don't update physics from inputs if not main player
-        
+
         UpdateIsGrounded();
+
+        if (this != gameController.player) return; // don't update physics from inputs if not main player
+
         if (jump)
         {
             Rigidbody.AddForce(Vector2.up * jumpMultiplier, ForceMode2D.Impulse);
@@ -320,12 +404,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        if (!prevQueueGrab && queueGrab)
+        if (queueGrab) // this is only for the current player
         {
             DoGrab();
-        }
-        else
-        {
             queueGrab = false;
         }
     }
@@ -369,7 +450,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
-        
+
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
     }
@@ -404,22 +485,18 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         Position.SaveSnapshot(snapshotDictionary, force);
         Velocity.SaveSnapshot(snapshotDictionary, force);
-        snapshotDictionary.Set(nameof(ItemID), ItemID, force);
+        snapshotDictionary.Set(nameof(ItemID), ItemID, force, clearFuture:true);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
-        
-        snapshotDictionary.Set(nameof(queueGrab), queueGrab, force);
-        prevQueueGrab = queueGrab;
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -427,9 +504,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             Position.Current = Position.History;
             Velocity.Current = Velocity.History;
-            
-            queueGrab = snapshotDictionary.Get<bool>(nameof(queueGrab));
-            prevQueueGrab = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep-1, nameof(queueGrab));;
         }
 
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
@@ -451,9 +525,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
-        
-        queueGrab = snapshotDictionary.Get<bool>(nameof(queueGrab));
-        prevQueueGrab = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep-1, nameof(queueGrab));
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }

@@ -4,7 +4,11 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
 
@@ -24,6 +28,7 @@ public class GameController : MonoBehaviour
     public const int TIME_SKIP_ANIMATE_FPS = 10;
     public const int TIME_TRAVEL_REWIND_MULT = 10;
     public const float POSITION_ANOMALY_ERROR = 0.75f;
+    public const float POSITION_CLEAR_FUTURE_THRESHOLD = 0.02f;
 
     public const string TYPE_BOX = "MoveableBox";
     public const string TYPE_EXPLOAD_BOX = "ExplodeBox";
@@ -32,23 +37,30 @@ public class GameController : MonoBehaviour
     public const string TYPE_TIME_MACHINE = "TimeMachine";
     public const string TYPE_GUARD = "Guard";
 
+    public const int SCENE_LOCKED = -1;
+    public const int SCENE_READY = 0;
+
     public Dictionary<string, GameObject> timeTrackerPrefabs = new Dictionary<string, GameObject>();
     
     public List<TimeMachineController> timeMachines = new List<TimeMachineController>();
     public PlayerController player;
-    public BoxCollider2D levelEndObject;
-    public string nextLevel;
+    public List<LevelEnd> LevelEnds = new List<LevelEnd>();
+
     // visuals
     private Image rewindIndicator;
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
 
+
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
 	
 	public GameObject playerItem;
 	public Sprite tempImage; 
-
+	public bool userPause = false; 
+	public GameObject pauseScreen; 
+	public float actualTimeChange;
+	
     public IEnumerable<PlayerController> PastPlayers
     {
         get
@@ -61,6 +73,15 @@ public class GameController : MonoBehaviour
                     yield return playerController;
                 }
             }
+        }
+    }
+
+    public IEnumerable<PlayerController> AllPlayers
+    {
+        get
+        {
+            yield return player;
+            foreach(var p in PastPlayers) yield return p;
         }
     }
 
@@ -129,6 +150,7 @@ public class GameController : MonoBehaviour
         public Dictionary<int, TimeDict> snapshotHistoryById = new Dictionary<int, TimeDict>();
         public Dictionary<int, string> objectTypeByID = new Dictionary<int, string>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
+        public Dictionary<int, List<TimeEvent>> eventsByTimeStep = new Dictionary<int, List<TimeEvent>>();
         public int timeStep = 0;
         public int furthestTimeStep = 0;
         public int skipTimeStep = -1;
@@ -162,6 +184,12 @@ public class GameController : MonoBehaviour
             foreach (var kvp in other.snapshotHistoryById)
             {
                 snapshotHistoryById[kvp.Key] = new TimeDict(kvp.Value);
+            }
+            
+            eventsByTimeStep.Clear();
+            foreach (var kvp in other.eventsByTimeStep)
+            {
+                eventsByTimeStep[kvp.Key] = new List<TimeEvent>(kvp.Value);
             }
 
             objectTypeByID = new Dictionary<int, string>(other.objectTypeByID);
@@ -203,6 +231,8 @@ public class GameController : MonoBehaviour
 
     private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
 
+    private Dictionary<int, List<TimeEvent>> EventsByTimeStep => currentState.eventsByTimeStep;
+    
     public int TimeStep
     {
         get => currentState.timeStep;
@@ -308,6 +338,33 @@ public class GameController : MonoBehaviour
         timeMachines.Clear();
         TimeTrackerObjects.Clear();
         AllReferencedObjects.Clear();
+		
+		
+		// getting the pauseMenu set up here - assuming that it is active when it starts 
+		pauseScreen = GameObject.Find("PauseMenu"); 
+		pauseScreen.SetActive(false); 
+		Button[] pauseButton;
+		pauseButton = pauseScreen.GetComponentsInChildren<Button>();
+		foreach (Button butt in pauseButton)
+		{
+			if (butt.gameObject.name == "Resume")
+			{
+				butt.onClick.AddListener(Resume);
+			}
+			if (butt.gameObject.name == "Restart")
+			{
+				butt.onClick.AddListener(Retry);
+			}
+			if (butt.gameObject.name == "QuitScene")
+			{
+				butt.onClick.AddListener(QuitScene);
+			}
+			if (butt.gameObject.name == "QuitDesktop")
+			{
+				butt.onClick.AddListener(QuitDesktop);
+			}
+		}			
+		
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -352,7 +409,15 @@ public class GameController : MonoBehaviour
         GatherSceneObjects<Guard_AI>();
         GatherSceneObjects<BasicTimeTracker>(); // always do generic type last
 
-        //TODO: assert nextLevel is a valid level
+        // get all level end transition objects, and make sure they have valid scenes attached
+        LevelEnds.AddRange(FindObjectsOfType<LevelEnd>());
+        foreach (var levelEnd in LevelEnds)
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(levelEnd.TransitionToLevel), $"Scene name is empty for LevelEnd object!");
+#if UNITY_EDITOR
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<SceneAsset>($"Assets/Scenes/{levelEnd.TransitionToLevel}.unity"), $"Scene name {levelEnd.TransitionToLevel} is invalid!");
+#endif
+        }
 
         // get rewind indicator object
         rewindIndicator = GameObject.Find("RewindIndicator").GetComponent<Image>();
@@ -411,7 +476,7 @@ public class GameController : MonoBehaviour
         return default;
     }
 
-    private void SaveObjectToPool(ITimeTracker timeTracker)
+    public void SaveObjectToPool(ITimeTracker timeTracker)
     {
         if (!ObjectTypeByID.TryGetValue(timeTracker.ID, out string type))
         {
@@ -424,12 +489,57 @@ public class GameController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Adds a new event to the time event "queue". Expected to be called by <see cref="ITimeTracker"/> in their
+    ///     <see cref="ITimeTracker.GameUpdate()"/> method.
+    /// </summary>
+    /// <param name="sourceID">The item that spawned the event</param>
+    /// <param name="eventType">The type of event spawned</param>
+    /// <param name="targetID">The optional target of the event</param>
+    /// <param name="otherData">Any additional data needed for the event</param>
+    public void AddEvent(int sourceID, TimeEvent.EventType eventType, int targetID = -1, string otherData = null)
+    {
+        if (!EventsByTimeStep.TryGetValue(TimeStep, out var events))
+        {
+            events = EventsByTimeStep[TimeStep] = new List<TimeEvent>();
+        }
+    
+        Log($"AddEvent({sourceID}, {eventType.ToString()}, {targetID}, {otherData})");
+        events.Add(new TimeEvent(sourceID, eventType, targetID, otherData));
+    }
+
+    /// <summary>
+    ///     Method that executes the events stored in the structure. Called in <see cref="DoTimeStep"/>
+    /// </summary>
+    /// <param name="timeEvent"></param>
+    public void ExecuteEvent(TimeEvent timeEvent)
+    {
+        
+        ITimeTracker timeTracker = GetTimeTrackerByID(timeEvent.SourceID);
+        if (timeTracker == null) // cannot find source object
+        {
+            Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
+            if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!");
+            }
+            if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
+            }
+        }
+        else
+        {
+            Log($"ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
+            timeTracker.ExecutePastEvent(timeEvent);   
+        }
+    }
+    
     public Explosion CreateExplosion(Vector2 location, float radius)
     {
         int newID = NextID++;
         Explosion explosionObject = AcquireTimeTracker<Explosion>(TYPE_EXPLOSION);
-
-        // Init and add to trackers
+        
         Log($"{newID.ToString()}.Init()");
         explosionObject.Init(this, newID);
         explosionObject.FlagDestroy = false;
@@ -448,13 +558,62 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = $"Test Timer:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#if UNITY_EDITOR
+            timerText.text = $"Total Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#else
+            timerText.text = $"Total Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+#endif
         }
     }
 
+
+    public void ToggleUserPause()
+    {
+        if(userPause)
+        {
+            Resume();
+        }
+        else
+        {
+            pauseScreen.SetActive(true); 
+            actualTimeChange = Time.timeScale; 
+            Time.timeScale = 0f; // stops the time (I think... hopefully) 
+            userPause = true;
+        }
+    }
+    
+	public void Resume()
+    {
+        userPause = false;
+		pauseScreen.SetActive(false);
+		Time.timeScale = actualTimeChange;
+	}
+
+	public void Retry()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		Time.timeScale = actualTimeChange; // this is for the menu whenever it gets changed (also since I didn't want to make retry level has the same thing and potentially break something
+    }
+	
+	public void QuitScene()
+    {
+		Debug.Log("This is quit");
+		Time.timeScale = actualTimeChange; 
+        SceneManager.LoadScene(0); // the current starting scene so this might change if the scenes are altered... sry about that 
+		
+    }
+
+	public void QuitDesktop()
+	{
+		Debug.Log("This is quit-Desktop");
+		Time.timeScale = actualTimeChange;
+		Application.Quit(); 
+	}
+
+
     private void FixedUpdate()
     {
-        if (paused)
+        if (paused || userPause)
         {
             return;
         }
@@ -466,7 +625,7 @@ public class GameController : MonoBehaviour
             player.gameObject.SetActive(false);
             AnimateFrame -= TIME_TRAVEL_REWIND_MULT;
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
-            LoadSnapshotFull(AnimateFrame, true, forceLoad:AnimateFrame == TimeStep);
+            LoadSnapshotFull(AnimateFrame, true, forceLoad:true);
             Physics2D.Simulate(Time.fixedDeltaTime); // needed to update rigidbodies after loading
 
             if (AnimateFrame == TimeStep) // we are done rewinding
@@ -481,6 +640,9 @@ public class GameController : MonoBehaviour
                 
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
+                OccupiedTimeMachine.IsAnimating = true;
+                SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.IsAnimating), true);
+                OccupiedTimeMachine.animator.SetBool(TimeMachineController.AnimateOpen, true);
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
                 
@@ -525,8 +687,11 @@ public class GameController : MonoBehaviour
         paused = newPaused;
     }
 
+    private TimeEvent timeTravelQueueEvent = new TimeEvent();
     public void DoTimeStep()
     {
+        timeTravelQueueEvent = new TimeEvent(); // clear time travel event, we want to receive it in GameUpdate()
+        
         LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
 
         if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
@@ -543,12 +708,42 @@ public class GameController : MonoBehaviour
             IsPresent = true;
         }
 
-        if (levelEndObject.IsTouching(player.CapsuleCollider))
+        // check if players exit the level
+        foreach(var levelEnd in LevelEnds)
         {
-            //NOTE: in the future, we may want past players to be able to have some slight assymetry by being able to progress to the next level
-            SceneManager.LoadScene(nextLevel);
+            foreach (var player in AllPlayers)
+            {
+                if (levelEnd.BoxCollider2D.IsTouching(player.CapsuleCollider))
+                {
+                    // store level stats for scene select screen
+                    float prevBest = PlayerPrefs.GetFloat($"{SceneManager.GetActiveScene().name}_time", defaultValue:float.PositiveInfinity);
+                    float thisTime = TimeStep * Time.fixedDeltaTime;
+                    if (thisTime < prevBest)
+                    {
+                        PlayerPrefs.SetFloat($"{SceneManager.GetActiveScene().name}_time", thisTime);
+                    }
+
+                    int numPlays = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}");
+                    PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}", numPlays + 1);
+                    
+                    int nextSceneNumPlays = PlayerPrefs.GetInt($"{levelEnd.TransitionToLevel}", defaultValue:SCENE_LOCKED);
+                    if (nextSceneNumPlays == SCENE_LOCKED)
+                    {
+                        PlayerPrefs.SetInt($"{levelEnd.TransitionToLevel}", SCENE_READY);
+                    }
+                    SceneManager.LoadScene(levelEnd.TransitionToLevel);
+                }
+            }
         }
 
+        if (EventsByTimeStep.TryGetValue(TimeStep, out var events))
+        {
+            foreach (var timeEvent in events)
+            {
+                ExecuteEvent(timeEvent);
+            }
+        }
+        
         for (int i = 0; i < NextID; i++)
         {
             if (AllReferencedObjects.TryGetValue(i, out var obj))
@@ -562,7 +757,6 @@ public class GameController : MonoBehaviour
             }
         }
 
-        int timeTravelStep = -1;
         bool didActivate = false;
         TimeMachineController targetTimeMachine = null;
         if (player.IsActivating && !ActivatedLastFrame)
@@ -572,7 +766,10 @@ public class GameController : MonoBehaviour
                 if (timeMachine.IsTouching(player.gameObject))
                 {
                     targetTimeMachine = timeMachine;
-                    didActivate = timeMachine.Activate(out timeTravelStep);
+                    if (timeMachine.Activate(player))
+                    {
+                        AddEvent(player.ID, TimeEvent.EventType.ACTIVATE_TIME_MACHINE, timeMachine.ID);
+                    }
                     break;
                 }
             }
@@ -592,8 +789,10 @@ public class GameController : MonoBehaviour
         FurthestTimeStep = Mathf.Max(TimeStep, FurthestTimeStep);
         player.ClearActivate();
 
-        if (timeTravelStep >= 0)
+        if (timeTravelQueueEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
         {
+            int timeTravelStep = int.Parse(timeTravelQueueEvent.OtherData);
+            targetTimeMachine = GetObjectByID(timeTravelQueueEvent.TargetID) as TimeMachineController;
             DoTimeTravel(timeTravelStep, targetTimeMachine, player);
         }
     }
@@ -711,23 +910,54 @@ public class GameController : MonoBehaviour
 
         return defaultValue;
     }
+    public void SetSnapshotValue<T>(ITimeTracker timeTracker, int timeStep, string parameter, T value, bool force=false, bool clearFuture=false) where T : IEquatable<T>
+    {
+        if (SnapshotHistoryById.TryGetValue(timeTracker.ID, out var history))
+        {
+            history.Set<T>(timeStep, parameter, value, force, clearFuture);
+        }
+    }
 
+    public string GetUserFriendlyName(int id)
+    {
+        string objectType = ObjectTypeByID.TryGetValue(id, out var result) ? result : null;
+
+        switch (objectType)
+        {
+            case TYPE_TIME_MACHINE: return "Time Machine";
+            case TYPE_BOX: return "Crate";
+            case TYPE_EXPLOAD_BOX: return "Explosives";
+            
+            case TYPE_GUARD: return "Guard";
+            case TYPE_PLAYER: return "Player";
+            case TYPE_EXPLOSION: return "Explosion";
+            default: return "Unknown Object";
+        }
+    }
     public string GetObjectTypeByID(int id) => ObjectTypeByID.TryGetValue(id, out var result) ? result : null;
     public ICustomObject GetObjectByID(int id) => AllReferencedObjects.TryGetValue(id, out var result) ? result : null;
     public ITimeTracker GetTimeTrackerByID(int id) => TimeTrackerObjects.TryGetValue(id, out var result) ? result : null;
     
-    public bool DropItem(int id)
+    public bool DropItem(PlayerController droppingPlayer, int targetID)
     {
-        if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
+        if (TimeTrackerObjects.TryGetValue(targetID, out var timeTracker))
         {
-            Log($"Drop Item {id.ToString()}");
-            Vector2 offset = new Vector2(player.facingRight ? 1.2f : -1.2f, 0); 
-            timeTracker.Position.Current = player.Position.Get + offset;
+            Log($"Drop Item {targetID.ToString()}");
+            Vector2 dropPos = droppingPlayer.Position.Get + new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0);
+            
+            RaycastHit2D raycastHit = Physics2D.Raycast(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f, LayerMask.NameToLayer("LevelPlatforms"));
+            if (raycastHit.collider != null)
+            {
+                // set drop position to halfway between player and collision
+                dropPos = (raycastHit.point + droppingPlayer.Position.Get) / 2;
+            }
+
+            timeTracker.Position.Current = dropPos;
             return timeTracker.SetItemState(false);
         }
         else
         {
-            LogError($"could not drop item {id.ToString()}");
+            LogError($"could not drop item {targetID.ToString()}");
             return false;
         }
     }
@@ -776,7 +1006,7 @@ public class GameController : MonoBehaviour
     public void RetryLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
+	}
 
     public void RespawnLatest()
     {
@@ -784,6 +1014,13 @@ public class GameController : MonoBehaviour
         {
             RetryLevel();
             return;
+        }
+        
+        // Remove popup if it exists
+        var retryPopups = FindObjectsOfType<RetryPopup>();
+        foreach (var popup in retryPopups)
+        {
+            Destroy(popup.gameObject); //TODO: destroying and recreating not the best idea long term... pool popup? make generic popup class?
         }
 
         // load player snapshot from current state (at the timestep of the spawnState)
@@ -901,7 +1138,7 @@ public class GameController : MonoBehaviour
     {
         string symmetryBrokenTitle = "Symmetry Broken!";   
         
-        // ensure that past player's paths of motion are uninterrupted
+        // ensure that Doppelganger's paths of motion are uninterrupted
         foreach (PlayerController p in PastPlayers)
         {
             //string historyColliderState = GetSnapshotValue<string>(p, TimeStep, nameof(PlayerController.GetCollisionStateString));
@@ -909,27 +1146,17 @@ public class GameController : MonoBehaviour
             //if (historyColliderState != currentColliderState)
             //{
             //    Debug.Log($"{historyColliderState}\n{currentColliderState}");
-            //    throw new TimeAnomalyException("Past player was unable to follow his previous path of motion!");
+            //    throw new TimeAnomalyException("Doppelganger was unable to follow his previous path of motion!");
             //}
             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
             if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Past player was unable to follow his previous path of motion!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!");
             }
         }
     }
     private void PostSaveValidateTimeAnomalies()
     {
-        // check if past player(s) died
-        foreach (PlayerController p in PastPlayers)
-        {
-            if (GetSnapshotValue<bool>(p, TimeStep, FLAG_DESTROY) && !p.DidTimeTravel)
-            {
-                // player is destroyed & not timetravelling
-                throw new TimeAnomalyException("Oh No!", "Past Player was killed!");
-            }
-        }
-
         string symmetryBrokenTitle = "Symmetry Broken!";        
         
         // ensure that time machines are not used in such a way that it prevents a past player from going to the time they intended
@@ -961,6 +1188,12 @@ public class GameController : MonoBehaviour
         return result;
     }
 
+    public void QueueTimeTravel(TimeEvent timeEvent)
+    {
+        timeTravelQueueEvent = timeEvent;
+        AddEvent(timeEvent.SourceID, timeEvent.Type, timeEvent.TargetID, timeEvent.OtherData);
+    }
+    
     public void DoTimeTravel(int timeTravelStep, TimeMachineController timeMachine, PlayerController player)
     {
         // TODO: if/when adding lerping to updates need to force no lerp when travelling in time
@@ -1010,6 +1243,8 @@ public class GameController : MonoBehaviour
             timeMachine.ActivatedTimeStep.Current = -1;
             timeMachine.Activated.Current = false;
             timeMachine.Occupied.Current = false;
+
+            timeMachine.playerID = -1;
             SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
         }
 

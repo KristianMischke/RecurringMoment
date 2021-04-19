@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+[ExecuteInEditMode]
 public class ExplodeBox : BasicTimeTracker
 {
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
-
-	private int explosionID = -1;
+	[SerializeField] public string label;
+	[SerializeField] private AudioClip _clip;
+	[SerializeField] private TMP_Text labelText;
 	
 	public override void Init(GameController gameController, int id)
 	{
@@ -36,6 +39,7 @@ public class ExplodeBox : BasicTimeTracker
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
 
+			label = otherBox.label;
 			distance = otherBox.distance;
 			requiredActivatableIDs.AddRange(otherBox.requiredActivatableIDs);
 			requiredActivatables.AddRange(otherBox.requiredActivatables);
@@ -52,14 +56,21 @@ public class ExplodeBox : BasicTimeTracker
 		requiredActivatables.Clear();
 		requiredActivatableIDs.Clear();
 		prevActivatableString = null;
-		explosionID = -1;
+	}
+
+	public void Update()
+	{
+		labelText.text = label ?? "";
 	}
 
 	public override void GameUpdate()
-    {
+	{
 	    // if we are activated AND we haven't already created an explosion object
-        if (AllActivated() && explosionID == -1)
+
+        if (AllActivated())
         {
+
+		AudioSource.PlayClipAtPoint(_clip, Camera.main.transform.position, 1f);
 	        bool isInPlayerInv = false;
 	        Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
@@ -102,26 +113,18 @@ public class ExplodeBox : BasicTimeTracker
                 }
 			}
 			
-			foreach(var player in gameController.PastPlayers)
+			foreach(var player in gameController.AllPlayers)
 			{
 				if(player.ItemID == ID)
 				{
-					Debug.Log("Past Player is currently holding a item that is a explodeBox");
+					Debug.Log($"Player {player.ID} is currently holding a item that is a explodeBox");
 					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
 					loc = player.transform.position;
 					player.FlagDestroy = true;
 				}
 			}
-			if(gameController.player.ItemID == ID)
-			{
-				Debug.Log("Currently the player has the explodeBox in their inventory"); 
-				gameController.player.FlagDestroy = true;
-				isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
-				loc = gameController.player.transform.position;
-			}
 			
-			Explosion explosion = gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
-			explosionID = explosion.ID;
+			gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
 			
 			FlagDestroy = true; // mark object for destruction in time
         }
@@ -172,20 +175,22 @@ public class ExplodeBox : BasicTimeTracker
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
-	    snapshotDictionary.Set(nameof(explosionID), explosionID, force);
+	    snapshotDictionary.Set(nameof(distance), distance, force:force);
+	    snapshotDictionary.Set(nameof(label), label, force:force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.LoadSnapshot(snapshotDictionary);
 		LoadActivatables(snapshotDictionary);
-		explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
     }
     public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
-	    explosionID = snapshotDictionary.Get<int>(nameof(explosionID));
+	    
+	    distance = snapshotDictionary.Get<float>(nameof(distance));
+	    label = snapshotDictionary.Get<string>(nameof(label));
     }
     
 #if UNITY_EDITOR

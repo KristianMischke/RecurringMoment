@@ -28,8 +28,8 @@ namespace Tests
             TimeMachineController timeMachine = Object.Instantiate(Resources.Load<GameObject>("Prefabs/TimeMachine")).GetComponent<TimeMachineController>();
             BasicTimeTracker moveableBox = Object.Instantiate(Resources.Load<GameObject>("Prefabs/MoveableBox")).GetComponent<BasicTimeTracker>();
             
-            _game.levelEndObject = Object.Instantiate(Resources.Load<GameObject>("Prefabs/LevelEnd")).GetComponent<BoxCollider2D>();
-            _game.levelEndObject.transform.position = new Vector3(30, 0, 0);
+            var levelEndObject = Object.Instantiate(Resources.Load<GameObject>("Prefabs/LevelEnd"));
+            levelEndObject.transform.position = new Vector3(30, 0, 0);
         }
 
         [TearDown]

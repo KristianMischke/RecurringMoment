@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
+
+
 public class Explosion : BasicTimeTracker
 {
 	public float radius;
 	public int lifetime;
+	
+	public ParticleSystem blastZone;
+	public CircleCollider2D explosionArea;
 	
 	private LineRenderer _lineRenderer;
 
@@ -29,6 +34,26 @@ public class Explosion : BasicTimeTracker
 
 	public void DrawExplosion()
 	{
+		// stting up the particle system instead 
+		 blastZone = GetComponent<ParticleSystem>();
+		 explosionArea = GetComponent<CircleCollider2D>(); 
+		 explosionArea.radius = radius; 
+		 
+		 /**
+		 var em = blastZone.emission;
+		 em.enabled = true;
+		 em.type = ParticleSystemEmissionType.Time;
+		 em.SetBursts(
+		 new ParticleSystem.Burst[]{
+			 new ParticleSystem.Burst(0.0f, 500),
+			 //new ParticleSystem.Burst(0.00005f, 500)
+		 }
+		 ); 
+		 
+		 **/
+		
+		
+		
 		LineRenderer.startColor = Color.red;
 		LineRenderer.endColor = Color.red;
 		
@@ -49,10 +74,18 @@ public class Explosion : BasicTimeTracker
 	{
 		base.GameUpdate();
 
+		// shrink radius on time
+		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
+		
+
 		// if the game is past or at the frame we disappear, destroy us 
 		if (gameController.TimeStep >= destroyStep)
 		{
+			// HACK: remove this object from the history
+			gameController.SetSnapshotValue(this, 0, GameController.FLAG_DESTROY, true, true, true);
+			
 			FlagDestroy = true;
+			gameController.SaveObjectToPool(this); // manually save to pool, because we aren't going to save it in time
 		}
 	}
 

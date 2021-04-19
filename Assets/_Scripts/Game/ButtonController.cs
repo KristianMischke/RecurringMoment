@@ -22,7 +22,7 @@ public class ButtonController : ActivatableBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("TriggerObject"))
+        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("TriggerObject") || collision.gameObject.CompareTag("Guard"))
         {
             triggeringObjects.Add(collision.gameObject);
         }
@@ -30,7 +30,7 @@ public class ButtonController : ActivatableBehaviour
     }
     void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("TriggerObject"))
+        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("TriggerObject") || collision.gameObject.CompareTag("Guard"))
         {
             triggeringObjects.Remove(collision.gameObject);
         }
