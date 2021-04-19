@@ -14,7 +14,6 @@ public class Guard_AI : BasicTimeTracker
     public bool movingRight = false;
     public GameObject bullet;
     public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f, bulletLife = 1f;
-    public GameObject gameController;
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
     Vector2 startPos;

@@ -74,6 +74,10 @@ public class Explosion : BasicTimeTracker
 	{
 		base.GameUpdate();
 
+		// shrink radius on time
+		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
+		
+
 		// if the game is past or at the frame we disappear, destroy us 
 		if (gameController.TimeStep >= destroyStep)
 		{

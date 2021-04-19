@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -187,7 +188,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	public void OnPause(InputValue inputValue)
 	{
 		Debug.Log("Pressed the escape key"); 
-		gameController.userPause = true; 
+		gameController.ToggleUserPause(); 
 	}
 	
     //------
@@ -197,7 +198,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (gameController.player != this) return; // only current player can initiate grab with this method
         
         // to get the sprite 
-        Sprite itemImage = gameController.tempImage; 
+        Sprite itemImage = gameController.tempImage;
+        Color itemColor = Color.white;
+        string itemLabel = "";
         bool isFound = false;
 
         if (ItemID != -1) // not -1 means it is a valid item, so we ARE holding something
@@ -225,8 +228,16 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        itemImage = contact.transform.gameObject.GetComponentInChildren<SpriteRenderer>().sprite;
+                        var sr = timeTracker.gameObject.GetComponentInChildren<SpriteRenderer>(); 
+                        itemImage = sr.sprite;
+                        itemColor = sr.color;
                         Debug.Log("The name of the sprite is : " + itemImage.name);
+                        
+                        ExplodeBox explodeBox = timeTracker as ExplodeBox;
+                        if (explodeBox != null)
+                        {
+                            itemLabel = explodeBox.label;
+                        }
                     }
                 }
 
@@ -242,7 +253,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 			{
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
 				gameController.playerItem.SetActive(true); // shows the screen to the player 
-				gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
+                Image playerItemImage = gameController.playerItem.GetComponentInChildren<Image>(); 
+                playerItemImage.sprite = itemImage;
+                playerItemImage.color = itemColor;
+                TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
+                playerItemLabel.text = itemLabel ?? "";
 				Debug.Log("The name of the sprite is : " + itemImage.name);
 			}
         }
@@ -304,9 +319,18 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
             }
         } // end TIME_TRAVEL
+        else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+        {
+            TimeMachineController timeMachine = gameController.GetTimeTrackerByID(timeEvent.TargetID) as TimeMachineController;
+
+            if (timeMachine == null || !timeMachine.IsTouching(gameObject))
+            {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+            }
+        } // end ACTIVATE_TIME_MACHINE
     }
 
     public void ClearActivate()

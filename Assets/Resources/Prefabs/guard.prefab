@@ -266,14 +266,13 @@ MonoBehaviour:
   _isItemable: 0
   distLeft: 1
   distRight: 1
-  moveSpeed: 1
+  moveSpeed: 3.5
   movingRight: 0
   bullet: {fileID: 6563743087319956307, guid: 65bd86ed0b86d12409f639e24eb37200, type: 3}
-  fireRateSeconds: 0.75
-  shotSpeed: 8
+  fireRateSeconds: 0.4
+  shotSpeed: 14
   range: 8
   bulletLife: 1
-  gameController: {fileID: 0}
   mainUIcanvas: {fileID: 0}
   retryPopupPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
   _blastSound: {fileID: 8300000, guid: 0933a7b0c5595b5468393cf6dc0022d2, type: 3}

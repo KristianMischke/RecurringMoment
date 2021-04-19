@@ -8,6 +8,7 @@ using TMPro;
 using UnityEditor;
 #endif
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
 
@@ -520,6 +521,10 @@ public class GameController : MonoBehaviour
             Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
             {
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!");
+            }
+            if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
+            {
                 throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
             }
         }
@@ -557,9 +562,25 @@ public class GameController : MonoBehaviour
         }
     }
 
-	
+
+    public void ToggleUserPause()
+    {
+        if(userPause)
+        {
+            Resume();
+        }
+        else
+        {
+            pauseScreen.SetActive(true); 
+            actualTimeChange = Time.timeScale; 
+            Time.timeScale = 0f; // stops the time (I think... hopefully) 
+            userPause = true;
+        }
+    }
+    
 	public void Resume()
-	{
+    {
+        userPause = false;
 		pauseScreen.SetActive(false);
 		Time.timeScale = actualTimeChange;
 	}
@@ -588,22 +609,10 @@ public class GameController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (paused)
+        if (paused || userPause)
         {
-						
             return;
         }
-		
-		if(userPause)
-		{
-			Debug.Log("Pausing Now - halting time and other things  so will need to do a while loop I believe");
-			pauseScreen.SetActive(true); 
-			actualTimeChange = Time.timeScale; 
-			Time.timeScale = 0f; // stops the time (I think... hopefully) 
-			
-			userPause = false;
-			return; 
-		}
 
         rewindIndicator.enabled = AnimateRewind;
         
@@ -612,7 +621,7 @@ public class GameController : MonoBehaviour
             player.gameObject.SetActive(false);
             AnimateFrame -= TIME_TRAVEL_REWIND_MULT;
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
-            LoadSnapshotFull(AnimateFrame, true, forceLoad:AnimateFrame == TimeStep);
+            LoadSnapshotFull(AnimateFrame, true, forceLoad:true);
             Physics2D.Simulate(Time.fixedDeltaTime); // needed to update rigidbodies after loading
 
             if (AnimateFrame == TimeStep) // we are done rewinding
@@ -673,7 +682,6 @@ public class GameController : MonoBehaviour
 
     public void DoTimeStep()
     {
-        LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
         LoadSnapshotFull(TimeStep, false, DidTimeTravelThisFrame);
 
         if (DidTimeTravelThisFrame) DidTimeTravelThisFrame = false;
@@ -751,7 +759,14 @@ public class GameController : MonoBehaviour
                     targetTimeMachine = timeMachine;
                     if (timeMachine.Activate(out timeTravelStep))
                     {
-                        AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);
+                        if (timeTravelStep == -1)
+                        {
+                            AddEvent(player.ID, TimeEvent.EventType.ACTIVATE_TIME_MACHINE, timeMachine.ID);
+                        }
+                        else
+                        {
+                            AddEvent(player.ID, TimeEvent.EventType.TIME_TRAVEL, timeMachine.ID);                            
+                        }
                     }
                     break;
                 }
@@ -924,9 +939,16 @@ public class GameController : MonoBehaviour
         if (TimeTrackerObjects.TryGetValue(targetID, out var timeTracker))
         {
             Log($"Drop Item {targetID.ToString()}");
-            Vector2 offset = new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0); 
-            timeTracker.Position.Current = droppingPlayer.Position.Get + offset;
+            Vector2 dropPos = droppingPlayer.Position.Get + new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0);
+            
+            RaycastHit2D raycastHit = Physics2D.Raycast(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f, LayerMask.NameToLayer("LevelPlatforms"));
+            if (raycastHit.collider != null)
+            {
+                // set drop position to halfway between player and collision
+                dropPos = (raycastHit.point + droppingPlayer.Position.Get) / 2;
+            }
 
+            timeTracker.Position.Current = dropPos;
             return timeTracker.SetItemState(false);
         }
         else

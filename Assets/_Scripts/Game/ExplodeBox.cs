@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+[ExecuteInEditMode]
 public class ExplodeBox : BasicTimeTracker
 {
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
+	[SerializeField] public string label;
 	[SerializeField] private AudioClip _clip;
-
-
+	[SerializeField] private TMP_Text labelText;
+	
 	public override void Init(GameController gameController, int id)
 	{
 		base.Init(gameController, id);
@@ -36,6 +39,7 @@ public class ExplodeBox : BasicTimeTracker
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
 
+			label = otherBox.label;
 			distance = otherBox.distance;
 			requiredActivatableIDs.AddRange(otherBox.requiredActivatableIDs);
 			requiredActivatables.AddRange(otherBox.requiredActivatables);
@@ -54,8 +58,13 @@ public class ExplodeBox : BasicTimeTracker
 		prevActivatableString = null;
 	}
 
+	public void Update()
+	{
+		labelText.text = label ?? "";
+	}
+
 	public override void GameUpdate()
-    {
+	{
 	    // if we are activated AND we haven't already created an explosion object
 
         if (AllActivated())
@@ -166,6 +175,8 @@ public class ExplodeBox : BasicTimeTracker
 	    base.SaveSnapshot(snapshotDictionary, force);
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
+	    snapshotDictionary.Set(nameof(distance), distance, force:force);
+	    snapshotDictionary.Set(nameof(label), label, force:force);
     }
 
     public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
@@ -177,6 +188,9 @@ public class ExplodeBox : BasicTimeTracker
     {
 	    base.ForceLoadSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
+	    
+	    distance = snapshotDictionary.Get<float>(nameof(distance));
+	    label = snapshotDictionary.Get<string>(nameof(label));
     }
     
 #if UNITY_EDITOR

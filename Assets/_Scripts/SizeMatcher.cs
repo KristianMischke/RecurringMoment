@@ -33,6 +33,7 @@ public class SizeMatcher : MonoBehaviour
 
     [SerializeField] private bool matchBoxCollider;
     [SerializeField] private bool matchSpriteRenderer;
+    [SerializeField] private bool matchRectTransform;
     [SerializeField] private float gridSize;
 
     private void Start()
@@ -50,6 +51,8 @@ public class SizeMatcher : MonoBehaviour
     }
     private void UpdateDims()
     {
+        var rectTransform = transform as RectTransform;
+        
         Vector2? dims = null;
 
         if (matchSpriteRenderer && SpriteRenderer != null && (SpriteRenderer.drawMode == SpriteDrawMode.Sliced || SpriteRenderer.drawMode == SpriteDrawMode.Tiled))
@@ -59,6 +62,10 @@ public class SizeMatcher : MonoBehaviour
         if (matchBoxCollider && BoxCollider2D != null)
         {
             dims = BoxCollider2D.size;
+        }
+        if (matchRectTransform && rectTransform != null)
+        {
+            dims = rectTransform.sizeDelta;
         }
 
         if (gridSize > 0)
@@ -71,11 +78,15 @@ public class SizeMatcher : MonoBehaviour
                 dims = (Vector2)Vector2Int.RoundToInt(dims.Value / gridSize) * gridSize;
             }
 
-            if (SpriteRenderer != null && SpriteRenderer.drawMode == SpriteDrawMode.Sliced || SpriteRenderer.drawMode == SpriteDrawMode.Tiled) SpriteRenderer.size = dims.Value;
+            if (SpriteRenderer != null && (SpriteRenderer.drawMode == SpriteDrawMode.Sliced || SpriteRenderer.drawMode == SpriteDrawMode.Tiled)) SpriteRenderer.size = dims.Value;
             if (BoxCollider2D != null)
             {
                 BoxCollider2D.size = dims.Value;
                 BoxCollider2D.offset =  Vector2.zero;
+            }
+            if (rectTransform != null)
+            {
+                rectTransform.sizeDelta = dims.Value;
             }
         }
     }

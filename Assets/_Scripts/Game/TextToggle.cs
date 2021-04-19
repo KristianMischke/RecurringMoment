@@ -5,28 +5,29 @@ using UnityEngine;
 
 public class TextToggle : MonoBehaviour
 {
-    
-    private GameController gameController;
+	private GameController gameController;
+
+	public GameObject childObject;
 
     void Start()
     {
         gameController = (GameController)GameObject.FindObjectsOfType(typeof(GameController))[0];
-	gameObject.GetComponent<TextMeshProUGUI>().enabled = false;
+        childObject.SetActive(false);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-	if(other == gameController.player.CapsuleCollider)
-	{
-	    gameObject.GetComponent<TextMeshProUGUI>().enabled = true;
-	}
+		if(other == gameController.player.CapsuleCollider)
+		{
+			childObject.SetActive(true);
+		}
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-	if(other == gameController.player.CapsuleCollider)
-	{
-	    gameObject.GetComponent<TextMeshProUGUI>().enabled = false;	
-	}	
+		if(other == gameController.player.CapsuleCollider)
+		{
+			childObject.SetActive(false);	
+		}	
     }
 }
