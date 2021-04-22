@@ -532,7 +532,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	{
 	    if(_material == null)
 		Debug.Log("No shader found");
-	    this._material.SetFloat("_StaticOpacity", 0.35f);
+	    this._material.SetFloat("_StaticOpacity", 0.50f);
 	    this._material.SetFloat("_DistortIntensity", 0.02f);
 	}
     }
