@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering.Universal;
 using TMPro;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -52,6 +53,8 @@ public class GameController : MonoBehaviour
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
 
+    [SerializeField]
+    private ScriptableRendererFeature _postProcessRenderer = null;
 
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
 	
@@ -424,6 +427,9 @@ public class GameController : MonoBehaviour
         Assert.IsNotNull(rewindIndicator);
         
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
+
+	//Reset the post-processing effect
+	_postProcessRenderer.SetActive(false);
     }
 
     //---These methods are to be used in our pooling to acquire and release generic TimeTracker objects
@@ -632,6 +638,8 @@ public class GameController : MonoBehaviour
             {
                 Log($"Finish Rewind Animation");
                 
+		_postProcessRenderer.SetActive(false);
+
                 AnimateFrame = -1;
                 AnimateRewind = false;
                 
@@ -1201,6 +1209,8 @@ public class GameController : MonoBehaviour
         
         Log("DoTimeTravel");
 
+        _postProcessRenderer.SetActive(true);
+
         AnimateRewind = true;
         AnimateFrame = TimeStep;
         TimeStep = timeTravelStep;
@@ -1260,5 +1270,6 @@ public class GameController : MonoBehaviour
             otherTimeMachine.Occupied.Current = false;
             SaveSnapshot(timeTravelStep, otherTimeMachine, force:true);
         }
+
     }
 }
