@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private Material _material;
 	
     #region EasyAccessProperties
     public Rigidbody2D Rigidbody
@@ -370,14 +371,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             facingRight = Rigidbody.velocity.x > 0;
             SpriteRenderer.flipX = facingRight;
         }
-        if (gameController.player != this)
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 0.5f;
-            temp.g = 0.5f;
-            temp.b = 0.5f;
-            SpriteRenderer.color = temp;
-        }
         else
         {
             Color temp = SpriteRenderer.color;
@@ -456,6 +449,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
+
     }
 
     public string GetCollisionStateString()
@@ -530,5 +524,26 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+    }
+
+    public void UpdateShaders()
+    {
+	if(gameController.player != this)
+	{
+	    if(_material == null)
+		Debug.Log("No shader found");
+	    this._material.SetFloat("_StaticOpacity", 0.35f);
+	    this._material.SetFloat("_DistortIntensity", 0.02f);
+	}
+    }
+
+    void Awake()
+    {
+	_material = GetComponentInChildren<SpriteRenderer>().material;
+    }
+
+    void OnDestroy()
+    {
+	Destroy(_material);
     }
 }

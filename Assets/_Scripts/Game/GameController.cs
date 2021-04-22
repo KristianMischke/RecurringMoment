@@ -1232,7 +1232,8 @@ public class GameController : MonoBehaviour
         
         SaveSnapshot(timeTravelStep, newPlayer); // save the spawn position for the new player
         this.player = newPlayer; // update current player to the new one
-
+	player.UpdateShaders();
+	
         { // clear 'history' values on the time machine for the frame this was activated
             timeMachine.Countdown.History = -1;
             timeMachine.ActivatedTimeStep.History = -1;
