@@ -439,6 +439,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         PlayerInput.enabled = false;
         ClearState();
+	ResetShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -535,6 +536,19 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	    this._material.SetFloat("_StaticOpacity", 0.50f);
 	    this._material.SetFloat("_DistortIntensity", 0.02f);
 	}
+	else
+	{
+	    if(_material == null)
+		Debug.Log("No shader found");
+	    this._material.SetFloat("_StaticOpacity", 0.0f);
+	    this._material.SetFloat("_DistortIntensity", 0.0f);
+	}
+    }
+
+    public void ResetShaders()
+    {
+	this._material.SetFloat("_StaticOpacity", 0.0f);
+	this._material.SetFloat("_DistortIntensity", 0.0f);
     }
 
     void Awake()
