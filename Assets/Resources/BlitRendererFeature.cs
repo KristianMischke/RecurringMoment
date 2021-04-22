@@ -34,11 +34,11 @@ public class BlitRendererFeature : ScriptableRendererFeature
         // You don't have to call ScriptableRenderContext.submit, the render pipeline will call it at specific points in the pipeline.
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-	    CommandBuffer commandBuffer = CommandBufferPool.Get();
+	    CommandBuffer commandBuffer = CommandBufferPool.Get("CustomPostProcessPass");
 
 	    commandBuffer.GetTemporaryRT(tempTarget.id, renderingData.cameraData.cameraTargetDescriptor);
 	    Blit(commandBuffer, _source, tempTarget.Identifier(), material);
-	    Blit(commandBuffer, tempTarget.Identifier(), _source, material);
+	    Blit(commandBuffer, tempTarget.Identifier(), _source);
 
 	    context.ExecuteCommandBuffer(commandBuffer);
 	    CommandBufferPool.Release(commandBuffer);
@@ -53,7 +53,7 @@ public class BlitRendererFeature : ScriptableRendererFeature
     [System.Serializable]
     public class Settings
     {
-	public Material _material = null;
+	public Material material = null;
     }
 
     public Settings _settings = new Settings();
@@ -62,7 +62,7 @@ public class BlitRendererFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_ScriptablePass = new CustomRenderPass(_settings._material);
+        m_ScriptablePass = new CustomRenderPass(_settings.material);
 
         // Configures where the render pass should be injected.
         m_ScriptablePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
