@@ -7,6 +7,7 @@ public class ButtonController : ActivatableBehaviour
 {
     public GameObject PressedArt;
     public GameObject NormalArt;
+    public GameObject HalfPressArt;
 
     private HashSet<GameObject> triggeringObjects = new HashSet<GameObject>();
 
@@ -17,7 +18,8 @@ public class ButtonController : ActivatableBehaviour
     public void UpdateArt()
     {
         PressedArt.SetActive(IsActivated);
-        NormalArt.SetActive(!IsActivated);
+        NormalArt.SetActive(!IsActivated && triggeringObjects.Count == 0);
+        HalfPressArt.SetActive(!IsActivated && triggeringObjects.Count > 0);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
