@@ -433,13 +433,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public virtual void OnPoolInit()
     {
         PlayerInput.enabled = false;
+	EnableShaders();
     }
 
     public virtual void OnPoolRelease()
     {
         PlayerInput.enabled = false;
         ClearState();
-	ResetShaders();
+	DisableShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -527,25 +528,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
-    public void UpdateShaders()
+    public void EnableShaders()
     {
-	if(gameController.player != this)
-	{
-	    if(_material == null)
-		Debug.Log("No shader found");
-	    this._material.SetFloat("_StaticOpacity", 0.50f);
-	    this._material.SetFloat("_DistortIntensity", 0.02f);
-	}
-	else
-	{
-	    if(_material == null)
-		Debug.Log("No shader found");
-	    this._material.SetFloat("_StaticOpacity", 0.0f);
-	    this._material.SetFloat("_DistortIntensity", 0.0f);
-	}
+	this._material.SetFloat("_StaticOpacity", 0.50f);
+	this._material.SetFloat("_DistortIntensity", 0.02f);
     }
 
-    public void ResetShaders()
+    public void DisableShaders()
     {
 	this._material.SetFloat("_StaticOpacity", 0.0f);
 	this._material.SetFloat("_DistortIntensity", 0.0f);
