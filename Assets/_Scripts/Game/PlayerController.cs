@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private Material _material;
 	
     #region EasyAccessProperties
     public Rigidbody2D Rigidbody
@@ -362,8 +363,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         
         Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0.001f);
-	    Animator.SetBool(Grounded, isGrounded);
-	    Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+	      Animator.SetBool(Grounded, isGrounded);
+	      Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
         SpriteRenderer.flipX = facingRight;
         
@@ -442,12 +443,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public virtual void OnPoolInit()
     {
         PlayerInput.enabled = false;
+	EnableShaders();
     }
 
     public virtual void OnPoolRelease()
     {
         PlayerInput.enabled = false;
         ClearState();
+	DisableShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -458,6 +461,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
+
     }
 
     public string GetCollisionStateString()
@@ -535,5 +539,27 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+    }
+
+    public void EnableShaders()
+    {
+	this._material.SetFloat("_StaticOpacity", 0.50f);
+	this._material.SetFloat("_DistortIntensity", 0.02f);
+    }
+
+    public void DisableShaders()
+    {
+	this._material.SetFloat("_StaticOpacity", 0.0f);
+	this._material.SetFloat("_DistortIntensity", 0.0f);
+    }
+
+    void Awake()
+    {
+	_material = GetComponentInChildren<SpriteRenderer>().material;
+    }
+
+    void OnDestroy()
+    {
+	Destroy(_material);
     }
 }
