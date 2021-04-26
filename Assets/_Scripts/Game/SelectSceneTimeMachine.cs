@@ -19,6 +19,8 @@ public class SelectSceneTimeMachine : MonoBehaviour
     // art related
     public SpriteRenderer renderer;
     public TMP_Text timeText;
+	public TMP_Text levelShow;
+	public int currLevel = 0; 
 
     void Start()
     {
@@ -27,6 +29,15 @@ public class SelectSceneTimeMachine : MonoBehaviour
         _didCompleteScene = numPlays > 0;
         _bestTime = PlayerPrefs.GetFloat($"{MyScene}_time", defaultValue:float.PositiveInfinity);
         
+		
+		
+		
+		levelShow = GetComponentInChildren<Canvas>().GetComponentInChildren<BoxCollider2D>().GetComponentInChildren<TMP_Text>();
+		
+	
+		levelShow.text = "Scene " + currLevel; 
+		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false); 
+		
         if (!_sceneIsUnlocked) // occupied color when locked
         {
             renderer.color = new Color(0.8f, 0.8f, 1f);
@@ -43,6 +54,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
             TimeSpan timeSpan = TimeSpan.FromSeconds(_bestTime);
             timeText.text = timeSpan.ToString(@"mm\:ss\.ff");
         }
+		
     }
 
     public void Update()
@@ -51,6 +63,15 @@ public class SelectSceneTimeMachine : MonoBehaviour
         {
             SceneManager.LoadScene(MyScene);
         }
+		if(touchingPlayer)
+		{
+			levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(true); 
+
+		}
+		if(!touchingPlayer)
+		{
+			levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false); 
+		}
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -58,6 +79,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
         if (collision.gameObject.tag == "Player")
         {
             touchingPlayer = collision.gameObject.GetComponent<PlayerController>();
+			levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(true); 
         }
     }
     void OnTriggerExit2D(Collider2D collision)
@@ -65,6 +87,8 @@ public class SelectSceneTimeMachine : MonoBehaviour
         if (collision.gameObject.tag == "Player")
         {
             touchingPlayer = null;
+			levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(true); 
+ 
         }
     }
 }
