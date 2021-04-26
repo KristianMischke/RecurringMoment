@@ -361,15 +361,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private void Update()
     {
         
-        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0);
-	Animator.SetBool(Grounded, isGrounded);
-	Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0.001f);
+	    Animator.SetBool(Grounded, isGrounded);
+	    Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
-        if (Rigidbody.velocity.x != 0)
-        {
-            facingRight = Rigidbody.velocity.x > 0;
-            SpriteRenderer.flipX = facingRight;
-        }
+        SpriteRenderer.flipX = facingRight;
+        
         if (gameController.player != this)
         {
             Color temp = SpriteRenderer.color;
@@ -407,6 +404,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
+        if (Mathf.Abs(Rigidbody.velocity.x) > 0.001f)
+        {
+            facingRight = Rigidbody.velocity.x > 0;
+        }
+        
         if (queueGrab) // this is only for the current player
         {
             DoGrab();
@@ -492,6 +494,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
+        snapshotDictionary.Set(nameof(facingRight), facingRight, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
@@ -512,6 +515,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+        facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
@@ -528,6 +532,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+        facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
