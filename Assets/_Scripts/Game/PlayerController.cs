@@ -280,6 +280,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 bool isFound = false;
                 ITimeTracker bestMatch = null;
                 ITimeTracker originalItem = gameController.GetObjectByID(timeEvent.TargetID) as ITimeTracker;
+                // NOTE: There might be a bug if the original item was destroyed before this event occurs...
+                //       
                 
                 if (ItemID != -1)
                 {
@@ -336,7 +338,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         } // end PLAYER_GRAB
         else if (timeEvent.Type == TimeEvent.EventType.PLAYER_DROP)
         {
-            if (gameController.DropItem(this, timeEvent.TargetID)) // check to see if we successfully drop the item
+            if (ItemID != timeEvent.TargetID)
+            {
+                gameController.Log($"Note: dropping {ItemID} instead of {timeEvent.TargetID}");
+            }
+            if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
                 ItemID = -1;
             }
