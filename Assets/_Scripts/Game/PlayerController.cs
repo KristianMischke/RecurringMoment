@@ -114,6 +114,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         sprite = null;
         color = Color.magenta;
     }
+
+    public bool IsEquivalentItem(ITimeTracker other) => false;
     
     public void CopyTimeTrackerState(ITimeTracker other)
     {
@@ -273,9 +275,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         
         if (timeEvent.Type == TimeEvent.EventType.PLAYER_GRAB)
         {
-            bool isFound = false;
             if (gameController.player != this)
             {
+                bool isFound = false;
+                ITimeTracker bestMatch = null;
+                ITimeTracker originalItem = gameController.GetObjectByID(timeEvent.TargetID) as ITimeTracker;
+                
                 if (ItemID != -1)
                 {
                     gameController.LogError($"Trying to grab {timeEvent.TargetID} when already holding {ItemID}!");
@@ -293,12 +298,31 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                         isFound = true;
                     }
 
+                    if (isFound)
+                    {
+                        isFound = timeTracker.SetItemState(true);
+                    }
+
                     // break the loop if we found the object bc we can only pick up one object
                     if (isFound)
                     {
-                        timeTracker.SetItemState(true);
                         ItemID = timeEvent.TargetID;
                         break;
+                    }
+                    
+                    // if object is equivalent enough, save it in case we don't find the actual object we previously picked up
+                    if (originalItem != null && originalItem.IsEquivalentItem(timeTracker))
+                    {
+                        bestMatch = timeTracker;
+                    }
+                }
+
+                if (bestMatch != null)
+                {
+                    isFound = bestMatch.SetItemState(true);
+                    if (isFound)
+                    {
+                        ItemID = bestMatch.ID;
                     }
                 }
 
