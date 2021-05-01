@@ -74,14 +74,14 @@ public class Shoot : MonoBehaviour
             }
         }
 
-        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().player.transform.position));
-        direc = gameController.GetComponent<GameController>().player.transform.position - gameObject.transform.position;
+        dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, gameController.GetComponent<GameController>().Player.transform.position));
+        direc = gameController.GetComponent<GameController>().Player.transform.position - gameObject.transform.position;
         angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
         angle = Mathf.Abs(angle);
         if (dist < minDist && (angle <= 45 || angle >= 135))
         {
             minDist = dist;
-            closest = gameController.GetComponent<GameController>().player.gameObject;
+            closest = gameController.GetComponent<GameController>().Player.gameObject;
         }
         if(!seen && (minDist <= range))
         {

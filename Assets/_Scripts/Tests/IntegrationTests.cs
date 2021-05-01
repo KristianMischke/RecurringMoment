@@ -22,8 +22,8 @@ namespace Tests
             _game = Object.Instantiate(Resources.Load<GameObject>("Prefabs/GameController")).GetComponent<GameController>();
             
             PlayerController playerPrefab = Resources.Load<PlayerController>("Prefabs/Player");
-            _game.player = Object.Instantiate(playerPrefab).GetComponent<PlayerController>();
-            _game.player.PlayerInput.enabled = true;
+            //_game.Player = Object.Instantiate(playerPrefab).GetComponent<PlayerController>();
+            _game.Player.PlayerInput.enabled = true;
             
             TimeMachineController timeMachine = Object.Instantiate(Resources.Load<GameObject>("Prefabs/TimeMachine")).GetComponent<TimeMachineController>();
             BasicTimeTracker moveableBox = Object.Instantiate(Resources.Load<GameObject>("Prefabs/MoveableBox")).GetComponent<BasicTimeTracker>();
@@ -45,7 +45,7 @@ namespace Tests
             
             Assert.IsFalse(timeMachine.IsActivatedOrOccupied);
             Assert.AreEqual(-1, timeMachine.Countdown.Current);
-            Assert.IsFalse(_game.player.IsActivating);
+            Assert.IsFalse(_game.Player.IsActivating);
             yield return null;
 
             PressAndRelease(_keyboard.spaceKey);
