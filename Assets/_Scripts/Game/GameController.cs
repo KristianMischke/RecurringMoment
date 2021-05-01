@@ -839,7 +839,9 @@ public class GameController : MonoBehaviour
             TimeTrackerObjects.TryGetValue(id, out var timeTracker);
             if (timeTracker != null && timeTracker.ID != id) // ID mismatch, remove here, and potentially recreate below
             {
+                SaveObjectToPool(timeTracker);
                 TimeTrackerObjects.Remove(id);
+                AllReferencedObjects.Remove(id);
                 timeTracker = null;
             }
             if (!alreadyDestroyed
