@@ -47,6 +47,11 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         sprite = sr.sprite;
         color = sr.color;
     }
+    
+    public virtual bool IsEquivalentItem(ITimeTracker other)
+    {
+        return other is BasicTimeTracker;
+    }
 
     public virtual void ExecutePastEvent(TimeEvent timeEvent)
     {
