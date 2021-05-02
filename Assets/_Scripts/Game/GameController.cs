@@ -1079,7 +1079,7 @@ public class GameController : MonoBehaviour
         LoadSnapshotFull(TimeStep, false, true);
         SetPause(false);
         
-        SetItemInUI(player.ItemID); // reset UI for player's item
+        SetItemInUI(Player.ItemID); // reset UI for player's item
     }
 
     public void SetItemInUI(int id)
