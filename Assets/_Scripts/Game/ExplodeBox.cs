@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -56,6 +57,16 @@ public class ExplodeBox : BasicTimeTracker
 		requiredActivatables.Clear();
 		requiredActivatableIDs.Clear();
 		prevActivatableString = null;
+	}
+	
+	public override bool IsEquivalentItem(ITimeTracker other)
+	{
+		ExplodeBox otherExplode = other as ExplodeBox;
+		if (otherExplode == null) return false; // incorrect object type
+		if (this.label != otherExplode.label) return false; // different labels matter
+		if (this.requiredActivatableIDs.Except(otherExplode.requiredActivatableIDs).Any()) return false; // any difference in activatable IDs
+		
+		return base.IsEquivalentItem(other);
 	}
 
 	public void Update()

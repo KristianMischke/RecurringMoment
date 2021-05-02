@@ -414,7 +414,9 @@ MonoBehaviour:
   TextBubbleHint: {fileID: 5834820164530720931}
   animator: {fileID: 5294768808561599294}
   foldSpriteIcon: {fileID: 21300000, guid: f7f88205d27b1af4599ab7a0feecf411, type: 3}
-  IsAnimating: 0
+  IsAnimatingOpenClose: 0
+  IsAnimatingFold: 0
+  IsAnimatingUnfold: 0
   playerID: -1
   isFoldable: 0
 --- !u!114 &2188584014909302519
@@ -720,7 +722,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 978059031207519769, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 3.273
+      value: 2.229
       objectReference: {fileID: 0}
     - target: {fileID: 978059031207519769, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_SizeDelta.x
@@ -728,7 +730,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 978059031207519769, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 6.6341586
+      value: 4.546946
       objectReference: {fileID: 0}
     - target: {fileID: 978059031207519769, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_AnchorMin.x
@@ -756,11 +758,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5903855115407741950, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 2.139
+      value: 3.259
       objectReference: {fileID: 0}
     - target: {fileID: 5903855115407741950, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_SizeDelta.y
-      value: -4.96835
+      value: -2.7276654
       objectReference: {fileID: 0}
     - target: {fileID: 5903855115407741950, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -780,7 +782,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8916713041555176670, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_Size.y
-      value: 6.6341586
+      value: 4.546946
       objectReference: {fileID: 0}
     - target: {fileID: 8916713041555176670, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_Size.x

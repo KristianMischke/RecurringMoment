@@ -114,6 +114,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         sprite = null;
         color = Color.magenta;
     }
+
+    public bool IsEquivalentItem(ITimeTracker other) => false;
     
     public void CopyTimeTrackerState(ITimeTracker other)
     {
@@ -132,7 +134,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     //---PlayerInputs---
     public void OnMove(InputValue movementValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         Vector2 movementVector = movementValue.Get<Vector2>();
 
@@ -141,39 +143,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
     public void OnJump(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         jump |= inputValue.isPressed && isGrounded;
     }
     public void OnActivate(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         isActivating = inputValue.isPressed;
     }
     public void OnSkipTime(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         gameController.SkipTime();
     }
     public void OnSaveDebugHistory(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         gameController.ExportHistory();
     }
 
     public void OnRetry(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         gameController.RetryLevel();
     }
 
     public void OnRespawn(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
 
         gameController.RespawnLatest();
     }
@@ -185,7 +187,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void OnGrab(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.Player != this) return;
         
         queueGrab = true;
     }
@@ -201,7 +203,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void DoGrab()
     {
-        if (gameController.player != this) return; // only current player can initiate grab with this method
+        if (gameController.Player != this) return; // only current player can initiate grab with this method
         
         bool isFound = false;
 
@@ -223,7 +225,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 if (contact.gameObject == gameObject) continue;
                 
                 ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-				if (timeTracker != null)
+				        if (timeTracker != null)
                 {
                     if (timeTracker.SetItemState(true))
                     {
@@ -239,24 +241,29 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 }
             }
 			
-			// this is when he grabs a object and it shows up in the screen 
-			if(isFound == true)
-			{
+            // this is when he grabs a object and it shows up in the screen 
+            if(isFound == true)
+            {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
-				gameController.SetItemInUI(ItemID);
-			}
+				        gameController.SetItemInUI(ItemID);
+			      }
         }
     }
     
     public void ExecutePastEvent(TimeEvent timeEvent)
     {
-        if(gameController.player == this) gameController.LogError($"ExecutePastEvent on current player!");
+        if(gameController.Player == this) gameController.LogError($"ExecutePastEvent on current player!");
         
         if (timeEvent.Type == TimeEvent.EventType.PLAYER_GRAB)
         {
-            bool isFound = false;
-            if (gameController.player != this)
+            if (gameController.Player != this)
             {
+                bool isFound = false;
+                ITimeTracker bestMatch = null;
+                ITimeTracker originalItem = gameController.GetObjectByID(timeEvent.TargetID) as ITimeTracker;
+                // NOTE: There might be a bug if the original item was destroyed before this event occurs...
+                //       
+                
                 if (ItemID != -1)
                 {
                     gameController.LogError($"Trying to grab {timeEvent.TargetID} when already holding {ItemID}!");
@@ -274,12 +281,31 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                         isFound = true;
                     }
 
+                    if (isFound)
+                    {
+                        isFound = timeTracker.SetItemState(true);
+                    }
+
                     // break the loop if we found the object bc we can only pick up one object
                     if (isFound)
                     {
-                        timeTracker.SetItemState(true);
                         ItemID = timeEvent.TargetID;
                         break;
+                    }
+                    
+                    // if object is equivalent enough, save it in case we don't find the actual object we previously picked up
+                    if (originalItem != null && originalItem.IsEquivalentItem(timeTracker))
+                    {
+                        bestMatch = timeTracker;
+                    }
+                }
+
+                if (bestMatch != null)
+                {
+                    isFound = bestMatch.SetItemState(true);
+                    if (isFound)
+                    {
+                        ItemID = bestMatch.ID;
                     }
                 }
 
@@ -293,7 +319,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         } // end PLAYER_GRAB
         else if (timeEvent.Type == TimeEvent.EventType.PLAYER_DROP)
         {
-            if (gameController.DropItem(this, timeEvent.TargetID)) // check to see if we successfully drop the item
+            if (ItemID != timeEvent.TargetID)
+            {
+                gameController.Log($"Note: dropping {ItemID} instead of {timeEvent.TargetID}");
+            }
+            if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
                 ItemID = -1;
             }
@@ -349,7 +379,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         SpriteRenderer.flipX = facingRight;
         
-        if (gameController.player != this)
+        if (gameController.Player != this)
         {
             Color temp = SpriteRenderer.color;
             temp.r = 0.5f;
@@ -373,7 +403,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         UpdateIsGrounded();
 
-        if (this != gameController.player) return; // don't update physics from inputs if not main player
+        if (this != gameController.Player) return; // don't update physics from inputs if not main player
 
         if (jump)
         {
@@ -442,7 +472,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
-
     }
 
     public string GetCollisionStateString()
@@ -453,7 +482,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         List<string> colliderStrings = new List<string>();
         foreach (var collider in contactColliders)
         {
-            if (collider.gameObject == gameController.player.gameObject || collider.gameObject == this.gameObject) continue;
+            if (collider.gameObject == gameController.Player.gameObject || collider.gameObject == this.gameObject) continue;
             
             ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(collider.gameObject);
             if (timeTracker != null)
@@ -491,7 +520,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
-        if (gameController.player != this) // we don't want the current player to revert to their history positions/velocity
+        if (gameController.Player != this) // we don't want the current player to revert to their history positions/velocity
         {
             Position.Current = Position.History;
             Velocity.Current = Velocity.History;

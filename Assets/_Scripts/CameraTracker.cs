@@ -37,12 +37,12 @@ public class CameraTracker : MonoBehaviour
     {
         if (gameController.TimeStep > 0)
         {
-            Vector2 playerPos = gameController.GetSnapshotValue<Vector2>(gameController.player, gameController.TimeStep,
-                gameController.player.Position.CurrentName, defaultValue:Vector2.positiveInfinity);
+            Vector2 playerPos = gameController.GetSnapshotValue<Vector2>(gameController.Player, gameController.TimeStep,
+                gameController.Player.Position.CurrentName, defaultValue:Vector2.positiveInfinity);
 
             if (float.IsPositiveInfinity(playerPos.x) && float.IsPositiveInfinity(playerPos.y))
             {
-                playerPos = gameController.player.Position.Current;
+                playerPos = gameController.Player.Position.Current;
             }
             
             //Follow the player's position
