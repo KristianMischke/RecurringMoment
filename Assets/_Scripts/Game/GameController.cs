@@ -1079,13 +1079,33 @@ public class GameController : MonoBehaviour
         LoadSnapshotFull(TimeStep, false, true);
         SetPause(false);
         
-        // HACK: to reset player's item on respawn
-        playerItem.SetActive(Player.ItemID != -1); // shows the screen to the player
-        if (Player.ItemID != -1)
+        SetItemInUI(player.ItemID); // reset UI for player's item
+    }
+
+    public void SetItemInUI(int id)
+    {
+        Sprite itemImage = tempImage;
+        Color itemColor = Color.white;
+        string itemLabel = "";
+        
+        var timeTracker = GetTimeTrackerByID(id);
+        if (timeTracker != null)
         {
-            playerItem.GetComponentInChildren<Image>().sprite = GetTimeTrackerByID(Player.ItemID).gameObject
-                .GetComponentInChildren<SpriteRenderer>().sprite;
+            timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
+
+            ExplodeBox explodeBox = timeTracker as ExplodeBox;
+            if (explodeBox != null)
+            {
+                itemLabel = explodeBox.label;
+            }
         }
+        
+        playerItem.SetActive(timeTracker != null); 
+        Image playerItemImage = playerItem.GetComponentInChildren<Image>();
+        playerItemImage.sprite = itemImage;
+        playerItemImage.color = itemColor;
+        TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
+        playerItemLabel.text = itemLabel ?? "";
     }
 
     public void ShowRetryPopup(TimeAnomalyException e)

@@ -205,10 +205,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         if (gameController.Player != this) return; // only current player can initiate grab with this method
         
-        // to get the sprite 
-        Sprite itemImage = gameController.tempImage;
-        Color itemColor = Color.white;
-        string itemLabel = "";
         bool isFound = false;
 
         if (ItemID != -1) // not -1 means it is a valid item, so we ARE holding something
@@ -216,9 +212,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
+                gameController.SetItemInUI(-1);
                 ItemID = -1;
-                gameController.playerItem.SetActive(false);
-                gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
             }
         }
         else
@@ -230,20 +225,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 if (contact.gameObject == gameObject) continue;
                 
                 ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-				if (timeTracker != null)
+				        if (timeTracker != null)
                 {
                     if (timeTracker.SetItemState(true))
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
-                        Debug.Log("The name of the sprite is : " + itemImage.name);
-                        
-                        ExplodeBox explodeBox = timeTracker as ExplodeBox;
-                        if (explodeBox != null)
-                        {
-                            itemLabel = explodeBox.label;
-                        }
                     }
                 }
 
@@ -254,18 +241,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 }
             }
 			
-			// this is when he grabs a object and it shows up in the screen 
-			if(isFound == true)
-			{
+            // this is when he grabs a object and it shows up in the screen 
+            if(isFound == true)
+            {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
-				        gameController.playerItem.SetActive(true); // shows the screen to the player 
-                Image playerItemImage = gameController.playerItem.GetComponentInChildren<Image>(); 
-                playerItemImage.sprite = itemImage;
-                playerItemImage.color = itemColor;
-                TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
-                playerItemLabel.text = itemLabel ?? "";
-				Debug.Log("The name of the sprite is : " + itemImage.name);
-			}
+				        gameController.SetItemInUI(ItemID);
+			      }
         }
     }
     
