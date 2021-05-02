@@ -35,6 +35,9 @@ public class Pool<T>
     public void Release(T obj)
     {
         release.Invoke(obj);
-        available.Enqueue(obj);
+        if (!available.Contains(obj))
+        {
+            available.Enqueue(obj);
+        }
     }
 }
