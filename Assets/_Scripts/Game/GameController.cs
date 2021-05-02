@@ -49,6 +49,7 @@ public class GameController : MonoBehaviour
 
     // visuals
     private Image rewindIndicator;
+    private Image fastForwardIndicator;
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
@@ -437,6 +438,9 @@ public class GameController : MonoBehaviour
         // get rewind indicator object
         rewindIndicator = GameObject.Find("RewindIndicator").GetComponent<Image>();
         Assert.IsNotNull(rewindIndicator);
+        // get fast-forward indicator object
+        fastForwardIndicator = GameObject.Find("FastForwardIndicator").GetComponent<Image>();
+        Assert.IsNotNull(fastForwardIndicator);
         
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
 
@@ -637,6 +641,7 @@ public class GameController : MonoBehaviour
         }
 
         rewindIndicator.enabled = AnimateRewind;
+        fastForwardIndicator.enabled = DoTimeSkip;
         
         if (AnimateRewind)
         {
