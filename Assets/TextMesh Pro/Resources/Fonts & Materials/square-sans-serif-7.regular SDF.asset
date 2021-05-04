@@ -113,11 +113,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
-  m_Name: square-sans-serif-7
+  m_Name: square-sans-serif-7.regular SDF
   m_EditorClassIdentifier: 
-  hashCode: -390439233
+  hashCode: 1716878266
   material: {fileID: -6770754663378155745}
-  materialHashCode: -513824705
+  materialHashCode: -1174425254
   m_Version: 1.1.0
   m_SourceFontFileGUID: 442490a7daa5540439ee2a630dcb5784
   m_SourceFontFile_EditorRef: {fileID: 12800000, guid: 442490a7daa5540439ee2a630dcb5784, type: 3}

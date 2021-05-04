@@ -20,7 +20,8 @@ public class SelectSceneTimeMachine : MonoBehaviour
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 	public TMP_Text levelShow;
-	public int currLevel = 0; 
+	//public int currLevel = 0; 
+	public string writeStuffHereToShow;
 
     void Start()
     {
@@ -35,7 +36,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
 		levelShow = GetComponentInChildren<Canvas>().GetComponentInChildren<BoxCollider2D>().GetComponentInChildren<TMP_Text>();
 		
 	
-		levelShow.text = "Scene " + currLevel; 
+		levelShow.text = writeStuffHereToShow; 
 		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false); 
 		
         if (!_sceneIsUnlocked) // occupied color when locked

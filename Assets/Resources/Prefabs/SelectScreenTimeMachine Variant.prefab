@@ -16,7 +16,7 @@ MonoBehaviour:
   renderer: {fileID: 7279557836691114012}
   timeText: {fileID: 2589893206573383668}
   levelShow: {fileID: 4786175307868629994}
-  currLevel: 1
+  writeStuffHereToShow: Stage #1
 --- !u!1001 &2622418751938845707
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -75,6 +75,14 @@ PrefabInstance:
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7838263696305194828, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a37a41facf446e74b83af305ee0ef55f, type: 2}
+    - target: {fileID: 7838263696305194828, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2057023354604346571, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
@@ -219,11 +227,11 @@ PrefabInstance:
     - target: {fileID: 8194559900358180715, guid: 7a0ca4188ff844749b227cb87d745d03, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 88a7014a320c65a40bd7e66920fdbf23, type: 2}
+      objectReference: {fileID: 11400000, guid: a37a41facf446e74b83af305ee0ef55f, type: 2}
     - target: {fileID: 8194559900358180715, guid: 7a0ca4188ff844749b227cb87d745d03, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: -6770754663378155745, guid: 88a7014a320c65a40bd7e66920fdbf23, type: 2}
+      objectReference: {fileID: -1546254950218299654, guid: a37a41facf446e74b83af305ee0ef55f, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7a0ca4188ff844749b227cb87d745d03, type: 3}
 --- !u!114 &4786175307868629994 stripped
