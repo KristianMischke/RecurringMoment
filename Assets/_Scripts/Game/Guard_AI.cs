@@ -100,9 +100,10 @@ public class Guard_AI : BasicTimeTracker
     {
 
         GameObject b = Instantiate(bullet, gameObject.transform.position, gameObject.transform.rotation);
-        b.GetComponent<ObjectLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
-        Rigidbody2D r = b.GetComponent<Rigidbody2D>();
-        r.velocity = (target.gameObject.transform.position - gameObject.transform.position).normalized * shotSpeed;
+        b.GetComponent<ShotLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
+        b.GetComponent<LineRenderer>().SetPosition(0, gameObject.transform.position);
+        b.GetComponent<LineRenderer>().SetPosition(1, target.transform.position);
+        b.GetComponent<CircleCollider2D>().offset = target.transform.position - gameObject.transform.position;
 
     }
 

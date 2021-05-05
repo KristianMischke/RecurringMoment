@@ -262,14 +262,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac481ecdbf7075342a930ff69de1d6c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prevFlagDestroy: 0
   _shouldPoolObject: 0
   _isItemable: 0
   distLeft: 1
   distRight: 1
   moveSpeed: 3.5
   movingRight: 0
-  bullet: {fileID: 6563743087319956307, guid: 65bd86ed0b86d12409f639e24eb37200, type: 3}
-  fireRateSeconds: 0.4
+  bullet: {fileID: 7669242284398269772, guid: 68bc889f5993ce943b4a238132b08bcf, type: 3}
+  fireRateSeconds: 3.5
   shotSpeed: 14
   range: 8
   bulletLife: 1
