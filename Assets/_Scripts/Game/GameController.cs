@@ -977,11 +977,13 @@ public class GameController : MonoBehaviour
             Log($"Drop Item {targetID.ToString()}");
             Vector2 dropPos = droppingPlayer.Position.Get + new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0);
             
-            RaycastHit2D raycastHit = Physics2D.Raycast(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f, LayerMask.NameToLayer("LevelPlatforms"));
-            if (raycastHit.collider != null)
+            RaycastHit2D[] raycastHits = Physics2D.RaycastAll(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f);
+            foreach (var hit in raycastHits)
             {
+                if (hit.collider.gameObject.layer != LayerMask.NameToLayer("LevelPlatforms")) continue;
                 // set drop position to halfway between player and collision
-                dropPos = (raycastHit.point + droppingPlayer.Position.Get) / 2;
+                dropPos = (hit.point + droppingPlayer.Position.Get) / 2;
+                break;
             }
 
             timeTracker.Position.Current = dropPos;
