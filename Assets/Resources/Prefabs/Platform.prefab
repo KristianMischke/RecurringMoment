@@ -124,4 +124,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   matchBoxCollider: 0
   matchSpriteRenderer: 1
+  matchRectTransform: 0
   gridSize: 0.5
