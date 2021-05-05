@@ -247,6 +247,8 @@ public class GameController : MonoBehaviour
         set => currentState.currentPlayerID = value.ID;
     }
 
+    public int CurrentPlayerID => currentState.currentPlayerID;
+
     public int TimeStep
     {
         get => currentState.timeStep;
