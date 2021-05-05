@@ -276,7 +276,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     if (contact.gameObject == gameObject) continue;
 
                     ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-                    if (timeTracker != null && timeTracker.ID == timeEvent.TargetID)
+                    if (timeTracker == null) continue;
+                    
+                    if (timeTracker.ID == timeEvent.TargetID)
                     {
                         isFound = true;
                     }

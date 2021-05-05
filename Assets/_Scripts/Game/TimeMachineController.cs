@@ -409,11 +409,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
         gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
 
-        IsAnimatingOpenClose |= snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
+        IsAnimatingOpenClose = snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
         animator.SetBool(AnimateOpen, IsAnimatingOpenClose);
-        IsAnimatingFold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
+        IsAnimatingFold = snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
         animator.SetBool(AnimateFolding, IsAnimatingFold);
-        IsAnimatingUnfold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
+        IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
         
         Occupied.Current &= Activated.History;
