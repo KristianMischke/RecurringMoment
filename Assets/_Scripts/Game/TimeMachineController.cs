@@ -395,6 +395,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(IsAnimatingFold), IsAnimatingFold);
         snapshotDictionary.Set(nameof(IsAnimatingUnfold), IsAnimatingUnfold);
         snapshotDictionary.Set(nameof(playerID), playerID, force);
+        snapshotDictionary.Set(nameof(isFoldable), isFoldable, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
@@ -409,11 +410,11 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
         gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
 
-        IsAnimatingOpenClose |= snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
+        IsAnimatingOpenClose = snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
         animator.SetBool(AnimateOpen, IsAnimatingOpenClose);
-        IsAnimatingFold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
+        IsAnimatingFold = snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
         animator.SetBool(AnimateFolding, IsAnimatingFold);
-        IsAnimatingUnfold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
+        IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
         
         Occupied.Current &= Activated.History;
@@ -438,6 +439,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
         playerID = snapshotDictionary.Get<int>(nameof(playerID));
+        isFoldable = snapshotDictionary.Get<bool>(nameof(isFoldable));
+        animator.SetBool(AnimIsFoldable, isFoldable);
+        animator.SetBool(AnimIsItem, ItemForm);
         
         gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
     }
