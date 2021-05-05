@@ -3092,7 +3092,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2042322532105421962, guid: a9af55cd9e543764a8d7d196fdd1c507, type: 3}
       propertyPath: writeStuffHereToShow
-      value: Stage #1
+      value: 01 - Intro
+      objectReference: {fileID: 0}
+    - target: {fileID: 2042322532105421962, guid: a9af55cd9e543764a8d7d196fdd1c507, type: 3}
+      propertyPath: MyScene
+      value: Alpha_01_IntroDoorButton
       objectReference: {fileID: 0}
     - target: {fileID: 7279557836915517000, guid: a9af55cd9e543764a8d7d196fdd1c507, type: 3}
       propertyPath: m_Name
