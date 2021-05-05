@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -0.433, y: 0}
+  m_SizeDelta: {x: 4.1338305, y: 5.0000033}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &864929326
 CanvasRenderer:
@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190174
-  m_fontColor: {r: 0.3679245, g: 0, b: 0, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -92,8 +92,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 1
-  m_fontSizeBase: 1
+  m_fontSize: 1.24
+  m_fontSizeBase: 1.24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -152,7 +152,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1993970131
 RectTransform:
   m_ObjectHideFlags: 0
@@ -171,7 +171,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1, y: 1}
+  m_SizeDelta: {x: 5, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1993970134
 Canvas:
@@ -245,14 +245,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fb01d5be6215a24dba799595f9abab5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prevFlagDestroy: 0
   _shouldPoolObject: 1
   _isItemable: 1
   requiredActivatableIDs: 
   requiredActivatables: []
   distance: 3.5
   label: 1
-  labelText: {fileID: 864929325}
   _clip: {fileID: 8300000, guid: d0784fe87d434384eb6cba44f72fbe5c, type: 3}
+  labelText: {fileID: 864929325}
 --- !u!1001 &1837105157904715410
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -330,16 +331,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5059759033524784144, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_Color.r
-      value: 0.8018868
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5059759033524784144, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_Color.g
-      value: 0.39682868
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5059759033524784144, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_Color.b
-      value: 0.3215112
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5059759033524784144, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 0bfcda33a5032314ca3467a804782ab5, type: 3}
     - target: {fileID: 7319135265960423019, guid: 8da46a854a603bd4cad3a87ee0f17d61, type: 3}
       propertyPath: m_Enabled
       value: 1
