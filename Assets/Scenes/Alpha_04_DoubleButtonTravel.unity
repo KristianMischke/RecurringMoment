@@ -1048,6 +1048,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1920048977343419218, guid: fe62a2342957a6a459eb46911d12f788, type: 3}
   m_PrefabInstance: {fileID: 1737899445}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1780705418 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2094052832, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+  m_PrefabInstance: {fileID: 1705154289}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1887634459
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1585,6 +1590,14 @@ PrefabInstance:
       propertyPath: playerItem
       value: 
       objectReference: {fileID: 1705154290}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: playerWatch
+      value: 
+      objectReference: {fileID: 1780705418}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: watchTMPrefab
+      value: 
+      objectReference: {fileID: 1955303887011049094, guid: 354548ae81a08fd44b7f5af358ec8530, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1001 &4711500496275973040

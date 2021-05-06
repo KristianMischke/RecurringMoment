@@ -152,6 +152,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (gameController.Player != this) return;
 
         isActivating = inputValue.isPressed;
+		Debug.Log("Activated a time machine"); 
     }
     public void OnSkipTime(InputValue inputValue)
     {

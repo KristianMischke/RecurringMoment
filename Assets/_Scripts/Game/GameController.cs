@@ -53,6 +53,7 @@ public class GameController : MonoBehaviour
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
+	public GameObject watchTMPrefab; 
 
     [SerializeField]
     private ScriptableRendererFeature _postProcessRenderer = null;
@@ -60,6 +61,11 @@ public class GameController : MonoBehaviour
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
 	
 	public GameObject playerItem;
+	public GameObject playerWatch; 
+	public int currTMActive = 0; 
+	public List<GameObject> watchShow = new List<GameObject>(); 
+	
+
 	public Sprite tempImage; 
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
@@ -379,6 +385,8 @@ public class GameController : MonoBehaviour
 			}
 		}			
 		
+		
+		
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -414,6 +422,10 @@ public class GameController : MonoBehaviour
                 }
             }
         }
+		
+		
+		
+		
 
         // Gather non-TimeTracker Objects, but still ones we need IDs for
         GatherSceneObjects<ActivatableBehaviour>();
@@ -424,6 +436,38 @@ public class GameController : MonoBehaviour
         GatherSceneObjects<ExplodeBox>();
         GatherSceneObjects<Guard_AI>();
         GatherSceneObjects<BasicTimeTracker>(); // always do generic type last
+		
+		
+		// sets up the watch setup as well and makes a array to hold the different current watches it has 
+		playerWatch = GameObject.Find("PlayerWatch");
+		int multToPlace = 0; 
+		foreach (var TM in timeMachines)
+		{
+			watchShow.Add(Instantiate(watchTMPrefab, playerWatch.GetComponent<RectTransform>()));
+		}
+		
+		foreach (var watch in watchShow)
+		{
+			RectTransform currPos = watch.gameObject.GetComponent<RectTransform>(); 
+			var pos = currPos.anchoredPosition; 
+			currPos.anchoredPosition = new Vector3(pos.x, pos.y - (90 * multToPlace)); 
+			multToPlace = multToPlace + 1; 
+			//watch.gameObject.GetComponent<RectTransform>().parent.gameObject.SetActive(false);
+			watch.gameObject.GetComponent<RectTransform>().gameObject.SetActive(false);			
+		}
+		
+		
+		Debug.Log("Current number of tmemachines: " + timeMachines.Count);
+		foreach (var TM in timeMachines)
+		{
+			string word = "TM " + TM.Countdown.Current;
+			// watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = TM.Countdown.Current;
+			watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 
+			currTMActive = currTMActive + 1;
+			Debug.Log("This is the current word : " + word); 
+		}
+		
+		
 
         // get all level end transition objects, and make sure they have valid scenes attached
         LevelEnds.AddRange(FindObjectsOfType<LevelEnd>());
@@ -705,6 +749,30 @@ public class GameController : MonoBehaviour
                 ShowRetryPopup(e);
             }
         }
+		currTMActive = 0;
+		foreach (var TM in timeMachines)
+		{
+			if(TM.IsActivatedOrOccupied)
+			{
+				//string word = "TM " + TM.ActivatedTimeStep.Current;
+				string word = "TM " + TM.gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text;
+
+				//TMP_Text TMText = TM.gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text;
+				
+				// watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = TM.Countdown.Current;
+				watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 
+				
+				watchShow[currTMActive].gameObject.SetActive(true);
+			}
+			else
+			{
+				watchShow[currTMActive].gameObject.SetActive(false);
+
+			}
+			currTMActive = currTMActive + 1;
+			
+			//Debug.Log("This is the current word : " + word); 
+		}
     }
 
     private void SetPause(bool newPaused)
