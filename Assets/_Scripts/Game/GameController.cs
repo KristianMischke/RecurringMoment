@@ -64,7 +64,7 @@ public class GameController : MonoBehaviour
 	public GameObject playerWatch; 
 	public int currTMActive = 0; 
 	public List<GameObject> watchShow = new List<GameObject>(); 
-	
+	public int watchShowNextPos = 90; // this is the distance where the next watchShow item has between each other 
 
 	public Sprite tempImage; 
 	public bool userPause = false; 
@@ -463,7 +463,6 @@ public class GameController : MonoBehaviour
 		foreach (var TM in timeMachines)
 		{
 			string word = "TM " + TM.Countdown.Current;
-			// watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = TM.Countdown.Current;
 			watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 
 			currTMActive = currTMActive + 1;
 			Debug.Log("This is the current word : " + word); 
@@ -751,31 +750,104 @@ public class GameController : MonoBehaviour
                 ShowRetryPopup(e);
             }
         }
+		int totalTM = currTMActive; 
 		currTMActive = 0;
 		foreach (var TM in timeMachines)
 		{
 			if(TM.IsActivatedOrOccupied)
 			{
-				//string word = "TM " + TM.ActivatedTimeStep.Current;
-                string word = "TM " + TM.GetDisplayString();
-
-				//TMP_Text TMText = TM.gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text;
-				
-				// watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = TM.Countdown.Current;
-				watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 
-				
+                string word = "TM " + TM.GetDisplayString();				
+				watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 				
 				watchShow[currTMActive].gameObject.SetActive(true);
 			}
 			else
 			{
 				watchShow[currTMActive].gameObject.SetActive(false);
-
 			}
 			currTMActive = currTMActive + 1;
-			
-			//Debug.Log("This is the current word : " + word); 
+			if(currTMActive == totalTM)
+			{
+				// if there is a total tm active that equals the total that I had made then add a new one to watchShow
+				totalTM += 1;
+				watchShow.Add(Instantiate(watchTMPrefab, playerWatch.GetComponent<RectTransform>()));
+				RectTransform currPos = watchShow[currTMActive - 1].gameObject.GetComponent<RectTransform>(); 
+				var pos = currPos.anchoredPosition; 
+				RectTransform newWatchPosition = watchShow[currTMActive].gameObject.GetComponent<RectTransform>();
+				newWatchPosition.anchoredPosition = new Vector3(pos.x, pos.y - (watchShowNextPos)); 
+				watchShow[currTMActive].gameObject.GetComponent<RectTransform>().gameObject.SetActive(false);
+			}
 		}
+
+		// this tries to swap the order of the tm when there is a differeence and tries to put the highest on top
+		
+
+		for (int x = 0; x < currTMActive; x++)
+		{
+			for (int y = 0; y < currTMActive; y++)
+			{
+				if (y != x)
+				{
+					float xCount, x1Count;
+					if(watchShow[x].activeSelf == true && watchShow[y].activeSelf == true)
+					{
+						string [] xText = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
+						xCount = (float) Convert.ToDouble(xText[1]); 
+						string [] x1Text = watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
+						x1Count = (float) Convert.ToDouble(x1Text[1]); 
+						
+						if(xCount < x1Count && x < y)
+						{
+							Debug.Log("Xcount is : " + xCount + " and x1Count is : " + x1Count); 
+							/**var temp = watchShow[x];
+							watchShow[x] = watchShow[y];
+							watchShow[y] = temp; **/
+							/**var temp = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text;
+							var temp1 = watchShow[x].gameObject; 
+							watchShow[x] = watchShow[y].gameObject;
+							watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text = watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text;
+							watchShow[y] = temp1;
+							watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text = temp; 
+							**/
+							var temp = timeMachines[x];
+							timeMachines[x] = timeMachines[y];
+							timeMachines[y] = temp; 
+						}
+					}
+				}
+			}
+		}
+
+
+/**
+		for (int x = 0; x < currTMActive; x++)
+		{
+			if (x != 0)
+				{
+					float xCount, x1Count;
+					if(watchShow[x].activeSelf == true && watchShow[x - 1].activeSelf == true)
+					{
+						string [] xText = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
+						xCount = (float) Convert.ToDouble(xText[1]); 
+						string [] x1Text = watchShow[x - 1].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
+						x1Count = (float) Convert.ToDouble(x1Text[1]); 
+						
+						if(xCount > x1Count)
+						{
+							GameObject temp = watchShow[x].gameObject;
+							watchShow[x] = watchShow[x - 1].gameObject;
+							watchShow[x - 1] = temp.gameObject; 
+						}
+					}
+				}
+			
+		} **/
+		currTMActive = totalTM; 
+
     }
+
+
+
+
 
     private void SetPause(bool newPaused)
     {
