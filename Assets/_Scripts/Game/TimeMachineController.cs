@@ -312,6 +312,21 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public string GetDisplayString()
+    {
+        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
+        int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
+        if (displayCountdown >= 0)
+        {
+            return (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
+        }
+        if (displayStartStep >= 0)
+        {
+            return ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
+        }
+        return isFoldable ? "FOLD" : "TM";                
+    }
+
     public void Start()
     {
 	    _source = GetComponent<AudioSource>();
@@ -320,20 +335,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         TextBubbleHint.SetActive(isFoldable);
 
-        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
         int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
-        if (displayCountdown >= 0)
-        {
-            timeText.text = (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else if (displayStartStep >= 0)
-        {
-            timeText.text = ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else
-        {
-            timeText.text = isFoldable ? "FOLD" : "TM";                
-        }
+        timeText.text = GetDisplayString();
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);

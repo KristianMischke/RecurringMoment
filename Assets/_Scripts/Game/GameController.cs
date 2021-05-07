@@ -757,7 +757,7 @@ public class GameController : MonoBehaviour
 			if(TM.IsActivatedOrOccupied)
 			{
 				//string word = "TM " + TM.ActivatedTimeStep.Current;
-				string word = "TM " + TM.gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text;
+                string word = "TM " + TM.GetDisplayString();
 
 				//TMP_Text TMText = TM.gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text;
 				
