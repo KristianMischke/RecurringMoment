@@ -26,7 +26,7 @@ public class CameraTracker : MonoBehaviour
     public Vector2 relativeMin, relativeMax;
     private Vector2 startPos;
 	
-	public float percentChange = .2f;
+	[SerializeField]public float percentChange = .2f;
 	private Vector3 midGroundPos;
 	private Vector3 oldCamPosition;
 	private Vector3 newCamPosition; 
@@ -79,7 +79,7 @@ public class CameraTracker : MonoBehaviour
 			//oldCamPosition = this.transform.position; 
 			//Vector3 startPos3 = new Vector3(startPos.x, startPos.y, 0);
 			//Vector3 camDifference = (midGroundChange - startPos3); //* percentChange;
-			midGround.transform.position = midGroundChange + midGround.transform.position; 
+			midGround.transform.position -= midGroundChange; 
 			
 			
 			//midGround.transform.position = new Vector3( ((startPos.x - midGroundChange.x) * percentChange) + midGroundPos.x,
