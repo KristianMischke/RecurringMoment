@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     //---PlayerInputs---
     public void OnMove(InputValue movementValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         Vector2 movementVector = movementValue.Get<Vector2>();
 
@@ -143,39 +143,39 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
     public void OnJump(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         jump |= inputValue.isPressed && isGrounded;
     }
     public void OnActivate(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         isActivating = inputValue.isPressed;
     }
     public void OnSkipTime(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.SkipTime();
     }
     public void OnSaveDebugHistory(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.ExportHistory();
     }
 
     public void OnRetry(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.RetryLevel();
     }
 
     public void OnRespawn(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.RespawnLatest();
     }
@@ -187,7 +187,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void OnGrab(InputValue inputValue)
     {
-        if (gameController.Player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
         
         queueGrab = true;
     }
@@ -203,7 +203,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void DoGrab()
     {
-        if (gameController.Player != this) return; // only current player can initiate grab with this method
+        if (gameController.CurrentPlayerID != ID) return; // only current player can initiate grab with this method
         
         bool isFound = false;
 
@@ -245,18 +245,18 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             if(isFound == true)
             {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
-				        gameController.SetItemInUI(ItemID);
-			      }
+				gameController.SetItemInUI(ItemID);
+		    }
         }
     }
     
     public void ExecutePastEvent(TimeEvent timeEvent)
     {
-        if(gameController.Player == this) gameController.LogError($"ExecutePastEvent on current player!");
+        if(gameController.CurrentPlayerID == ID) gameController.LogError($"ExecutePastEvent on current player!");
         
         if (timeEvent.Type == TimeEvent.EventType.PLAYER_GRAB)
         {
-            if (gameController.Player != this)
+            if (gameController.CurrentPlayerID != ID)
             {
                 bool isFound = false;
                 ITimeTracker bestMatch = null;
@@ -276,7 +276,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     if (contact.gameObject == gameObject) continue;
 
                     ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-                    if (timeTracker != null && timeTracker.ID == timeEvent.TargetID)
+                    if (timeTracker == null) continue;
+                    
+                    if (timeTracker.ID == timeEvent.TargetID)
                     {
                         isFound = true;
                     }
@@ -372,30 +374,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void Update()
     {
-        
+
         Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0.001f);
-	      Animator.SetBool(Grounded, isGrounded);
-	      Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+        Animator.SetBool(Grounded, isGrounded);
+        Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
         SpriteRenderer.flipX = facingRight;
-        
-        if (gameController.Player != this)
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 0.5f;
-            temp.g = 0.5f;
-            temp.b = 0.5f;
-            SpriteRenderer.color = temp;
-        }
-        else
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 1.0f;
-            temp.g = 1.0f;
-            temp.b = 1.0f;
-            SpriteRenderer.color = temp;
-        }
-
+        SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 3 : 2; // current player on higher layer than past player
     }
 
     void FixedUpdate()
@@ -403,7 +388,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         UpdateIsGrounded();
 
-        if (this != gameController.Player) return; // don't update physics from inputs if not main player
+        if (gameController.CurrentPlayerID != ID) return; // don't update physics from inputs if not main player
 
         if (jump)
         {
@@ -520,7 +505,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
-        if (gameController.Player != this) // we don't want the current player to revert to their history positions/velocity
+        if (gameController.CurrentPlayerID != ID) // we don't want the current player to revert to their history positions/velocity
         {
             Position.Current = Position.History;
             Velocity.Current = Velocity.History;
