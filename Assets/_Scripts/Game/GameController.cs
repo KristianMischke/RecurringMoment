@@ -582,10 +582,11 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
+			var sceneName = SceneManager.GetActiveScene().name;
 #if UNITY_EDITOR
-            timerText.text = $"Total Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+            timerText.text = sceneName + $"\nTotal Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
 #else
-            timerText.text = $"Total Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
+            timerText.text = sceneName + $"\nTotal Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
 #endif
         }
     }
@@ -1096,7 +1097,6 @@ public class GameController : MonoBehaviour
         Sprite itemImage = tempImage;
         Color itemColor = Color.white;
         string itemLabel = "";
-        
         var timeTracker = GetTimeTrackerByID(id);
         if (timeTracker != null)
         {
@@ -1108,13 +1108,13 @@ public class GameController : MonoBehaviour
                 itemLabel = explodeBox.label;
             }
         }
-        
         playerItem.SetActive(timeTracker != null); 
         Image playerItemImage = playerItem.GetComponentInChildren<Image>();
         playerItemImage.sprite = itemImage;
         playerItemImage.color = itemColor;
         TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
         playerItemLabel.text = itemLabel ?? "";
+		playerItem.GetComponentInChildren<TMP_Text>().text = timeTracker.gameObject.name;
     }
 
     public void ShowRetryPopup(TimeAnomalyException e)
