@@ -378,23 +378,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	      Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
         SpriteRenderer.flipX = facingRight;
-        
-        if (gameController.Player != this)
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 0.5f;
-            temp.g = 0.5f;
-            temp.b = 0.5f;
-            SpriteRenderer.color = temp;
-        }
-        else
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 1.0f;
-            temp.g = 1.0f;
-            temp.b = 1.0f;
-            SpriteRenderer.color = temp;
-        }
 
     }
 
@@ -455,6 +438,9 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         PlayerInput.enabled = false;
 	EnableShaders();
+
+        Animator.SetFloat("Cycle_Offset", UnityEngine.Random.value);
+
     }
 
     public virtual void OnPoolRelease()
