@@ -70,6 +70,8 @@ public class GameController : MonoBehaviour
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
+
+    [SerializeField] private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -608,11 +610,8 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-#if UNITY_EDITOR
-            timerText.text = $"Total Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#else
-            timerText.text = $"Total Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#endif
+            TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
+            timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
     }
 
@@ -1184,13 +1183,11 @@ public class GameController : MonoBehaviour
         Sprite itemImage = tempImage;
         Color itemColor = Color.white;
         string itemLabel = "";
-        
         var timeTracker = GetTimeTrackerByID(id);
         if (timeTracker != null)
         {
             timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
         }
-        
         playerItem.SetActive(timeTracker != null); 
         Image playerItemImage = playerItem.GetComponentInChildren<Image>();
         playerItemImage.sprite = itemImage;
