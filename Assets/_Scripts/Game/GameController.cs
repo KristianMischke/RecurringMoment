@@ -752,6 +752,10 @@ public class GameController : MonoBehaviour
         }
 		int totalTM = currTMActive; 
 		currTMActive = 0;
+        foreach (var watchInterface in watchShow) // hide all interfaces
+        {
+            watchInterface.gameObject.SetActive(false);
+        }
 		foreach (var TM in timeMachines)
 		{
 			if(TM.IsActivatedOrOccupied)
@@ -759,12 +763,9 @@ public class GameController : MonoBehaviour
                 string word = "TM " + TM.GetDisplayString();				
 				watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 				
 				watchShow[currTMActive].gameObject.SetActive(true);
+                currTMActive = currTMActive + 1; // increment only for active interfaces (this way they all stack at the top without gaps)
 			}
-			else
-			{
-				watchShow[currTMActive].gameObject.SetActive(false);
-			}
-			currTMActive = currTMActive + 1;
+			
 			if(currTMActive == totalTM)
 			{
 				// if there is a total tm active that equals the total that I had made then add a new one to watchShow
