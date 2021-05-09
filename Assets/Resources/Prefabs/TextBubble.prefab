@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Example Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: a37a41facf446e74b83af305ee0ef55f, type: 2}
+  m_sharedMaterial: {fileID: -1546254950218299654, guid: a37a41facf446e74b83af305ee0ef55f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -262,7 +262,7 @@ GameObject:
   - component: {fileID: 6421801485766357429}
   - component: {fileID: 2125742650734145638}
   m_Layer: 5
-  m_Name: TextCanvas
+  m_Name: TextBubble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -385,7 +385,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.6646037, y: 2.6996598}
+  m_Size: {x: 5, y: 3}
   m_EdgeRadius: 0
 --- !u!114 &2125742650734145638
 MonoBehaviour:
