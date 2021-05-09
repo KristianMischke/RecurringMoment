@@ -79,9 +79,12 @@ public class CameraTracker : MonoBehaviour
 			//oldCamPosition = this.transform.position; 
 			//Vector3 startPos3 = new Vector3(startPos.x, startPos.y, 0);
 			//Vector3 camDifference = (midGroundChange - startPos3); //* percentChange;
-			midGround.transform.position -= midGroundChange; 
-			
-			
+			if (midGround != null)
+			{
+				midGround.transform.position -= midGroundChange;
+			}
+
+
 			//midGround.transform.position = new Vector3( ((startPos.x - midGroundChange.x) * percentChange) + midGroundPos.x,
 			//((startPos.y - midGroundChange.y) * percentChange) + midGroundPos.y,
 			//((startPos.z - midGroundChange.z) * percentChange) + midGroundPos.z );
