@@ -161,6 +161,7 @@ public class GameController : MonoBehaviour
         public Dictionary<int, string> objectTypeByID = new Dictionary<int, string>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
         public Dictionary<int, List<TimeEvent>> eventsByTimeStep = new Dictionary<int, List<TimeEvent>>();
+        public Dictionary<int, string> timeMachineLabel = new Dictionary<int, string>();
         public int currentPlayerID = -1;
         public int timeStep = 0;
         public int furthestTimeStep = 0;
@@ -205,6 +206,7 @@ public class GameController : MonoBehaviour
 
             objectTypeByID = new Dictionary<int, string>(other.objectTypeByID);
             historyStartById = new Dictionary<int, int>(other.historyStartById);
+            timeMachineLabel = new Dictionary<int, string>(other.timeMachineLabel);
 
             currentPlayerID = other.currentPlayerID;
             
@@ -246,6 +248,8 @@ public class GameController : MonoBehaviour
     private Dictionary<int, int> HistoryStartById => currentState.historyStartById;
 
     private Dictionary<int, List<TimeEvent>> EventsByTimeStep => currentState.eventsByTimeStep;
+
+    private Dictionary<int, string> TimeMachineLabel => currentState.timeMachineLabel;
 
     public PlayerController Player
     {
@@ -523,6 +527,18 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public string GetTimeMachineLabel(int id)
+    {
+        if (GetObjectTypeByID(id) != TYPE_TIME_MACHINE) return null;
+        
+        if (!TimeMachineLabel.TryGetValue(id, out string label))
+        {
+            label = TimeMachineLabel[id] = (char)('A' + TimeMachineLabel.Count) + "";
+        }
+
+        return label;
+    }
+
     /// <summary>
     ///     Adds a new event to the time event "queue". Expected to be called by <see cref="ITimeTracker"/> in their
     ///     <see cref="ITimeTracker.GameUpdate()"/> method.
@@ -751,28 +767,28 @@ public class GameController : MonoBehaviour
 				watchShow[currTMActive].gameObject.SetActive(false);
 			}
             
-            string word = tm.GetDisplayString();
-            var watchText = watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>(); 
-            watchText.text = word;
+            var watchUI = watchShow[currTMActive].GetComponent<WatchUI>();
+            watchUI.LabelText.text = GetTimeMachineLabel(tm.ID);
+            watchUI.ClockText.text = tm.GetDisplayString();
             watchShow[currTMActive].gameObject.SetActive(true);
             currTMActive = currTMActive + 1;
             
             int displayCountdown = tm.Countdown.Current == -1 ? tm.Countdown.History : tm.Countdown.Current;
             if (tm.Occupied.AnyTrue)
             {
-                watchText.color = new Color(0f, 1f, 0f);
+                watchUI.LabelText.color = watchUI.ClockText.color = new Color(0f, 1f, 0f);
             }
             else if (tm.Activated.AnyTrue)
             {
-                watchText.color =  new Color(1f, 0f, 0f);
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 0f, 0f);
             }
             else if (displayCountdown >= 0)
             {
-                watchText.color =  new Color(1f, 0.7f, 0f);
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 0.7f, 0f);
             }
             else
             {
-                watchText.color =  new Color(1f, 1f, 0f);
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 1f, 0f);
             }
 		}
     }

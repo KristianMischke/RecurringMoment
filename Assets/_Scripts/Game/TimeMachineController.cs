@@ -381,7 +381,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
-        
+
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position, true);
     }
 
