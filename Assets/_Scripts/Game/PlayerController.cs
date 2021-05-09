@@ -78,9 +78,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     #endregion
 
     [SerializeField] private float maxHorizontalSpeed;
-    [SerializeField] private float jumpMultiplier;
+    [SerializeField] private float _jumpVelocityChange;
+    [SerializeField] private float _jumpAcceleration;
     [SerializeField] private float movementMultiplier;
     [SerializeField] private bool isGrounded = false;
+    [SerializeField] private float _maxJumpTime;
+
+    private float _startJumpTime = 0;
 
     public int ItemID = -1;
     
@@ -145,7 +149,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         if (gameController.Player != this) return;
 
-        jump |= inputValue.isPressed && isGrounded;
+        jump = inputValue.isPressed;
     }
     public void OnActivate(InputValue inputValue)
     {
@@ -374,12 +378,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         
         Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0.001f);
-	      Animator.SetBool(Grounded, isGrounded);
-	      Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
+	Animator.SetBool(Grounded, isGrounded);
+	Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
         SpriteRenderer.flipX = facingRight;
 
     }
+
+    private bool _alreadyJumping = false;
 
     void FixedUpdate()
     {
@@ -388,11 +394,17 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         if (this != gameController.Player) return; // don't update physics from inputs if not main player
 
-        if (jump)
+        if (jump && !_alreadyJumping && isGrounded)
         {
-            Rigidbody.AddForce(Vector2.up * jumpMultiplier, ForceMode2D.Impulse);
-            jump = false;
+            _startJumpTime = Time.time;
+	    Rigidbody.AddForce(this.transform.up * _jumpVelocityChange, ForceMode2D.Impulse);
+	    _alreadyJumping = true;
         }
+	else if(jump && _alreadyJumping && (_startJumpTime + _maxJumpTime > Time.time))
+	{
+	    Rigidbody.AddForce(Vector3.up * _jumpAcceleration, ForceMode2D.Force);
+	}
+
         Rigidbody.AddForce(new Vector2(horizontalInput, 0)*movementMultiplier);
         Rigidbody.velocity = new Vector2(Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed), Rigidbody.velocity.y);
     }
@@ -423,6 +435,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 && raycastHits[i].point.y < transform.position.y - CapsuleCollider.size.y/2 + 0.01
                 && raycastHits[i].point.y > transform.position.y - CapsuleCollider.size.y/2 - 0.01)
             {
+		_alreadyJumping = false;
                 isGrounded = true;
                 return;
             }

@@ -217,9 +217,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GrabCollider: {fileID: 5323333000555512028}
   maxHorizontalSpeed: 15
-  jumpMultiplier: 25
+  _jumpVelocityChange: 20
+  _jumpAcceleration: 15
   movementMultiplier: 35
   isGrounded: 0
+  _maxJumpTime: 1
   ItemID: -1
   facingRight: 1
 --- !u!114 &4052834050897800091
