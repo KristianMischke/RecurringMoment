@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.Universal;
@@ -64,7 +65,6 @@ public class GameController : MonoBehaviour
 	public GameObject playerWatch; 
 	public int currTMActive = 0; 
 	public List<GameObject> watchShow = new List<GameObject>(); 
-	public int watchShowNextPos = 90; // this is the distance where the next watchShow item has between each other 
 
 	public Sprite tempImage; 
 	public bool userPause = false; 
@@ -386,9 +386,6 @@ public class GameController : MonoBehaviour
 				butt.onClick.AddListener(QuitDesktop);
 			}
 		}			
-		
-		
-		
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -424,10 +421,6 @@ public class GameController : MonoBehaviour
                 }
             }
         }
-		
-		
-		
-		
 
         // Gather non-TimeTracker Objects, but still ones we need IDs for
         GatherSceneObjects<ActivatableBehaviour>();
@@ -441,34 +434,8 @@ public class GameController : MonoBehaviour
 		
 		
 		// sets up the watch setup as well and makes a array to hold the different current watches it has 
-		playerWatch = GameObject.Find("PlayerWatch");
-		int multToPlace = 0; 
-		foreach (var TM in timeMachines)
-		{
-			watchShow.Add(Instantiate(watchTMPrefab, playerWatch.GetComponent<RectTransform>()));
-		}
-		
-		foreach (var watch in watchShow)
-		{
-			RectTransform currPos = watch.gameObject.GetComponent<RectTransform>(); 
-			var pos = currPos.anchoredPosition; 
-			currPos.anchoredPosition = new Vector3(pos.x, pos.y - (90 * multToPlace)); 
-			multToPlace = multToPlace + 1; 
-			//watch.gameObject.GetComponent<RectTransform>().parent.gameObject.SetActive(false);
-			watch.gameObject.GetComponent<RectTransform>().gameObject.SetActive(false);			
-		}
-		
-		
-		Debug.Log("Current number of tmemachines: " + timeMachines.Count);
-		foreach (var TM in timeMachines)
-		{
-			string word = "TM " + TM.Countdown.Current;
-			watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 
-			currTMActive = currTMActive + 1;
-			Debug.Log("This is the current word : " + word); 
-		}
-		
-		
+        playerWatch = GameObject.Find("PlayerWatch");
+
 
         // get all level end transition objects, and make sure they have valid scenes attached
         LevelEnds.AddRange(FindObjectsOfType<LevelEnd>());
@@ -489,8 +456,8 @@ public class GameController : MonoBehaviour
         
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
 
-	//Reset the post-processing effect
-	_postProcessRenderer.SetActive(false);
+	    //Reset the post-processing effect
+	    _postProcessRenderer.SetActive(false);
     }
 
     //---These methods are to be used in our pooling to acquire and release generic TimeTracker objects
@@ -756,94 +723,58 @@ public class GameController : MonoBehaviour
         {
             watchInterface.gameObject.SetActive(false);
         }
-		foreach (var TM in timeMachines)
+
+        /*
+         *  Get all TimeMachines that are counting down
+         *  Sort by their countdown (less time remaining at top of list)
+         * 
+         *  Get all TimeMachines that are activated or occupied
+         *  Order by ActivatedTimeStep
+         *  Concat counting down machines to end of list
+         */
+        IEnumerable<TimeMachineController> sortedCountdownTimeMachines = timeMachines
+            .Where(tm => tm.Countdown.Current >= 0 || tm.Countdown.History >= 0)
+            .OrderBy(tm => tm.Countdown.Current == -1 ? tm.Countdown.History : tm.Countdown.Current);
+        IEnumerable<TimeMachineController> sortedTimeMachines = timeMachines
+            .Where(tm => tm.IsActivatedOrOccupied)
+            .OrderBy(tm => tm.ActivatedTimeStep.Current == -1 ? tm.ActivatedTimeStep.History : tm.ActivatedTimeStep.Current)
+            .Concat(sortedCountdownTimeMachines);
+        
+		foreach (var tm in sortedTimeMachines)
 		{
-			if(TM.IsActivatedOrOccupied)
-			{
-                string word = "TM " + TM.GetDisplayString();				
-				watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>().text = word; 				
-				watchShow[currTMActive].gameObject.SetActive(true);
-                currTMActive = currTMActive + 1; // increment only for active interfaces (this way they all stack at the top without gaps)
-			}
-			
-			if(currTMActive == totalTM)
+            if(currTMActive == totalTM)
 			{
 				// if there is a total tm active that equals the total that I had made then add a new one to watchShow
 				totalTM += 1;
-				watchShow.Add(Instantiate(watchTMPrefab, playerWatch.GetComponent<RectTransform>()));
-				RectTransform currPos = watchShow[currTMActive - 1].gameObject.GetComponent<RectTransform>(); 
-				var pos = currPos.anchoredPosition; 
-				RectTransform newWatchPosition = watchShow[currTMActive].gameObject.GetComponent<RectTransform>();
-				newWatchPosition.anchoredPosition = new Vector3(pos.x, pos.y - (watchShowNextPos)); 
-				watchShow[currTMActive].gameObject.GetComponent<RectTransform>().gameObject.SetActive(false);
+                RectTransform watchParent = playerWatch.GetComponent<RectTransform>();
+				watchShow.Add(Instantiate(watchTMPrefab, watchParent));
+				watchShow[currTMActive].gameObject.SetActive(false);
 			}
+            
+            string word = tm.GetDisplayString();
+            var watchText = watchShow[currTMActive].gameObject.GetComponentInChildren<TMP_Text>(); 
+            watchText.text = word;
+            watchShow[currTMActive].gameObject.SetActive(true);
+            currTMActive = currTMActive + 1;
+            
+            int displayCountdown = tm.Countdown.Current == -1 ? tm.Countdown.History : tm.Countdown.Current;
+            if (tm.Occupied.AnyTrue)
+            {
+                watchText.color = new Color(0f, 1f, 0f);
+            }
+            else if (tm.Activated.AnyTrue)
+            {
+                watchText.color =  new Color(1f, 0f, 0f);
+            }
+            else if (displayCountdown >= 0)
+            {
+                watchText.color =  new Color(1f, 0.7f, 0f);
+            }
+            else
+            {
+                watchText.color =  new Color(1f, 1f, 0f);
+            }
 		}
-
-		// this tries to swap the order of the tm when there is a differeence and tries to put the highest on top
-		
-
-		for (int x = 0; x < currTMActive; x++)
-		{
-			for (int y = 0; y < currTMActive; y++)
-			{
-				if (y != x)
-				{
-					float xCount, x1Count;
-					if(watchShow[x].activeSelf == true && watchShow[y].activeSelf == true)
-					{
-						string [] xText = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
-						xCount = (float) Convert.ToDouble(xText[1]); 
-						string [] x1Text = watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
-						x1Count = (float) Convert.ToDouble(x1Text[1]); 
-						
-						if(xCount < x1Count && x < y)
-						{
-							Debug.Log("Xcount is : " + xCount + " and x1Count is : " + x1Count); 
-							/**var temp = watchShow[x];
-							watchShow[x] = watchShow[y];
-							watchShow[y] = temp; **/
-							/**var temp = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text;
-							var temp1 = watchShow[x].gameObject; 
-							watchShow[x] = watchShow[y].gameObject;
-							watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text = watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text;
-							watchShow[y] = temp1;
-							watchShow[y].gameObject.GetComponentInChildren<TMP_Text>().text = temp; 
-							**/
-							var temp = timeMachines[x];
-							timeMachines[x] = timeMachines[y];
-							timeMachines[y] = temp; 
-						}
-					}
-				}
-			}
-		}
-
-
-/**
-		for (int x = 0; x < currTMActive; x++)
-		{
-			if (x != 0)
-				{
-					float xCount, x1Count;
-					if(watchShow[x].activeSelf == true && watchShow[x - 1].activeSelf == true)
-					{
-						string [] xText = watchShow[x].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
-						xCount = (float) Convert.ToDouble(xText[1]); 
-						string [] x1Text = watchShow[x - 1].gameObject.GetComponentInChildren<TMP_Text>().text.Split(' ');
-						x1Count = (float) Convert.ToDouble(x1Text[1]); 
-						
-						if(xCount > x1Count)
-						{
-							GameObject temp = watchShow[x].gameObject;
-							watchShow[x] = watchShow[x - 1].gameObject;
-							watchShow[x - 1] = temp.gameObject; 
-						}
-					}
-				}
-			
-		} **/
-		currTMActive = totalTM; 
-
     }
 
 

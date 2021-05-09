@@ -426,6 +426,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   relativeMin: {x: 0, y: 0}
   relativeMax: {x: 0, y: 0}
+  percentChange: 0.2
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -1597,6 +1598,10 @@ PrefabInstance:
       propertyPath: playerItem
       value: 
       objectReference: {fileID: 399790014}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: watchShowNextPos
+      value: 145
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1001 &4711500496275973040
