@@ -1241,12 +1241,6 @@ public class GameController : MonoBehaviour
         if (timeTracker != null)
         {
             timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
-
-            ExplodeBox explodeBox = timeTracker as ExplodeBox;
-            if (explodeBox != null)
-            {
-                itemLabel = explodeBox.label;
-            }
         }
         
         playerItem.SetActive(timeTracker != null); 
