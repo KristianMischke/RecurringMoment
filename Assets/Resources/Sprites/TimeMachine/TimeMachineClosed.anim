@@ -16,11 +16,41 @@ AnimationClip:
   m_EulerCurves: []
   m_PositionCurves: []
   m_ScaleCurves: []
-  m_FloatCurves: []
+  m_FloatCurves:
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_SortingOrder
+    path: Art/TimeMachine_Door
+    classID: 212
+    script: {fileID: 0}
   m_PPtrCurves:
   - curve:
     - time: 0
-      value: {fileID: 21300000, guid: 779bed74c2553e641b027931e649def2, type: 3}
+      value: {fileID: 21300000, guid: f8373bf725a7d944f958915b1c86aeb2, type: 3}
+    - time: 0.016666668
+      value: {fileID: 21300000, guid: f8373bf725a7d944f958915b1c86aeb2, type: 3}
     attribute: m_Sprite
     path: Art/TimeMachineTemp
     classID: 212
@@ -28,8 +58,19 @@ AnimationClip:
   - curve:
     - time: 0
       value: {fileID: 21300000, guid: 7591ae6fc47e380439c5be943b37d726, type: 3}
+    - time: 0.016666668
+      value: {fileID: 21300000, guid: 7591ae6fc47e380439c5be943b37d726, type: 3}
     attribute: m_Sprite
     path: Art/Color
+    classID: 212
+    script: {fileID: 0}
+  - curve:
+    - time: 0
+      value: {fileID: 21300000, guid: 34d8b6484540a5a42841c22281770b58, type: 3}
+    - time: 0.016666668
+      value: {fileID: 21300000, guid: 34d8b6484540a5a42841c22281770b58, type: 3}
+    attribute: m_Sprite
+    path: Art/TimeMachine_Door
     classID: 212
     script: {fileID: 0}
   m_SampleRate: 60
@@ -39,6 +80,13 @@ AnimationClip:
     m_Extent: {x: 0, y: 0, z: 0}
   m_ClipBindingConstant:
     genericBindings:
+    - serializedVersion: 2
+      path: 1714923734
+      attribute: 3762991556
+      script: {fileID: 0}
+      typeID: 212
+      customType: 26
+      isPPtrCurve: 0
     - serializedVersion: 2
       path: 1867098159
       attribute: 0
@@ -53,15 +101,26 @@ AnimationClip:
       typeID: 212
       customType: 23
       isPPtrCurve: 1
+    - serializedVersion: 2
+      path: 1714923734
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
     pptrCurveMapping:
-    - {fileID: 21300000, guid: 779bed74c2553e641b027931e649def2, type: 3}
+    - {fileID: 21300000, guid: f8373bf725a7d944f958915b1c86aeb2, type: 3}
+    - {fileID: 21300000, guid: f8373bf725a7d944f958915b1c86aeb2, type: 3}
     - {fileID: 21300000, guid: 7591ae6fc47e380439c5be943b37d726, type: 3}
+    - {fileID: 21300000, guid: 7591ae6fc47e380439c5be943b37d726, type: 3}
+    - {fileID: 21300000, guid: 34d8b6484540a5a42841c22281770b58, type: 3}
+    - {fileID: 21300000, guid: 34d8b6484540a5a42841c22281770b58, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.016666668
+    m_StopTime: 0.033333335
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -76,7 +135,35 @@ AnimationClip:
     m_KeepOriginalPositionXZ: 0
     m_HeightFromFeet: 0
     m_Mirror: 0
-  m_EditorCurves: []
+  m_EditorCurves:
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_SortingOrder
+    path: Art/TimeMachine_Door
+    classID: 212
+    script: {fileID: 0}
   m_EulerEditorCurves: []
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0

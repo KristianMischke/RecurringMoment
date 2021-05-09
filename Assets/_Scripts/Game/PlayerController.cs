@@ -89,7 +89,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private bool jump;
     private bool isActivating, historyActivating;
 
-    public bool facingRight = true; 
+    public bool facingRight = true;
+    public bool isSpriteOrderForced = false;
     
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
@@ -368,6 +369,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = false;
         ItemID = ItemID = -1;
         DidTimeTravel = false;
+        isSpriteOrderForced = false;
 
         queueGrab = false;
     }
@@ -380,7 +382,10 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
         SpriteRenderer.flipX = facingRight;
-        SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 3 : 2; // current player on higher layer than past player
+        if (!isSpriteOrderForced)
+        {
+            SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+        }
     }
 
     void FixedUpdate()
@@ -439,14 +444,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public virtual void OnPoolInit()
     {
         PlayerInput.enabled = false;
-	EnableShaders();
+	    EnableShaders();
     }
 
     public virtual void OnPoolRelease()
     {
         PlayerInput.enabled = false;
         ClearState();
-	DisableShaders();
+	    DisableShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -494,6 +499,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         snapshotDictionary.Set(nameof(facingRight), facingRight, force);
+        snapshotDictionary.Set(nameof(isSpriteOrderForced), isSpriteOrderForced, force, clearFuture:true);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
@@ -515,6 +521,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
+        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
@@ -532,29 +539,30 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
-        
+        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
+
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
     public void EnableShaders()
     {
-	this._material.SetFloat("_StaticOpacity", 0.50f);
-	this._material.SetFloat("_DistortIntensity", 0.02f);
+	    this._material.SetFloat("_StaticOpacity", 0.50f);
+	    this._material.SetFloat("_DistortIntensity", 0.02f);
     }
 
     public void DisableShaders()
     {
-	this._material.SetFloat("_StaticOpacity", 0.0f);
-	this._material.SetFloat("_DistortIntensity", 0.0f);
+	    this._material.SetFloat("_StaticOpacity", 0.0f);
+	    this._material.SetFloat("_DistortIntensity", 0.0f);
     }
 
     void Awake()
     {
-	_material = GetComponentInChildren<SpriteRenderer>().material;
+	    _material = GetComponentInChildren<SpriteRenderer>().material;
     }
 
     void OnDestroy()
     {
-	Destroy(_material);
+	    Destroy(_material);
     }
 }

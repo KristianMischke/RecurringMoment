@@ -664,12 +664,14 @@ public class GameController : MonoBehaviour
                 
                 // show player & add back to tracking list
                 Player.gameObject.SetActive(true);
-                
+
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
                 OccupiedTimeMachine.IsAnimatingOpenClose = true;
                 SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.IsAnimatingOpenClose), true);
                 OccupiedTimeMachine.animator.SetBool(TimeMachineController.AnimateOpen, true);
+                OccupiedTimeMachine.doneTimeTravelPlayerID = CurrentPlayerID;
+                SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep].Set(nameof(OccupiedTimeMachine.doneTimeTravelPlayerID), CurrentPlayerID);
                 OccupiedTimeMachine = null;
                 DidTimeTravelThisFrame = true;
                 
@@ -1290,6 +1292,14 @@ public class GameController : MonoBehaviour
 
 	    this.Player.DisableShaders();
 	
+        { // set some initial values for when the player spawns in
+            newPlayer.isSpriteOrderForced = true;
+            newPlayer.SpriteRenderer.sortingOrder = 2;
+            newPlayer.facingRight = false;
+                
+            SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
+        }
+        
         { // clear 'history' values on the time machine for the frame this was activated
             timeMachine.Countdown.History = -1;
             timeMachine.ActivatedTimeStep.History = -1;
