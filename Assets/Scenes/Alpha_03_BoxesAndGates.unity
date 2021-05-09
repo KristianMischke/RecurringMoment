@@ -1692,6 +1692,10 @@ PrefabInstance:
       propertyPath: playerItem
       value: 
       objectReference: {fileID: 154564674}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: sceneName
+      value: 03 - Boxes and Gates
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1001 &4711500496275973040

@@ -302,6 +302,10 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 1770990830, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3732764876823063403, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1416,6 +1420,14 @@ PrefabInstance:
     - target: {fileID: 8009318454046615023, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
       propertyPath: m_Name
       value: TextCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 8916713041555176670, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
+      propertyPath: m_Size.x
+      value: 4.6646037
+      objectReference: {fileID: 0}
+    - target: {fileID: 8916713041555176670, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}
+      propertyPath: m_Size.y
+      value: 2.6996598
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f71db60fb3ef76d479ac88b78f5cd0c3, type: 3}

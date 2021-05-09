@@ -610,7 +610,8 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = $"{sceneName} - {(TimeStep * Time.fixedDeltaTime):0.0}s";
+            TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
+            timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
     }
 
