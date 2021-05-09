@@ -273,62 +273,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 201424814, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1770990831, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 447
-      objectReference: {fileID: 0}
-    - target: {fileID: 1770990831, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0.00177
-      objectReference: {fileID: 0}
-    - target: {fileID: 1770990831, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 185.97083
-      objectReference: {fileID: 0}
-    - target: {fileID: 1770990831, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 1919.9966
-      objectReference: {fileID: 0}
-    - target: {fileID: 1770990832, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476384, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 36.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476384, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -28.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476384, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 113.353165
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476384, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 386.5597
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476386, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_VerticalAlignment
-      value: 512
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476386, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_text
-      value: LVL - TIME
-      objectReference: {fileID: 0}
-    - target: {fileID: 7260056098143476386, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_fontAsset
-      value: 
-      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-    - target: {fileID: 7260056098143476386, guid: 56f2419c429d05046b658a329d90d274, type: 3}
-      propertyPath: m_sharedMaterial
-      value: 
-      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 7260056099010255572, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -416,6 +360,10 @@ PrefabInstance:
     - target: {fileID: 7260056099010255574, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_Name
       value: Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 7596525620100985058, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 56f2419c429d05046b658a329d90d274, type: 3}

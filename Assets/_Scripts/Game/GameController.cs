@@ -64,6 +64,8 @@ public class GameController : MonoBehaviour
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
+
+    [SerializeField] private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -446,8 +448,8 @@ public class GameController : MonoBehaviour
         
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
 
-	//Reset the post-processing effect
-	_postProcessRenderer.SetActive(false);
+	    //Reset the post-processing effect
+	    _postProcessRenderer.SetActive(false);
     }
 
     //---These methods are to be used in our pooling to acquire and release generic TimeTracker objects
@@ -582,12 +584,7 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-			var sceneName = SceneManager.GetActiveScene().name;
-#if UNITY_EDITOR
-            timerText.text = sceneName + $"\nTotal Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#else
-            timerText.text = sceneName + $"\nTotal Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#endif
+            timerText.text = $"{sceneName} - {(TimeStep * Time.fixedDeltaTime):0.0}s";
         }
     }
 
@@ -1108,7 +1105,6 @@ public class GameController : MonoBehaviour
         playerItemImage.color = itemColor;
         TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
         playerItemLabel.text = itemLabel ?? "";
-		playerItem.GetComponentInChildren<TMP_Text>().text = timeTracker.gameObject.name;
     }
 
     public void ShowRetryPopup(TimeAnomalyException e)
