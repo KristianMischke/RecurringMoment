@@ -30,7 +30,7 @@ public class InvisibleObject : MonoBehaviour
         Gizmos.color = gizmoColor;
         if (BoxCollider2D != null)
         {
-            Gizmos.DrawWireCube(transform.position, new Vector3(BoxCollider2D.size.x, BoxCollider2D.size.y, 0.1f));
+            Gizmos.DrawWireCube(transform.position + (Vector3)BoxCollider2D.offset, new Vector3(BoxCollider2D.size.x, BoxCollider2D.size.y, 0.1f));
         }
     }
 #endif

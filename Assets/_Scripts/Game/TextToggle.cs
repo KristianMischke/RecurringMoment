@@ -17,7 +17,7 @@ public class TextToggle : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-		if(other == gameController.player.CapsuleCollider)
+		if(other == gameController.Player.CapsuleCollider)
 		{
 			childObject.SetActive(true);
 		}
@@ -25,7 +25,7 @@ public class TextToggle : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
-		if(other == gameController.player.CapsuleCollider)
+		if(other == gameController.Player.CapsuleCollider)
 		{
 			childObject.SetActive(false);	
 		}	

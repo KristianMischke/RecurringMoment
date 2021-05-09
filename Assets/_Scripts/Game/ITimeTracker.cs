@@ -81,6 +81,13 @@ public interface ITimeTracker : ICustomObject
     /// </summary>
     /// <returns></returns>
     void GetItemSpriteProperties(out Sprite sprite, out Color color);
+    
+    /// <summary>
+    ///     Determines if the other time tracker is equivalent to this one for the purposes of whether or not a player
+    ///     can pick it up.
+    /// </summary>
+    /// <returns>True if equivalent</returns>
+    bool IsEquivalentItem(ITimeTracker other);
 
     /// <summary>
     ///     Copy the state from another ITimeTracker object to this object

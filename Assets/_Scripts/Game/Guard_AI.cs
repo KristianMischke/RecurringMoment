@@ -68,18 +68,18 @@ public class Guard_AI : BasicTimeTracker
             toFire -= Time.deltaTime;
             if (toFire <= 0)
             {
-		if(Detected())
-		{
-                     Blast(closest.GetComponent<CapsuleCollider2D>());
-		     AudioSource.PlayClipAtPoint(_blastSound, Camera.main.transform.position, 0.1f);
-                     toFire = fireRateSeconds;
-		}
-		_alertState = false;
+                if(Detected())
+		        {
+                    Blast(closest.GetComponent<CapsuleCollider2D>());
+                    AudioSource.PlayClipAtPoint(_blastSound, Camera.main.transform.position, 0.1f);
+                    toFire = fireRateSeconds;
+		        }
+		        _alertState = false;
             }
         }
         else
         {
-	    _alertState = Detected();
+	        _alertState = Detected();
             toFire = fireRateSeconds;
         }
     }
@@ -138,7 +138,7 @@ public class Guard_AI : BasicTimeTracker
 
     IEnumerator Alerted()
     {
-	AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
+	    AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
         for (int i = 0; i < 45; i++)
         {
@@ -146,6 +146,28 @@ public class Guard_AI : BasicTimeTracker
         }
         transform.GetChild(0).gameObject.SetActive(false);
 
+    }
+
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force = false)
+    {
+        base.SaveSnapshot(snapshotDictionary, force);
+        snapshotDictionary.Set(nameof(movingRight), movingRight);
+        snapshotDictionary.Set(nameof(toFire), toFire);
+        snapshotDictionary.Set(nameof(_alertState), _alertState);
+    }
+
+    public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        base.LoadSnapshot(snapshotDictionary);
+    }
+    
+    public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        base.ForceLoadSnapshot(snapshotDictionary);
+
+        movingRight = snapshotDictionary.Get<bool>(nameof(movingRight));
+        toFire = snapshotDictionary.Get<float>(nameof(toFire));
+        _alertState = snapshotDictionary.Get<bool>(nameof(_alertState));
     }
 
 #if UNITY_EDITOR

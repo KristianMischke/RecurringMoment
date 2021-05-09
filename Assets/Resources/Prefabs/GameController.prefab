@@ -45,11 +45,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeMachines:
   - {fileID: 0}
-  basicTimeTrackers: []
   player: {fileID: 0}
-  playerPrefab: {fileID: 204538365, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
-  levelEndObject: {fileID: 0}
-  nextLevel: 
+  LevelEnds: []
   timerText: {fileID: 0}
   retryPopupPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
   mainUICanvas: {fileID: 0}
+  _postProcessRenderer: {fileID: 7713027633153550556, guid: e97ac2383cbf7d14fa7e58d6508637fa, type: 2}
+  playerItem: {fileID: 0}
+  tempImage: {fileID: 0}
+  userPause: 0
+  pauseScreen: {fileID: 0}
+  actualTimeChange: 0
