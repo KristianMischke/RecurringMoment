@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.Universal;
@@ -53,6 +54,7 @@ public class GameController : MonoBehaviour
     public TMP_Text timerText;
     public RetryPopup retryPopupPrefab;
     public Canvas mainUICanvas;
+	public GameObject watchTMPrefab; 
 
     [SerializeField]
     private ScriptableRendererFeature _postProcessRenderer = null;
@@ -60,10 +62,16 @@ public class GameController : MonoBehaviour
     private Dictionary<string, Pool<ITimeTracker>> timeTrackerPools = new Dictionary<string, Pool<ITimeTracker>>();
 	
 	public GameObject playerItem;
+	public GameObject playerWatch; 
+	public int currTMActive = 0; 
+	public List<GameObject> watchShow = new List<GameObject>(); 
+
 	public Sprite tempImage; 
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
+
+    [SerializeField] private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -155,6 +163,7 @@ public class GameController : MonoBehaviour
         public Dictionary<int, string> objectTypeByID = new Dictionary<int, string>();
         public Dictionary<int, int> historyStartById = new Dictionary<int, int>();
         public Dictionary<int, List<TimeEvent>> eventsByTimeStep = new Dictionary<int, List<TimeEvent>>();
+        public Dictionary<int, string> timeMachineLabel = new Dictionary<int, string>();
         public int currentPlayerID = -1;
         public int timeStep = 0;
         public int furthestTimeStep = 0;
@@ -199,6 +208,7 @@ public class GameController : MonoBehaviour
 
             objectTypeByID = new Dictionary<int, string>(other.objectTypeByID);
             historyStartById = new Dictionary<int, int>(other.historyStartById);
+            timeMachineLabel = new Dictionary<int, string>(other.timeMachineLabel);
 
             currentPlayerID = other.currentPlayerID;
             
@@ -241,11 +251,15 @@ public class GameController : MonoBehaviour
 
     private Dictionary<int, List<TimeEvent>> EventsByTimeStep => currentState.eventsByTimeStep;
 
+    private Dictionary<int, string> TimeMachineLabel => currentState.timeMachineLabel;
+
     public PlayerController Player
     {
         get => GetTimeTrackerByID(currentState.currentPlayerID) as PlayerController;
         set => currentState.currentPlayerID = value.ID;
     }
+
+    public int CurrentPlayerID => currentState.currentPlayerID;
 
     public int TimeStep
     {
@@ -378,7 +392,6 @@ public class GameController : MonoBehaviour
 				butt.onClick.AddListener(QuitDesktop);
 			}
 		}			
-		
         
         // Find the player, store and initialize it
         var playersInScene = FindObjectsOfType<PlayerController>();
@@ -424,6 +437,11 @@ public class GameController : MonoBehaviour
         GatherSceneObjects<ExplodeBox>();
         GatherSceneObjects<Guard_AI>();
         GatherSceneObjects<BasicTimeTracker>(); // always do generic type last
+		
+		
+		// sets up the watch setup as well and makes a array to hold the different current watches it has 
+        playerWatch = GameObject.Find("PlayerWatch");
+
 
         // get all level end transition objects, and make sure they have valid scenes attached
         LevelEnds.AddRange(FindObjectsOfType<LevelEnd>());
@@ -444,8 +462,8 @@ public class GameController : MonoBehaviour
         
         Physics2D.simulationMode = SimulationMode2D.Script; // GameController will call Physics2D.Simulate()
 
-	//Reset the post-processing effect
-	_postProcessRenderer.SetActive(false);
+	    //Reset the post-processing effect
+	    _postProcessRenderer.SetActive(false);
     }
 
     //---These methods are to be used in our pooling to acquire and release generic TimeTracker objects
@@ -509,6 +527,18 @@ public class GameController : MonoBehaviour
         {
             pool.Release(timeTracker);
         }
+    }
+
+    public string GetTimeMachineLabel(int id)
+    {
+        if (GetObjectTypeByID(id) != TYPE_TIME_MACHINE) return null;
+        
+        if (!TimeMachineLabel.TryGetValue(id, out string label))
+        {
+            label = TimeMachineLabel[id] = (char)('A' + TimeMachineLabel.Count) + "";
+        }
+
+        return label;
     }
 
     /// <summary>
@@ -580,11 +610,8 @@ public class GameController : MonoBehaviour
     {
         if (timerText != null)
         {
-#if UNITY_EDITOR
-            timerText.text = $"Total Time:\n{TimeStep.ToString()}\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#else
-            timerText.text = $"Total Time:\n{(TimeStep * Time.fixedDeltaTime):0.0}s";
-#endif
+            TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
+            timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
     }
 
@@ -705,7 +732,69 @@ public class GameController : MonoBehaviour
                 ShowRetryPopup(e);
             }
         }
+		int totalTM = currTMActive; 
+		currTMActive = 0;
+        foreach (var watchInterface in watchShow) // hide all interfaces
+        {
+            watchInterface.gameObject.SetActive(false);
+        }
+
+        /*
+         *  Get all TimeMachines that are counting down
+         *  Sort by their countdown (less time remaining at top of list)
+         * 
+         *  Get all TimeMachines that are activated or occupied
+         *  Order by ActivatedTimeStep
+         *  Concat counting down machines to end of list
+         */
+        IEnumerable<TimeMachineController> sortedCountdownTimeMachines = timeMachines
+            .Where(tm => tm.Countdown.Current >= 0 || tm.Countdown.History >= 0)
+            .OrderBy(tm => tm.Countdown.Current == -1 ? tm.Countdown.History : tm.Countdown.Current);
+        IEnumerable<TimeMachineController> sortedTimeMachines = timeMachines
+            .Where(tm => tm.IsActivatedOrOccupied)
+            .OrderBy(tm => tm.ActivatedTimeStep.Current == -1 ? tm.ActivatedTimeStep.History : tm.ActivatedTimeStep.Current)
+            .Concat(sortedCountdownTimeMachines);
+        
+		foreach (var tm in sortedTimeMachines)
+		{
+            if(currTMActive == totalTM)
+			{
+				// if there is a total tm active that equals the total that I had made then add a new one to watchShow
+				totalTM += 1;
+                RectTransform watchParent = playerWatch.GetComponent<RectTransform>();
+				watchShow.Add(Instantiate(watchTMPrefab, watchParent));
+				watchShow[currTMActive].gameObject.SetActive(false);
+			}
+            
+            var watchUI = watchShow[currTMActive].GetComponent<WatchUI>();
+            watchUI.LabelText.text = GetTimeMachineLabel(tm.ID);
+            watchUI.ClockText.text = tm.GetDisplayString();
+            watchShow[currTMActive].gameObject.SetActive(true);
+            currTMActive = currTMActive + 1;
+            
+            int displayCountdown = tm.Countdown.Current == -1 ? tm.Countdown.History : tm.Countdown.Current;
+            if (tm.Occupied.AnyTrue)
+            {
+                watchUI.LabelText.color = watchUI.ClockText.color = new Color(0f, 1f, 0f);
+            }
+            else if (tm.Activated.AnyTrue)
+            {
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 0f, 0f);
+            }
+            else if (displayCountdown >= 0)
+            {
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 0.7f, 0f);
+            }
+            else
+            {
+                watchUI.LabelText.color = watchUI.ClockText.color =  new Color(1f, 1f, 0f);
+            }
+		}
     }
+
+
+
+
 
     private void SetPause(bool newPaused)
     {
@@ -977,11 +1066,13 @@ public class GameController : MonoBehaviour
             Log($"Drop Item {targetID.ToString()}");
             Vector2 dropPos = droppingPlayer.Position.Get + new Vector2(droppingPlayer.facingRight ? 1.2f : -1.2f, 0);
             
-            RaycastHit2D raycastHit = Physics2D.Raycast(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f, LayerMask.NameToLayer("LevelPlatforms"));
-            if (raycastHit.collider != null)
+            RaycastHit2D[] raycastHits = Physics2D.RaycastAll(droppingPlayer.Position.Get, droppingPlayer.facingRight ? Vector2.right : Vector2.left, 1.2f);
+            foreach (var hit in raycastHits)
             {
+                if (hit.collider.gameObject.layer != LayerMask.NameToLayer("LevelPlatforms")) continue;
                 // set drop position to halfway between player and collision
-                dropPos = (raycastHit.point + droppingPlayer.Position.Get) / 2;
+                dropPos = (hit.point + droppingPlayer.Position.Get) / 2;
+                break;
             }
 
             timeTracker.Position.Current = dropPos;
@@ -1092,19 +1183,11 @@ public class GameController : MonoBehaviour
         Sprite itemImage = tempImage;
         Color itemColor = Color.white;
         string itemLabel = "";
-        
         var timeTracker = GetTimeTrackerByID(id);
         if (timeTracker != null)
         {
             timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
-
-            ExplodeBox explodeBox = timeTracker as ExplodeBox;
-            if (explodeBox != null)
-            {
-                itemLabel = explodeBox.label;
-            }
         }
-        
         playerItem.SetActive(timeTracker != null); 
         Image playerItemImage = playerItem.GetComponentInChildren<Image>();
         playerItemImage.sprite = itemImage;
