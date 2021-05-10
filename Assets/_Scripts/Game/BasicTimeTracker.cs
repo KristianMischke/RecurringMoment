@@ -47,6 +47,11 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         sprite = sr.sprite;
         color = sr.color;
     }
+    
+    public virtual bool IsEquivalentItem(ITimeTracker other)
+    {
+        return other is BasicTimeTracker;
+    }
 
     public virtual void ExecutePastEvent(TimeEvent timeEvent)
     {
@@ -102,7 +107,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public virtual void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         //FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         prevFlagDestroy = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, GameController.FLAG_DESTROY);
@@ -110,7 +115,7 @@ public class BasicTimeTracker : MonoBehaviour, ITimeTracker
         UpdateShow();
     }
 
-    public virtual void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public virtual void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         prevFlagDestroy = gameController.GetSnapshotValue<bool>(this, gameController.TimeStep - 1, GameController.FLAG_DESTROY);

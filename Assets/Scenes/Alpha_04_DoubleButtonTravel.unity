@@ -142,6 +142,10 @@ PrefabInstance:
       propertyPath: TransitionToLevel
       value: Alpha_05_RetrieveTheBox
       objectReference: {fileID: 0}
+    - target: {fileID: 5489453490819716726, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
+      propertyPath: m_Offset.x
+      value: -2.5
+      objectReference: {fileID: 0}
     - target: {fileID: 5489453490819716727, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -27
@@ -238,6 +242,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   relativeMin: {x: 0, y: 0}
   relativeMax: {x: 0, y: 0}
+  percentChange: 0.2
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -303,6 +308,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2057023354604346571, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: isFoldable
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4487747234727477562, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -311,22 +320,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 4711500497092203543, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4711500497092203543, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4711500497092203543, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4711500497092203543, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
     - target: {fileID: 4711500497337580099, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Name
       value: TimeMachine (1)
@@ -375,10 +368,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6528602716144037484, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
+    - target: {fileID: 5834820164530720931, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
 --- !u!114 &612092170 stripped
@@ -1056,6 +1049,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1920048977343419218, guid: fe62a2342957a6a459eb46911d12f788, type: 3}
   m_PrefabInstance: {fileID: 1737899445}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1780705418 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2094052832, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+  m_PrefabInstance: {fileID: 1705154289}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1887634459
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1593,6 +1591,18 @@ PrefabInstance:
       propertyPath: playerItem
       value: 
       objectReference: {fileID: 1705154290}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: playerWatch
+      value: 
+      objectReference: {fileID: 1780705418}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: watchTMPrefab
+      value: 
+      objectReference: {fileID: 1955303887011049094, guid: 354548ae81a08fd44b7f5af358ec8530, type: 3}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: sceneName
+      value: 04 - Double Button
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1001 &4711500496275973040
@@ -1648,6 +1658,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580101, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5834820164530720931, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

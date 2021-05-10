@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private Material _material;
 	
     #region EasyAccessProperties
     public Rigidbody2D Rigidbody
@@ -88,7 +89,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     private bool jump;
     private bool isActivating, historyActivating;
 
-    public bool facingRight = true; 
+    public bool facingRight = true;
+    public bool isSpriteOrderForced = false;
     
     public bool IsActivating => isActivating;
     public bool HistoryActivating => historyActivating;
@@ -113,6 +115,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         sprite = null;
         color = Color.magenta;
     }
+
+    public bool IsEquivalentItem(ITimeTracker other) => false;
     
     public void CopyTimeTrackerState(ITimeTracker other)
     {
@@ -131,7 +135,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     //---PlayerInputs---
     public void OnMove(InputValue movementValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         Vector2 movementVector = movementValue.Get<Vector2>();
 
@@ -140,39 +144,46 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
     public void OnJump(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         jump |= inputValue.isPressed && isGrounded;
     }
     public void OnActivate(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         isActivating = inputValue.isPressed;
+		Debug.Log("Activated a time machine"); 
     }
     public void OnSkipTime(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
-        gameController.SkipTime();
+        gameController.SkipTime(false);
+    }
+    public void OnSkipExtraTime(InputValue inputValue)
+    {
+        if (gameController.CurrentPlayerID != ID) return;
+
+        gameController.SkipTime(true);
     }
     public void OnSaveDebugHistory(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.ExportHistory();
     }
 
     public void OnRetry(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.RetryLevel();
     }
 
     public void OnRespawn(InputValue inputValue)
-    {
-        if (gameController.player != this) return;
+     {
+        if (gameController.CurrentPlayerID != ID) return;
 
         gameController.RespawnLatest();
     }
@@ -184,7 +195,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void OnGrab(InputValue inputValue)
     {
-        if (gameController.player != this) return;
+        if (gameController.CurrentPlayerID != ID) return;
         
         queueGrab = true;
     }
@@ -200,12 +211,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private void DoGrab()
     {
-        if (gameController.player != this) return; // only current player can initiate grab with this method
+        if (gameController.CurrentPlayerID != ID) return; // only current player can initiate grab with this method
         
-        // to get the sprite 
-        Sprite itemImage = gameController.tempImage;
-        Color itemColor = Color.white;
-        string itemLabel = "";
         bool isFound = false;
 
         if (ItemID != -1) // not -1 means it is a valid item, so we ARE holding something
@@ -213,9 +220,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
+                gameController.SetItemInUI(-1);
                 ItemID = -1;
-                gameController.playerItem.SetActive(false);
-                gameController.playerItem.GetComponentInChildren<Image>().sprite = itemImage;
             }
         }
         else
@@ -227,20 +233,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 if (contact.gameObject == gameObject) continue;
                 
                 ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-				if (timeTracker != null)
+				        if (timeTracker != null)
                 {
                     if (timeTracker.SetItemState(true))
                     {
                         isFound = true;
                         ItemID = timeTracker.ID;
-                        timeTracker.GetItemSpriteProperties(out itemImage, out itemColor);
-                        Debug.Log("The name of the sprite is : " + itemImage.name);
-                        
-                        ExplodeBox explodeBox = timeTracker as ExplodeBox;
-                        if (explodeBox != null)
-                        {
-                            itemLabel = explodeBox.label;
-                        }
                     }
                 }
 
@@ -251,30 +249,29 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 }
             }
 			
-			// this is when he grabs a object and it shows up in the screen 
-			if(isFound == true)
-			{
+            // this is when he grabs a object and it shows up in the screen 
+            if(isFound == true)
+            {
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
-				gameController.playerItem.SetActive(true); // shows the screen to the player 
-                Image playerItemImage = gameController.playerItem.GetComponentInChildren<Image>(); 
-                playerItemImage.sprite = itemImage;
-                playerItemImage.color = itemColor;
-                TMP_Text playerItemLabel = playerItemImage.gameObject.GetComponentInChildren<TMP_Text>();
-                playerItemLabel.text = itemLabel ?? "";
-				Debug.Log("The name of the sprite is : " + itemImage.name);
-			}
+				gameController.SetItemInUI(ItemID);
+		    }
         }
     }
     
     public void ExecutePastEvent(TimeEvent timeEvent)
     {
-        if(gameController.player == this) gameController.LogError($"ExecutePastEvent on current player!");
+        if(gameController.CurrentPlayerID == ID) gameController.LogError($"ExecutePastEvent on current player!");
         
         if (timeEvent.Type == TimeEvent.EventType.PLAYER_GRAB)
         {
-            bool isFound = false;
-            if (gameController.player != this)
+            if (gameController.CurrentPlayerID != ID)
             {
+                bool isFound = false;
+                ITimeTracker bestMatch = null;
+                ITimeTracker originalItem = gameController.GetObjectByID(timeEvent.TargetID) as ITimeTracker;
+                // NOTE: There might be a bug if the original item was destroyed before this event occurs...
+                //       
+                
                 if (ItemID != -1)
                 {
                     gameController.LogError($"Trying to grab {timeEvent.TargetID} when already holding {ItemID}!");
@@ -287,17 +284,38 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     if (contact.gameObject == gameObject) continue;
 
                     ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(contact.gameObject, true);
-                    if (timeTracker != null && timeTracker.ID == timeEvent.TargetID)
+                    if (timeTracker == null) continue;
+                    
+                    if (timeTracker.ID == timeEvent.TargetID)
                     {
                         isFound = true;
+                    }
+
+                    if (isFound)
+                    {
+                        isFound = timeTracker.SetItemState(true);
                     }
 
                     // break the loop if we found the object bc we can only pick up one object
                     if (isFound)
                     {
-                        timeTracker.SetItemState(true);
                         ItemID = timeEvent.TargetID;
                         break;
+                    }
+                    
+                    // if object is equivalent enough, save it in case we don't find the actual object we previously picked up
+                    if (originalItem != null && originalItem.IsEquivalentItem(timeTracker))
+                    {
+                        bestMatch = timeTracker;
+                    }
+                }
+
+                if (bestMatch != null)
+                {
+                    isFound = bestMatch.SetItemState(true);
+                    if (isFound)
+                    {
+                        ItemID = bestMatch.ID;
                     }
                 }
 
@@ -305,13 +323,18 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
                     throw new TimeAnomalyException("Time Anomaly!",
-                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
+                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}",
+                        this);
                 }
             }
         } // end PLAYER_GRAB
         else if (timeEvent.Type == TimeEvent.EventType.PLAYER_DROP)
         {
-            if (gameController.DropItem(this, timeEvent.TargetID)) // check to see if we successfully drop the item
+            if (ItemID != timeEvent.TargetID)
+            {
+                gameController.Log($"Note: dropping {ItemID} instead of {timeEvent.TargetID}");
+            }
+            if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
                 ItemID = -1;
             }
@@ -322,7 +345,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!", this);
             }
         } // end TIME_TRAVEL
         else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
@@ -331,7 +354,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!", this);
             }
         } // end ACTIVATE_TIME_MACHINE
     }
@@ -354,39 +377,25 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = false;
         ItemID = ItemID = -1;
         DidTimeTravel = false;
+        isSpriteOrderForced = false;
 
         queueGrab = false;
     }
 
     private void Update()
     {
-        
-        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0);
-	Animator.SetBool(Grounded, isGrounded);
-	Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
-        if (Rigidbody.velocity.x != 0)
-        {
-            facingRight = Rigidbody.velocity.x > 0;
-            SpriteRenderer.flipX = facingRight;
-        }
-        if (gameController.player != this)
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 0.5f;
-            temp.g = 0.5f;
-            temp.b = 0.5f;
-            SpriteRenderer.color = temp;
-        }
-        else
-        {
-            Color temp = SpriteRenderer.color;
-            temp.r = 1.0f;
-            temp.g = 1.0f;
-            temp.b = 1.0f;
-            SpriteRenderer.color = temp;
-        }
+        Animator.SetBool(Walking, Mathf.Abs(Rigidbody.velocity.x) > 0.001f);
+        Animator.SetBool(Grounded, isGrounded);
+        Animator.SetBool(Jumping, Rigidbody.velocity.y > 0);
 
+        SpriteRenderer.flipX = facingRight;
+        if (!isSpriteOrderForced)
+        {
+            SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+        }
+        if(gameController.CurrentPlayerID == ID)
+            Debug.Log($"{isSpriteOrderForced} {SpriteRenderer.sortingOrder}");
     }
 
     void FixedUpdate()
@@ -394,7 +403,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         UpdateIsGrounded();
 
-        if (this != gameController.player) return; // don't update physics from inputs if not main player
+        if (gameController.CurrentPlayerID != ID) return; // don't update physics from inputs if not main player
 
         if (jump)
         {
@@ -407,6 +416,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
+        if (Mathf.Abs(Rigidbody.velocity.x) > 0.001f)
+        {
+            facingRight = Rigidbody.velocity.x > 0;
+        }
+        
         if (queueGrab) // this is only for the current player
         {
             DoGrab();
@@ -440,12 +454,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public virtual void OnPoolInit()
     {
         PlayerInput.enabled = false;
+	    EnableShaders();
     }
 
     public virtual void OnPoolRelease()
     {
         PlayerInput.enabled = false;
         ClearState();
+	    DisableShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -453,6 +469,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
+
+        if (id == gameController.CurrentPlayerID)
+        {
+            PlayerInput.enabled = true;
+            DisableShaders();
+        }
 
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
@@ -466,7 +488,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         List<string> colliderStrings = new List<string>();
         foreach (var collider in contactColliders)
         {
-            if (collider.gameObject == gameController.player.gameObject || collider.gameObject == this.gameObject) continue;
+            if (collider.gameObject == gameController.Player.gameObject || collider.gameObject == this.gameObject) continue;
             
             ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(collider.gameObject);
             if (timeTracker != null)
@@ -492,18 +514,20 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
+        snapshotDictionary.Set(nameof(facingRight), facingRight, force);
+        snapshotDictionary.Set(nameof(isSpriteOrderForced), isSpriteOrderForced, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
-        if (gameController.player != this) // we don't want the current player to revert to their history positions/velocity
+        if (gameController.CurrentPlayerID != ID) // we don't want the current player to revert to their history positions/velocity
         {
             Position.Current = Position.History;
             Velocity.Current = Velocity.History;
@@ -512,11 +536,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
+        facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);
@@ -528,7 +553,31 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         Rigidbody.rotation = snapshotDictionary.Get<float>(nameof(Rigidbody.rotation));
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
-        
+        facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
+        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
+
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
+    }
+
+    public void EnableShaders()
+    {
+	    this._material.SetFloat("_StaticOpacity", 0.50f);
+	    this._material.SetFloat("_DistortIntensity", 0.02f);
+    }
+
+    public void DisableShaders()
+    {
+	    this._material.SetFloat("_StaticOpacity", 0.0f);
+	    this._material.SetFloat("_DistortIntensity", 0.0f);
+    }
+
+    void Awake()
+    {
+	    _material = GetComponentInChildren<SpriteRenderer>().material;
+    }
+
+    void OnDestroy()
+    {
+	    Destroy(_material);
     }
 }

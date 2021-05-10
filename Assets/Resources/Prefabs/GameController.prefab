@@ -45,11 +45,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeMachines:
   - {fileID: 0}
-  basicTimeTrackers: []
-  player: {fileID: 0}
-  playerPrefab: {fileID: 204538365, guid: d253b9ef31bdedb458493e23fd021508, type: 3}
-  levelEndObject: {fileID: 0}
-  nextLevel: 
+  - {fileID: 0}
+  LevelEnds: []
   timerText: {fileID: 0}
   retryPopupPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
   mainUICanvas: {fileID: 0}
+  watchTMPrefab: {fileID: 1955303887011049094, guid: 354548ae81a08fd44b7f5af358ec8530, type: 3}
+  _postProcessRenderer: {fileID: 7713027633153550556, guid: e97ac2383cbf7d14fa7e58d6508637fa, type: 2}
+  playerItem: {fileID: 0}
+  playerWatch: {fileID: 0}
+  currTMActive: 0
+  watchShow: []
+  tempImage: {fileID: 0}
+  userPause: 0
+  pauseScreen: {fileID: 0}
+  actualTimeChange: 0
+  indicator: {fileID: 6563743087319956307, guid: 65bd86ed0b86d12409f639e24eb37200, type: 3}
+  sceneName: 

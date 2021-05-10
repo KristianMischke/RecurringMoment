@@ -29,7 +29,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool IsAnimatingOpenClose = false;
     public bool IsAnimatingFold = false;
     public bool IsAnimatingUnfold = false;
-    public int playerID = -1;
+    public TimeInt playerID = new TimeInt("PlayerID");
+    public int doneTimeTravelPlayerID = -1;
     public TimeBool Activated = new TimeBool("Activated");
     public TimeBool Occupied = new TimeBool("Occupied");
     public TimeInt ActivatedTimeStep = new TimeInt("ActivatedTimeStep");
@@ -73,6 +74,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             ItemForm = otherTM.ItemForm;
 
             playerID = otherTM.playerID;
+            doneTimeTravelPlayerID = otherTM.doneTimeTravelPlayerID;
             IsAnimatingOpenClose = otherTM.IsAnimatingOpenClose;
             IsAnimatingFold = otherTM.IsAnimatingFold;
             IsAnimatingUnfold = otherTM.IsAnimatingUnfold;
@@ -176,6 +178,26 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         sprite = isFoldable ? foldSpriteIcon : renderer.sprite;
         color = isFoldable ? Color.white : renderer.color;
     }
+    
+    public bool IsEquivalentItem(ITimeTracker other)
+    {
+        return ID == other.ID;
+        /*
+         * NOTE: I was going to allow the player to pick up other Time Machines, but realized that the time histories
+         *       would not necessarily line up and would cause a lot of potential issues, so opted for this feature
+         *       to only be used for non-Time Machine objects for now.
+         */
+        /*TimeMachineController otherTimeMachine = other as TimeMachineController;
+        if (otherTimeMachine == null) return false; // incorrect object type
+
+        if (isFoldable != otherTimeMachine.isFoldable) return false; // must match foldable
+        
+        // not equivalent item if other machine is active in any way
+        if (otherTimeMachine.IsActivatedOrOccupied || otherTimeMachine.Countdown.Current >= 0 || otherTimeMachine.Countdown.History >= 0)
+            return false;
+
+        return true;*/
+    }
 
     /// <summary>
     /// 
@@ -190,7 +212,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
             IsAnimatingOpenClose = true;
-            playerID = playerController.ID;
+            playerID.Current = playerController.ID;
             animator.SetBool(AnimateOpen, true);
             return false;
         }
@@ -233,12 +255,12 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             IsAnimatingOpenClose = false;
             animator.SetBool(AnimateOpen, false);
 
-            if (playerID != -1) // execute time travel bc we have a playerID
+            if (playerID.Current != -1) // execute time travel bc we have a playerID
             {
                 int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
                 ActivatedTimeStep.Current = -1;
                 Activated.Current = false;
-                gameController.QueueTimeTravel(new TimeEvent(playerID, TimeEvent.EventType.TIME_TRAVEL, ID,
+                gameController.QueueTimeTravel(new TimeEvent(playerID.Current, TimeEvent.EventType.TIME_TRAVEL, ID,
                     timeTravelDestStep.ToString()));
                 AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
                 _source.Stop();
@@ -246,11 +268,31 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
         else if (IsAnimatingOpenClose)
         {
-            if (playerID != -1) // keep player on TimeMachine (TODO: player enter anim)
+            if (playerID.Current != -1 || playerID.History != -1) // keep player on TimeMachine
             {
-                PlayerController player = gameController.GetObjectByID(playerID) as PlayerController;
+                bool isAnimating = animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+                PlayerController player = gameController.GetObjectByID(playerID.Current == -1 ? playerID.History : playerID.Current) as PlayerController;
                 player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
                 player.Velocity.Current = Vector2.zero;
+                player.isSpriteOrderForced = true;
+                bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
+                player.SpriteRenderer.sortingOrder = isBeginning ? 7 : 2;
+            }
+        }
+        
+        if (doneTimeTravelPlayerID != -1) // correct sorting order for player at beginning of replaying
+        {
+            bool isAnimating = animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+            PlayerController player = gameController.GetObjectByID(doneTimeTravelPlayerID) as PlayerController;
+            player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
+            player.Velocity.Current = Vector2.zero;
+            player.isSpriteOrderForced = true;
+            bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
+            player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
+            if (IsAnimClosedState && gameController.TimeStep > ActivatedTimeStep.History + 5)
+            {
+                doneTimeTravelPlayerID = -1;
+                player.isSpriteOrderForced = false;
             }
         }
 
@@ -292,6 +334,21 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public string GetDisplayString()
+    {
+        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
+        int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
+        if (displayCountdown >= 0)
+        {
+            return (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
+        }
+        if (displayStartStep >= 0)
+        {
+            return ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
+        }
+        return isFoldable ? "FOLD" : "TM";                
+    }
+
     public void Start()
     {
 	    _source = GetComponent<AudioSource>();
@@ -300,20 +357,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         TextBubbleHint.SetActive(isFoldable);
 
-        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
         int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
-        if (displayCountdown >= 0)
-        {
-            timeText.text = (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else if (displayStartStep >= 0)
-        {
-            timeText.text = ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else
-        {
-            timeText.text = isFoldable ? "FOLD" : "TM";                
-        }
+        timeText.text = GetDisplayString();
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
@@ -358,7 +403,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
-        
+
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position, true);
     }
 
@@ -368,43 +413,48 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.SaveSnapshot(snapshotDictionary, force);
         ActivatedTimeStep.SaveSnapshot(snapshotDictionary, force);
         Countdown.SaveSnapshot(snapshotDictionary, force);
+        playerID.SaveSnapshot(snapshotDictionary, force);
         
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         snapshotDictionary.Set(nameof(ItemForm), ItemForm, force, clearFuture:true);
         snapshotDictionary.Set(nameof(IsAnimatingOpenClose), IsAnimatingOpenClose); // don't force animations?!
         snapshotDictionary.Set(nameof(IsAnimatingFold), IsAnimatingFold);
         snapshotDictionary.Set(nameof(IsAnimatingUnfold), IsAnimatingUnfold);
-        snapshotDictionary.Set(nameof(playerID), playerID, force);
+        snapshotDictionary.Set(nameof(doneTimeTravelPlayerID), doneTimeTravelPlayerID, force);
+        snapshotDictionary.Set(nameof(isFoldable), isFoldable, force);
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.LoadSnapshot(snapshotDictionary);
         Occupied.LoadSnapshot(snapshotDictionary);
         ActivatedTimeStep.LoadSnapshot(snapshotDictionary);
         Countdown.LoadSnapshot(snapshotDictionary);
+        playerID.LoadSnapshot(snapshotDictionary);
         
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
 
         gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
 
-        IsAnimatingOpenClose |= snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
+        IsAnimatingOpenClose = snapshotDictionary.Get<bool>(nameof(IsAnimatingOpenClose));
         animator.SetBool(AnimateOpen, IsAnimatingOpenClose);
-        IsAnimatingFold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
+        IsAnimatingFold = snapshotDictionary.Get<bool>(nameof(IsAnimatingFold));
         animator.SetBool(AnimateFolding, IsAnimatingFold);
-        IsAnimatingUnfold |= snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
+        IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
+        doneTimeTravelPlayerID = snapshotDictionary.Get<int>(nameof(doneTimeTravelPlayerID));
         
         Occupied.Current &= Activated.History;
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.ForceLoadSnapshot(snapshotDictionary);
         Occupied.ForceLoadSnapshot(snapshotDictionary);
         ActivatedTimeStep.ForceLoadSnapshot(snapshotDictionary);
         Countdown.ForceLoadSnapshot(snapshotDictionary);
+        playerID.ForceLoadSnapshot(snapshotDictionary);
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
         ItemForm = snapshotDictionary.Get<bool>(nameof(ItemForm));
@@ -417,7 +467,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         animator.SetBool(AnimateFolding, IsAnimatingFold);
         IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
-        playerID = snapshotDictionary.Get<int>(nameof(playerID));
+        doneTimeTravelPlayerID = snapshotDictionary.Get<int>(nameof(doneTimeTravelPlayerID));
+        isFoldable = snapshotDictionary.Get<bool>(nameof(isFoldable));
+        animator.SetBool(AnimIsFoldable, isFoldable);
+        animator.SetBool(AnimIsItem, ItemForm);
         
         gameObject.SetActive((!ItemForm && !FlagDestroy) || IsAnimatingFold);
     }
