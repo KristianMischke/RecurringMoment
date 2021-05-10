@@ -998,11 +998,11 @@ public class GameController : MonoBehaviour
             {
                 if (forceLoad)
                 {
-                    timeTracker.ForceLoadSnapshot(history[timeStep]);
+                    timeTracker.ForceRestoreSnapshot(history[timeStep]);
                 }
                 else
                 {
-                    timeTracker.LoadSnapshot(history[timeStep]);
+                    timeTracker.PreUpdateLoadSnapshot(history[timeStep]);
                 }
             }
             else
@@ -1149,7 +1149,7 @@ public class GameController : MonoBehaviour
         }
 
         // load player snapshot from current state (at the timestep of the spawnState)
-        Player.ForceLoadSnapshot(currentState.snapshotHistoryById[Player.ID][spawnState.timeStep]);
+        Player.ForceRestoreSnapshot(currentState.snapshotHistoryById[Player.ID][spawnState.timeStep]);
 
         // pool objects not yet created/active
         for(int id = 0; id < NextID; id++)
