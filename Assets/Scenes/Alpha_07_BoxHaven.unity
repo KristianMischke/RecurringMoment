@@ -2820,9 +2820,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5834820164530720931, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
-      propertyPath: m_IsActive
-      value: 0
+    - target: {fileID: 4849374442035296883, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6312688507507751616, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_IsActive
