@@ -12,9 +12,9 @@ public class ExplodeBox : BasicTimeTracker
 	public List<int> requiredActivatableIDs = new List<int>();
 	public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 	[SerializeField] float distance = 3;
-	[SerializeField] public string label;
+	[SerializeField] public string spritePath;
 	[SerializeField] private AudioClip _clip;
-	[SerializeField] private TMP_Text labelText;
+	[SerializeField] private SpriteRenderer spriteRenderer;
 	
 	public override void Init(GameController gameController, int id)
 	{
@@ -40,7 +40,7 @@ public class ExplodeBox : BasicTimeTracker
 			_shouldPoolObject = otherBox._shouldPoolObject;
 			_isItemable = otherBox._isItemable;
 
-			label = otherBox.label;
+			spritePath = otherBox.spritePath;
 			distance = otherBox.distance;
 			requiredActivatableIDs.AddRange(otherBox.requiredActivatableIDs);
 			requiredActivatables.AddRange(otherBox.requiredActivatables);
@@ -63,7 +63,7 @@ public class ExplodeBox : BasicTimeTracker
 	{
 		ExplodeBox otherExplode = other as ExplodeBox;
 		if (otherExplode == null) return false; // incorrect object type
-		if (this.label != otherExplode.label) return false; // different labels matter
+		if (this.spritePath != otherExplode.spritePath) return false; // different labels matter
 		if (this.requiredActivatableIDs.Except(otherExplode.requiredActivatableIDs).Any()) return false; // any difference in activatable IDs
 		
 		return base.IsEquivalentItem(other);
@@ -71,7 +71,10 @@ public class ExplodeBox : BasicTimeTracker
 
 	public void Update()
 	{
-		labelText.text = label ?? "";
+		if (!string.IsNullOrEmpty(spritePath))
+		{
+			spriteRenderer.sprite = Resources.Load<Sprite>(spritePath);
+		}
 	}
 
 	public override void GameUpdate()
@@ -187,21 +190,21 @@ public class ExplodeBox : BasicTimeTracker
 	    
 	    snapshotDictionary.Set(nameof(requiredActivatableIDs), string.Join(",", requiredActivatableIDs), force:force);
 	    snapshotDictionary.Set(nameof(distance), distance, force:force);
-	    snapshotDictionary.Set(nameof(label), label, force:force);
+	    snapshotDictionary.Set(nameof(spritePath), spritePath, force:force);
     }
 
-    public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-	    base.LoadSnapshot(snapshotDictionary);
+	    base.PreUpdateLoadSnapshot(snapshotDictionary);
 		LoadActivatables(snapshotDictionary);
     }
-    public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-	    base.ForceLoadSnapshot(snapshotDictionary);
+	    base.ForceRestoreSnapshot(snapshotDictionary);
 	    LoadActivatables(snapshotDictionary);
 	    
 	    distance = snapshotDictionary.Get<float>(nameof(distance));
-	    label = snapshotDictionary.Get<string>(nameof(label));
+	    spritePath = snapshotDictionary.Get<string>(nameof(spritePath));
     }
     
 #if UNITY_EDITOR

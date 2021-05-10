@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ObjectLife : MonoBehaviour
+public class ShotLife : MonoBehaviour
 {
     //TODO: rename Bullet or somthing more representative
     //TODO: bullets probably need to be time tracked... but that's tricky because they are spawned in time by another
