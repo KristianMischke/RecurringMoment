@@ -422,7 +422,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.AddForce(new Vector2(horizontalInput, 0)*movementMultiplier);
         float updateXVel = Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed);
-        if (Mathf.Abs(horizontalInput) > 0.1f && Mathf.Abs(Rigidbody.velocity.x) < 4f && isGrounded)
+        if (Mathf.Abs(horizontalInput) > 0.1f
+            && Mathf.Abs(Rigidbody.velocity.x) < 4f
+            && isGrounded
+            && !isSpriteOrderForced // only allow this initial velocity boost when not animating time machine door
+            )
         {
             updateXVel = 4f * Mathf.Sign(horizontalInput);
         }
