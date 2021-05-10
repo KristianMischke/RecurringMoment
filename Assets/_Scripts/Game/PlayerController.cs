@@ -153,12 +153,19 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (gameController.CurrentPlayerID != ID) return;
 
         isActivating = inputValue.isPressed;
+		Debug.Log("Activated a time machine"); 
     }
     public void OnSkipTime(InputValue inputValue)
     {
         if (gameController.CurrentPlayerID != ID) return;
 
-        gameController.SkipTime();
+        gameController.SkipTime(false);
+    }
+    public void OnSkipExtraTime(InputValue inputValue)
+    {
+        if (gameController.CurrentPlayerID != ID) return;
+
+        gameController.SkipTime(true);
     }
     public void OnSaveDebugHistory(InputValue inputValue)
     {
@@ -316,7 +323,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
                     throw new TimeAnomalyException("Time Anomaly!",
-                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
+                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}",
+                        this);
                 }
             }
         } // end PLAYER_GRAB
@@ -337,7 +345,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!", this);
             }
         } // end TIME_TRAVEL
         else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
@@ -346,7 +354,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!", this);
             }
         } // end ACTIVATE_TIME_MACHINE
     }
@@ -460,6 +468,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         ID = id;
         name = $"Player {id.ToString()}";
 
+        if (id == gameController.CurrentPlayerID)
+        {
+            PlayerInput.enabled = true;
+            DisableShaders();
+        }
+
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);
     }
@@ -506,7 +520,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
@@ -526,7 +540,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);

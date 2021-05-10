@@ -484,6 +484,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5834820164530720931, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6312688507507751616, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -653,6 +657,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   relativeMin: {x: 0, y: -17}
   relativeMax: {x: 23.5, y: 0}
+  percentChange: 0.2
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -2818,6 +2823,10 @@ PrefabInstance:
       propertyPath: playerItem
       value: 
       objectReference: {fileID: 399790014}
+    - target: {fileID: 2385757589598867224, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
+      propertyPath: sceneName
+      value: 11 - Friendly Helper
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36163f1cc309aca4e8872de7009511e9, type: 3}
 --- !u!1 &2081600882538346743 stripped

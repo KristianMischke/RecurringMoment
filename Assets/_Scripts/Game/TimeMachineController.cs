@@ -323,6 +323,21 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
     }
 
+    public string GetDisplayString()
+    {
+        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
+        int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
+        if (displayCountdown >= 0)
+        {
+            return (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
+        }
+        if (displayStartStep >= 0)
+        {
+            return ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
+        }
+        return isFoldable ? "FOLD" : "TM";                
+    }
+
     public void Start()
     {
 	    _source = GetComponent<AudioSource>();
@@ -341,20 +356,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
         }
 
-        int displayStartStep = ActivatedTimeStep.Current == -1 ? ActivatedTimeStep.History : ActivatedTimeStep.Current;
         int displayCountdown = Countdown.Current == -1 ? Countdown.History : Countdown.Current;
-        if (displayCountdown >= 0)
-        {
-            timeText.text = (displayCountdown * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else if (displayStartStep >= 0)
-        {
-            timeText.text = ((gameController.TimeStep - displayStartStep) * Time.fixedDeltaTime).ToString("0.0");
-        }
-        else
-        {
-            timeText.text = isFoldable ? "FOLD" : "TM";                
-        }
+        timeText.text = GetDisplayString();
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
@@ -399,7 +402,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         this.gameController = gameController;
         ID = id;
-        
+
         Position = new TimeVector("Position", x => transform.position = x, () => transform.position, true);
     }
 
@@ -421,7 +424,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.LoadSnapshot(snapshotDictionary);
         Occupied.LoadSnapshot(snapshotDictionary);
@@ -443,7 +446,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.Current &= Activated.History;
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.ForceLoadSnapshot(snapshotDictionary);
         Occupied.ForceLoadSnapshot(snapshotDictionary);
