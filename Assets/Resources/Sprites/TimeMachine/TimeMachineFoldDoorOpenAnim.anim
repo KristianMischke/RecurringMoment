@@ -45,6 +45,80 @@ AnimationClip:
     path: Art/Canvas
     classID: 1
     script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1.2
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_IsActive
+    path: Art/TimeMachine_Door
+    classID: 1
+    script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.4
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.93333334
+        value: 5
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1.2
+        value: 5
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_SortingOrder
+    path: Art/TimeMachine_Door
+    classID: 212
+    script: {fileID: 0}
   m_PPtrCurves:
   - curve:
     - time: 0
@@ -57,15 +131,30 @@ AnimationClip:
     script: {fileID: 0}
   - curve:
     - time: 0
-      value: {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
-    - time: 0.4
-      value: {fileID: 21300000, guid: d6dcbc48a4e6c5a4c9914c08f5ee839c, type: 3}
-    - time: 0.93333334
-      value: {fileID: 21300000, guid: d6dcbc48a4e6c5a4c9914c08f5ee839c, type: 3}
+      value: {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
     - time: 1.2
-      value: {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
+      value: {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
     attribute: m_Sprite
     path: Art/TimeMachineTemp
+    classID: 212
+    script: {fileID: 0}
+  - curve:
+    - time: 0
+      value: {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    - time: 0.13333334
+      value: {fileID: 21300000, guid: af26c6b67aa2554439dceaaffdef67e6, type: 3}
+    - time: 0.26666668
+      value: {fileID: 21300000, guid: 73370b069a64277499ef85fc9760ebc8, type: 3}
+    - time: 0.4
+      value: {fileID: 21300000, guid: 0af70725ee10b534abc00fcb6c215563, type: 3}
+    - time: 0.93333334
+      value: {fileID: 21300000, guid: 73370b069a64277499ef85fc9760ebc8, type: 3}
+    - time: 1.0666667
+      value: {fileID: 21300000, guid: af26c6b67aa2554439dceaaffdef67e6, type: 3}
+    - time: 1.2
+      value: {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    attribute: m_Sprite
+    path: Art/TimeMachine_Door
     classID: 212
     script: {fileID: 0}
   m_SampleRate: 60
@@ -83,6 +172,20 @@ AnimationClip:
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
+      path: 1714923734
+      attribute: 2086281974
+      script: {fileID: 0}
+      typeID: 1
+      customType: 0
+      isPPtrCurve: 0
+    - serializedVersion: 2
+      path: 1714923734
+      attribute: 3762991556
+      script: {fileID: 0}
+      typeID: 212
+      customType: 26
+      isPPtrCurve: 0
+    - serializedVersion: 2
       path: 1325221420
       attribute: 0
       script: {fileID: 0}
@@ -96,13 +199,25 @@ AnimationClip:
       typeID: 212
       customType: 23
       isPPtrCurve: 1
+    - serializedVersion: 2
+      path: 1714923734
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
     pptrCurveMapping:
     - {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
     - {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
-    - {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
-    - {fileID: 21300000, guid: d6dcbc48a4e6c5a4c9914c08f5ee839c, type: 3}
-    - {fileID: 21300000, guid: d6dcbc48a4e6c5a4c9914c08f5ee839c, type: 3}
-    - {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
+    - {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
+    - {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
+    - {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    - {fileID: 21300000, guid: af26c6b67aa2554439dceaaffdef67e6, type: 3}
+    - {fileID: 21300000, guid: 73370b069a64277499ef85fc9760ebc8, type: 3}
+    - {fileID: 21300000, guid: 0af70725ee10b534abc00fcb6c215563, type: 3}
+    - {fileID: 21300000, guid: 73370b069a64277499ef85fc9760ebc8, type: 3}
+    - {fileID: 21300000, guid: af26c6b67aa2554439dceaaffdef67e6, type: 3}
+    - {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -151,6 +266,80 @@ AnimationClip:
     attribute: m_IsActive
     path: Art/Canvas
     classID: 1
+    script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1.2
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_IsActive
+    path: Art/TimeMachine_Door
+    classID: 1
+    script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.4
+        value: 3
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.93333334
+        value: 5
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1.2
+        value: 5
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_SortingOrder
+    path: Art/TimeMachine_Door
+    classID: 212
     script: {fileID: 0}
   m_EulerEditorCurves: []
   m_HasGenericRootTransform: 0
