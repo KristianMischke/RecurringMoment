@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour, ITimeTracker
@@ -398,8 +399,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
         }
-        if(gameController.CurrentPlayerID == ID)
-            Debug.Log($"{isSpriteOrderForced} {SpriteRenderer.sortingOrder}");
     }
 
     private bool _alreadyJumping = false;
@@ -423,7 +422,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
         Rigidbody.AddForce(new Vector2(horizontalInput, 0)*movementMultiplier);
         float updateXVel = Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed);
-        if (Mathf.Abs(horizontalInput) > 0.1f && Mathf.Abs(Rigidbody.velocity.x) < 4f)
+        if (Mathf.Abs(horizontalInput) > 0.1f && Mathf.Abs(Rigidbody.velocity.x) < 4f && isGrounded)
         {
             updateXVel = 4f * Mathf.Sign(horizontalInput);
         }
@@ -446,17 +445,17 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void UpdateIsGrounded()
     {
-        RaycastHit2D[] raycastHits = Physics2D.RaycastAll(transform.position, Vector2.down, CapsuleCollider.size.y);//, LayerMask.NameToLayer("LevelPlatforms"));
+        List<ContactPoint2D> contacts = new List<ContactPoint2D>();
+        CapsuleCollider.GetContacts(contacts);
         isGrounded = false;
-        for (int i = 0; i < raycastHits.Length; i++)
+        for (int i = 0; i < contacts.Count; i++)
         {
-            if (raycastHits[i].collider.gameObject == gameObject) continue;
-
-            if (raycastHits[i].collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms")
-                && raycastHits[i].point.y < transform.position.y - CapsuleCollider.size.y/2 + 0.01
-                && raycastHits[i].point.y > transform.position.y - CapsuleCollider.size.y/2 - 0.01)
+            if (contacts[i].collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms")
+                && contacts[i].point.y < transform.position.y - CapsuleCollider.size.y/2 + 0.5f
+                && Mathf.Abs(contacts[i].point.x - transform.position.x) < 0.3f
+                )
             {
-		_alreadyJumping = false;
+                _alreadyJumping = false;
                 isGrounded = true;
                 return;
             }
