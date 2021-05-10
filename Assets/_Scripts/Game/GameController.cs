@@ -72,8 +72,7 @@ public class GameController : MonoBehaviour
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
-    public GameObject indicator;
-    private GameObject istantiatedIndicator;
+    private AnomalyIndicator instantiatedIndicator;
     private int RewindFrameRate = -1;
 
     [SerializeField] private string sceneName;
@@ -747,7 +746,9 @@ public class GameController : MonoBehaviour
             }
             catch (TimeAnomalyException e)
             {
-                istantiatedIndicator = Instantiate(indicator, e.Cause.gameObject.transform.position, e.Cause.gameObject.transform.rotation);
+                instantiatedIndicator = e.Cause.gameObject.AddComponent<AnomalyIndicator>();
+                instantiatedIndicator.tint = new Color(1f, 0.5f, 0.5f, 1f);
+                instantiatedIndicator.Apply();
                 SetPause(true);
                 ShowRetryPopup(e);
             }
@@ -1105,6 +1106,13 @@ public class GameController : MonoBehaviour
             }
 
             timeTracker.Position.Current = dropPos;
+
+            // copy player velocity when dropping
+            if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX || GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+            {
+                timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+            }
+            
             return timeTracker.SetItemState(false);
         }
         else
@@ -1213,9 +1221,9 @@ public class GameController : MonoBehaviour
         SetItemInUI(Player.ItemID); // reset UI for player's item
         
         // delete anomaly error
-        if (istantiatedIndicator != null)
+        if (instantiatedIndicator != null)
         {
-            Destroy(istantiatedIndicator);
+            instantiatedIndicator.Remove();
         }
     }
 
