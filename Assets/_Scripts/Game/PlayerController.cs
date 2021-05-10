@@ -158,7 +158,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         if (gameController.CurrentPlayerID != ID) return;
 
-        gameController.SkipTime();
+        gameController.SkipTime(false);
+    }
+    public void OnSkipExtraTime(InputValue inputValue)
+    {
+        if (gameController.CurrentPlayerID != ID) return;
+
+        gameController.SkipTime(true);
     }
     public void OnSaveDebugHistory(InputValue inputValue)
     {
