@@ -139,7 +139,7 @@ public class Guard_AI : BasicTimeTracker
     {
 	    AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
-        for (int i = 0; i < 45; i++)
+        for (float i = 0; i < fireRateSeconds; i = i + Time.deltaTime)
         {
             yield return null;
         }
