@@ -1105,6 +1105,13 @@ public class GameController : MonoBehaviour
             }
 
             timeTracker.Position.Current = dropPos;
+
+            // copy player velocity when dropping
+            if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX || GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+            {
+                timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+            }
+            
             return timeTracker.SetItemState(false);
         }
         else
