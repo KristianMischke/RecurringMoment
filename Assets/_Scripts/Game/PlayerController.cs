@@ -406,7 +406,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     void FixedUpdate()
     {
-
         UpdateIsGrounded();
 
         if (gameController.CurrentPlayerID != ID) return; // don't update physics from inputs if not main player
@@ -414,16 +413,21 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (jump && !_alreadyJumping && isGrounded)
         {
             _startJumpTime = Time.time;
-	    Rigidbody.AddForce(this.transform.up * _jumpVelocityChange, ForceMode2D.Impulse);
-	    _alreadyJumping = true;
+	        Rigidbody.AddForce(this.transform.up * _jumpVelocityChange, ForceMode2D.Impulse);
+	        _alreadyJumping = true;
         }
-	else if(jump && _alreadyJumping && (_startJumpTime + _maxJumpTime > Time.time))
-	{
-	    Rigidbody.AddForce(Vector3.up * _jumpAcceleration, ForceMode2D.Force);
-	}
+	    else if(jump && _alreadyJumping && (_startJumpTime + _maxJumpTime > Time.time))
+	    {
+	        Rigidbody.AddForce(Vector3.up * _jumpAcceleration, ForceMode2D.Force);
+	    }
 
         Rigidbody.AddForce(new Vector2(horizontalInput, 0)*movementMultiplier);
-        Rigidbody.velocity = new Vector2(Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed), Rigidbody.velocity.y);
+        float updateXVel = Mathf.Clamp(Rigidbody.velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed);
+        if (Mathf.Abs(horizontalInput) > 0.1f && Mathf.Abs(Rigidbody.velocity.x) < 4f)
+        {
+            updateXVel = 4f * Mathf.Sign(horizontalInput);
+        }
+        Rigidbody.velocity = new Vector2(updateXVel, Rigidbody.velocity.y);
     }
 
     public void GameUpdate()
