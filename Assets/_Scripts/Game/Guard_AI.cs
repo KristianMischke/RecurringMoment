@@ -155,14 +155,14 @@ public class Guard_AI : BasicTimeTracker
         snapshotDictionary.Set(nameof(_alertState), _alertState);
     }
 
-    public override void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        base.LoadSnapshot(snapshotDictionary);
+        base.PreUpdateLoadSnapshot(snapshotDictionary);
     }
     
-    public override void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public override void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        base.ForceLoadSnapshot(snapshotDictionary);
+        base.ForceRestoreSnapshot(snapshotDictionary);
 
         movingRight = snapshotDictionary.Get<bool>(nameof(movingRight));
         toFire = snapshotDictionary.Get<float>(nameof(toFire));

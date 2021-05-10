@@ -114,11 +114,11 @@ public interface ITimeTracker : ICustomObject
     ///     needs to); it does however need to restore any history states.
     /// </summary>
     /// <param name="snapshotDictionary"><see cref="TimeDict.TimeSlice"/>dictionary for storing the values</param>
-    void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
+    void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
     /// <summary>
-    ///     Same as <see cref="LoadSnapshot"/>, except forces current values to be updated as well (typically used in
+    ///     Same as <see cref="PreUpdateLoadSnapshot"/>, except forces current values to be updated as well (typically used in
     ///     <see cref="GameController"/> when resetting the state after time travelling or loading from a spawn point.
     /// </summary>
     /// <param name="snapshotDictionary"><see cref="TimeDict.TimeSlice"/>dictionary for storing the values</param>
-    void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary);
+    void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary);
 }

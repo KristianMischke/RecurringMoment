@@ -402,7 +402,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Position.SaveSnapshot(snapshotDictionary, force);
     }
 
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.LoadSnapshot(snapshotDictionary);
         Occupied.LoadSnapshot(snapshotDictionary);
@@ -423,7 +423,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         Occupied.Current &= Activated.History;
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Activated.ForceLoadSnapshot(snapshotDictionary);
         Occupied.ForceLoadSnapshot(snapshotDictionary);

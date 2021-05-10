@@ -508,7 +508,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
-    public void LoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
@@ -527,7 +527,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
-    public void ForceLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         Position.LoadSnapshot(snapshotDictionary);
