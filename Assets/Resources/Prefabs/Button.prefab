@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1288530036}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HalfPressArt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1921167062}
   - component: {fileID: 1921167063}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 978344198901258343}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: NormalArt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -154,7 +154,7 @@ GameObject:
   m_Component:
   - component: {fileID: 978344199677081340}
   - component: {fileID: 978344199677081343}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ButtonPressed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -235,7 +235,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 978344200368935895}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PressedArt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: -7029755965318898212}
   - component: {fileID: 4124366473047098373}
   - component: {fileID: 5264319100989968095}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -392,7 +392,7 @@ GameObject:
   m_Component:
   - component: {fileID: 978344200753596278}
   - component: {fileID: 978344200753596273}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
