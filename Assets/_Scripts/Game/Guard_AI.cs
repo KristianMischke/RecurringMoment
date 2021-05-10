@@ -17,7 +17,7 @@ public class Guard_AI : BasicTimeTracker
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
     Vector2 startPos;
-    float left, right, minDist, toFire = 0f, dist =0f;
+    float left, right, minDist, toFire = 0f, dist = 0f, shotAngle = 0f;
     bool wall = false, seen = false;
     GameObject closest;
     private bool _alertState = false;
@@ -100,9 +100,8 @@ public class Guard_AI : BasicTimeTracker
     {
 
         GameObject b = Instantiate(bullet, gameObject.transform.position, gameObject.transform.rotation);
-        b.GetComponent<ObjectLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
-        Rigidbody2D r = b.GetComponent<Rigidbody2D>();
-        r.velocity = (target.gameObject.transform.position - gameObject.transform.position).normalized * shotSpeed;
+        b.GetComponent<ShotLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
+        b.transform.Rotate(0f, 0f, shotAngle);
 
     }
 
@@ -118,12 +117,12 @@ public class Guard_AI : BasicTimeTracker
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
             direc = p.transform.position - gameObject.transform.position;
             angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
-            angle = Mathf.Abs(angle);
 
-            if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
+            if (dist < minDist && ((Mathf.Abs(angle) <= 45 && movingRight) || (Mathf.Abs(angle) >= 135 && !movingRight)))
             {
                 minDist = dist;
                 closest = p.gameObject;
+                shotAngle = angle;
             }
         }
         
@@ -140,7 +139,7 @@ public class Guard_AI : BasicTimeTracker
     {
 	    AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
-        for (int i = 0; i < 45; i++)
+        for (float i = 0; i < fireRateSeconds; i = i + Time.deltaTime)
         {
             yield return null;
         }
