@@ -174,7 +174,6 @@ public class GameController : MonoBehaviour
         public int furthestTimeStep = 0;
         public int skipTimeStep = -1;
         public bool isPresent = true;
-        public bool doTimeSkip = false;
         public bool didTimeTravelThisFrame = false;
         public bool activatedLastFrame = false;
     
@@ -227,7 +226,6 @@ public class GameController : MonoBehaviour
             furthestTimeStep = other.furthestTimeStep;
             skipTimeStep = other.skipTimeStep;
             isPresent = other.isPresent;
-            doTimeSkip = other.doTimeSkip;
             didTimeTravelThisFrame = other.didTimeTravelThisFrame;
             activatedLastFrame = other.activatedLastFrame;
 
@@ -240,6 +238,8 @@ public class GameController : MonoBehaviour
     private GameState spawnState = null;
     private GameState currentState = new GameState();
     private bool paused = false;
+    public bool doTimeSkip = false;
+    public bool skipExtra = false;
 
     #region EasyAccessorsForCurrentState
 
@@ -294,12 +294,6 @@ public class GameController : MonoBehaviour
     {
         get => currentState.isPresent;
         private set => currentState.isPresent = value;
-    }
-
-    public bool DoTimeSkip
-    {
-        get => currentState.doTimeSkip;
-        private set => currentState.doTimeSkip = value;
     }
 
     public bool DidTimeTravelThisFrame
@@ -679,10 +673,11 @@ public class GameController : MonoBehaviour
         }
 
         rewindIndicator.enabled = AnimateRewind;
-        fastForwardIndicator.enabled = DoTimeSkip;
-        
+
         if (AnimateRewind)
         {
+            fastForwardIndicator.enabled = false;
+            
             Player.gameObject.SetActive(false);
             AnimateFrame -= Mathf.Max(RewindFrameRate, TIME_TRAVEL_REWIND_MULT);
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
@@ -720,21 +715,32 @@ public class GameController : MonoBehaviour
             {
                 DoTimeStep();
 
-                if (DoTimeSkip)
+                if (doTimeSkip)
                 {
-                    DoTimeSkip = false;
-                    SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT;
+                    if (skipExtra)
+                    {
+                        SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT * 10;                        
+                    }
+                    else
+                    {
+                        SkipTimeStep = TimeStep + TIME_STEP_SKIP_AMOUNT;
+                    }
+                    doTimeSkip = false;
                 }
                 if (TimeStep < SkipTimeStep && SkipTimeStep != -1)
                 {
-                    for (int i = 0; i < TIME_SKIP_ANIMATE_FPS-1; i++)
+                    fastForwardIndicator.enabled = true;
+                    int numFrames = skipExtra ? TIME_SKIP_ANIMATE_FPS*10 : TIME_SKIP_ANIMATE_FPS;
+                    for (int i = 0; i < numFrames-1; i++)
                     {
                         DoTimeStep();
                     }
                 }
                 if (TimeStep >= SkipTimeStep)
                 {
+                    fastForwardIndicator.enabled = false;
                     SkipTimeStep = -1;
+                    skipExtra = false;
                 }
             }
             catch (TimeAnomalyException e)
@@ -923,9 +929,10 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void SkipTime()
+    public void SkipTime(bool skipExtra)
     {
-        DoTimeSkip = true;
+        doTimeSkip = true;
+        this.skipExtra = skipExtra;
     }
 
     void LoadSnapshotFull(int timeStep, bool rewind, bool forceLoad = false)
