@@ -693,7 +693,7 @@ public class GameController : MonoBehaviour
                 AnimateFrame = -1;
                 AnimateRewind = false;
                 
-                // show player & add back to tracking list
+                // show player
                 Player.gameObject.SetActive(true);
 
                 OccupiedTimeMachine.Occupied.Current = true;
@@ -1422,7 +1422,7 @@ public class GameController : MonoBehaviour
             newPlayer.SpriteRenderer.sortingOrder = 2;
             newPlayer.facingRight = false;
                 
-            SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
+            SaveSnapshot(timeTravelStep, newPlayer, force:true);
         }
         
         { // clear 'history' values on the time machine for the frame this was activated
@@ -1430,13 +1430,14 @@ public class GameController : MonoBehaviour
             timeMachine.ActivatedTimeStep.History = -1;
             timeMachine.Activated.History = false;
             timeMachine.Occupied.History = false;
+            timeMachine.playerID.History = -1;
             
             timeMachine.Countdown.Current = -1;
             timeMachine.ActivatedTimeStep.Current = -1;
             timeMachine.Activated.Current = false;
             timeMachine.Occupied.Current = false;
-
-            timeMachine.playerID = -1;
+            timeMachine.playerID.Current = -1;
+            
             SaveSnapshot(AnimateFrame - 1, timeMachine, force:true);
         }
 

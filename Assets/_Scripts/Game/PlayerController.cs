@@ -182,7 +182,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     }
 
     public void OnRespawn(InputValue inputValue)
-    {
+     {
         if (gameController.CurrentPlayerID != ID) return;
 
         gameController.RespawnLatest();
@@ -394,6 +394,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
         }
+        if(gameController.CurrentPlayerID == ID)
+            Debug.Log($"{isSpriteOrderForced} {SpriteRenderer.sortingOrder}");
     }
 
     void FixedUpdate()
@@ -513,7 +515,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
         snapshotDictionary.Set(nameof(facingRight), facingRight, force);
-        snapshotDictionary.Set(nameof(isSpriteOrderForced), isSpriteOrderForced, force, clearFuture:true);
+        snapshotDictionary.Set(nameof(isSpriteOrderForced), isSpriteOrderForced, force);
         //snapshotDictionary[nameof(GetCollisionStateString)] = GetCollisionStateString();
         snapshotDictionary.Set(GameController.FLAG_DESTROY, FlagDestroy, force);
         //NOTE: players should never be in item form, so don't save/load that info here
@@ -535,7 +537,6 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
-        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
