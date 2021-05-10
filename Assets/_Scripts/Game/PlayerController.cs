@@ -317,7 +317,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                     gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
                     throw new TimeAnomalyException("Time Anomaly!",
                         $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}",
-                        gameController.GetObjectByID(ID));
+                        this);
                 }
             }
         } // end PLAYER_GRAB
@@ -338,7 +338,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!", gameController.GetObjectByID(ID));
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!", this);
             }
         } // end TIME_TRAVEL
         else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
@@ -347,7 +347,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!", gameController.GetObjectByID(ID));
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!", this);
             }
         } // end ACTIVATE_TIME_MACHINE
     }
@@ -441,14 +441,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     public virtual void OnPoolInit()
     {
         PlayerInput.enabled = false;
-	EnableShaders();
+	    EnableShaders();
     }
 
     public virtual void OnPoolRelease()
     {
         PlayerInput.enabled = false;
         ClearState();
-	DisableShaders();
+	    DisableShaders();
     }
     
     public void Init(GameController gameController, int id)
@@ -456,6 +456,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         this.gameController = gameController;
         ID = id;
         name = $"Player {id.ToString()}";
+
+        if (id == gameController.CurrentPlayerID)
+        {
+            PlayerInput.enabled = true;
+            DisableShaders();
+        }
 
         Position = new TimeVector("Position", x => Rigidbody.position = x, () => Rigidbody.position);
         Velocity = new TimeVector("Velocity", x => Rigidbody.velocity = x, () => Rigidbody.velocity);

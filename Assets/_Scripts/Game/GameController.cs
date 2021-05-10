@@ -73,6 +73,7 @@ public class GameController : MonoBehaviour
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
     public GameObject indicator;
+    private GameObject istantiatedIndicator;
     private int RewindFrameRate = -1;
 
     [SerializeField] private string sceneName;
@@ -189,13 +190,19 @@ public class GameController : MonoBehaviour
             allReferencedObjects.Clear();
             foreach (var kvp in other.allReferencedObjects)
             {
-                allReferencedObjects[kvp.Key] = kvp.Value;
+                if (!(kvp.Value is ITimeTracker tracker) || !tracker.ShouldPoolObject) // skip potentially stale time trackers
+                {
+                    allReferencedObjects[kvp.Key] = kvp.Value;
+                }
             }
             
             timeTrackerObjects.Clear();
             foreach (var kvp in other.timeTrackerObjects)
             {
-                timeTrackerObjects[kvp.Key] = kvp.Value;
+                if (!kvp.Value.ShouldPoolObject) // skip potentially stale time trackers
+                {
+                    timeTrackerObjects[kvp.Key] = kvp.Value;
+                }
             }
 
             snapshotHistoryById.Clear();
@@ -577,11 +584,11 @@ public class GameController : MonoBehaviour
             Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!", GetObjectByID(timeTracker.ID));
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!", GetObjectByID(timeEvent.TargetID));
             }
             if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!", GetObjectByID(timeTracker.ID));
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!", GetObjectByID(timeEvent.TargetID));
             }
         }
         else
@@ -693,7 +700,7 @@ public class GameController : MonoBehaviour
                 
                 // show player & add back to tracking list
                 Player.gameObject.SetActive(true);
-                
+
                 OccupiedTimeMachine.Occupied.Current = true;
                 OccupiedTimeMachine.Occupied.SaveSnapshot(SnapshotHistoryById[OccupiedTimeMachine.ID][TimeStep], force:true);
                 OccupiedTimeMachine.IsAnimatingOpenClose = true;
@@ -732,7 +739,7 @@ public class GameController : MonoBehaviour
             }
             catch (TimeAnomalyException e)
             {
-                Instantiate(indicator, e.Cause.gameObject.transform.position, e.Cause.gameObject.transform.rotation);
+                istantiatedIndicator = Instantiate(indicator, e.Cause.gameObject.transform.position, e.Cause.gameObject.transform.rotation);
                 SetPause(true);
                 ShowRetryPopup(e);
             }
@@ -897,7 +904,7 @@ public class GameController : MonoBehaviour
 
         if (Player.FlagDestroy)
         {
-            throw new TimeAnomalyException("Oh no!", "You died!", GetObjectByID(Player.ID));
+            throw new TimeAnomalyException("Oh no!", "You died!", Player);
         }
 
         int thisTimeStep = TimeStep;
@@ -941,6 +948,10 @@ public class GameController : MonoBehaviour
                 SaveObjectToPool(timeTracker);
                 TimeTrackerObjects.Remove(id);
                 AllReferencedObjects.Remove(id);
+                if (timeTracker is TimeMachineController timeMachine)
+                {
+                    timeMachines.Remove(timeMachine);
+                }
                 timeTracker = null;
             }
             if (!alreadyDestroyed
@@ -952,7 +963,7 @@ public class GameController : MonoBehaviour
                 timeTracker.gameObject.SetActive(true);
             }
             
-            if (Player.ID == id || timeTracker != null) continue; // object already exists, so continue 
+            if (timeTracker != null) continue; // object already exists, so continue 
 
             int startTimeStep = HistoryStartById[id];
             int relativeSnapshotIndex = timeStep - startTimeStep;
@@ -977,6 +988,10 @@ public class GameController : MonoBehaviour
                         SaveObjectToPool(timeTracker);
                         TimeTrackerObjects.Remove(i);
                         AllReferencedObjects.Remove(i);
+                        if (timeTracker is TimeMachineController timeMachine)
+                        {
+                            timeMachines.Remove(timeMachine);
+                        }
                     }
                     else
                     {
@@ -1106,6 +1121,10 @@ public class GameController : MonoBehaviour
                         SaveObjectToPool(timeTracker);
                         TimeTrackerObjects.Remove(i);
                         AllReferencedObjects.Remove(i);
+                        if (timeTracker is TimeMachineController timeMachine)
+                        {
+                            timeMachines.Remove(timeMachine);
+                        }
                     }
                     else
                     {
@@ -1156,18 +1175,20 @@ public class GameController : MonoBehaviour
         // load player snapshot from current state (at the timestep of the spawnState)
         Player.ForceLoadSnapshot(currentState.snapshotHistoryById[Player.ID][spawnState.timeStep]);
 
-        // pool objects not yet created/active
+        // pool all objects
         for(int id = 0; id < NextID; id++)
         {
-            // destroy if not found in history (i.e. was created this frame, or if it starts after the spawn time)
-            bool destroy = !HistoryStartById.TryGetValue(id, out var startTime) || startTime > spawnState.timeStep; 
-            if (destroy && TimeTrackerObjects.TryGetValue(id, out var timeTracker))
+            if (TimeTrackerObjects.TryGetValue(id, out var timeTracker))
             {
                 if(timeTracker.ShouldPoolObject)
                 {
                     SaveObjectToPool(timeTracker);
                     TimeTrackerObjects.Remove(id);
                     AllReferencedObjects.Remove(id);
+                    if (timeTracker is TimeMachineController timeMachine)
+                    {
+                        timeMachines.Remove(timeMachine);
+                    }
                 }
                 else
                 {
@@ -1181,6 +1202,12 @@ public class GameController : MonoBehaviour
         SetPause(false);
         
         SetItemInUI(Player.ItemID); // reset UI for player's item
+        
+        // delete anomaly error
+        if (istantiatedIndicator != null)
+        {
+            Destroy(istantiatedIndicator);
+        }
     }
 
     public void SetItemInUI(int id)
@@ -1292,7 +1319,7 @@ public class GameController : MonoBehaviour
             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
             if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!", GetObjectByID(p.ID));
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!", p);
             }
         }
     }
@@ -1309,11 +1336,11 @@ public class GameController : MonoBehaviour
             
             if (currentActivated && historyCountdown != -1)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating an already active Time Machine!", GetObjectByID(timeMachine.ID));
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating an already active Time Machine!", timeMachine);
             }
             if (historyCountdown != -1 && currentCountdown != -1 && currentCountdown != historyCountdown)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!", GetObjectByID(timeMachine.ID));
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!", timeMachine);
             }
         }
     }

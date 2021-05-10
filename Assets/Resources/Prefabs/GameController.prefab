@@ -60,3 +60,5 @@ MonoBehaviour:
   userPause: 0
   pauseScreen: {fileID: 0}
   actualTimeChange: 0
+  indicator: {fileID: 6563743087319956307, guid: 65bd86ed0b86d12409f639e24eb37200, type: 3}
+  sceneName: 
