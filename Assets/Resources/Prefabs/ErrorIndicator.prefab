@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6563743087319956305}
   - component: {fileID: 6563743087319956304}
   - component: {fileID: 6563743087319956311}
-  - component: {fileID: 6563743087319956310}
   - component: {fileID: 6050971181920639902}
   m_Layer: 0
   m_Name: bullet
@@ -29,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 6563743087319956307}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 13.92933, y: -6.1393375, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -75,7 +74,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 2067228763910d147a880c5de8cb152c, type: 3}
-  m_Color: {r: 0.8588236, g: 0.29803923, b: 0.24705884, a: 1}
+  m_Color: {r: 1, g: 0.15686275, b: 0.5764706, a: 0.5058824}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -101,22 +100,6 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
---- !u!114 &6563743087319956310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6563743087319956307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a73031324da760479255789cfcbee71, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeActive: 1
-  controller: {fileID: 0}
-  mainUIcanvas: {fileID: 0}
-  retryPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
 --- !u!50 &6050971181920639902
 Rigidbody2D:
   serializedVersion: 4

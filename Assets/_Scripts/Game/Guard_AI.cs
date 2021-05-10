@@ -17,7 +17,7 @@ public class Guard_AI : BasicTimeTracker
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
     Vector2 startPos;
-    float left, right, minDist, toFire = 0f, dist =0f;
+    float left, right, minDist, toFire = 0f, dist = 0f, shotAngle = 0f;
     bool wall = false, seen = false;
     GameObject closest;
     private bool _alertState = false;
@@ -101,9 +101,7 @@ public class Guard_AI : BasicTimeTracker
 
         GameObject b = Instantiate(bullet, gameObject.transform.position, gameObject.transform.rotation);
         b.GetComponent<ShotLife>().Init(gameController.GetComponent<GameController>(), mainUIcanvas, retryPopupPrefab, bulletLife);
-        b.GetComponent<LineRenderer>().SetPosition(0, gameObject.transform.position);
-        b.GetComponent<LineRenderer>().SetPosition(1, target.transform.position);
-        b.GetComponent<CircleCollider2D>().offset = target.transform.position - gameObject.transform.position;
+        b.transform.Rotate(0f, 0f, shotAngle);
 
     }
 
@@ -119,12 +117,12 @@ public class Guard_AI : BasicTimeTracker
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
             direc = p.transform.position - gameObject.transform.position;
             angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
-            angle = Mathf.Abs(angle);
 
-            if (dist < minDist && ((angle <= 45 && movingRight) || (angle >= 135 && !movingRight)))
+            if (dist < minDist && ((Mathf.Abs(angle) <= 45 && movingRight) || (Mathf.Abs(angle) >= 135 && !movingRight)))
             {
                 minDist = dist;
                 closest = p.gameObject;
+                shotAngle = angle;
             }
         }
         

@@ -18,9 +18,11 @@ using Vector2 = UnityEngine.Vector2;
 public class TimeAnomalyException : Exception
 {
     public string Title;
-    public TimeAnomalyException(string title, string reason) : base($"Time Anomaly: {reason}")
+    public ICustomObject Cause;
+    public TimeAnomalyException(string title, string reason, ICustomObject cause) : base($"Time Anomaly: {reason}")
     {
         Title = title;
+        Cause = cause;
     }
 }
 
@@ -70,6 +72,8 @@ public class GameController : MonoBehaviour
 	public bool userPause = false; 
 	public GameObject pauseScreen; 
 	public float actualTimeChange;
+    public GameObject indicator;
+    private int RewindFrameRate = -1;
 
     [SerializeField] private string sceneName;
 	
@@ -573,11 +577,11 @@ public class GameController : MonoBehaviour
             Log($"Failed: ExecuteEvent({timeEvent.SourceID}, {timeEvent.Type.ToString()}, {timeEvent.TargetID}, {timeEvent.OtherData})");
             if (timeEvent.Type == TimeEvent.EventType.TIME_TRAVEL)
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to enter the Time Machine!", GetObjectByID(timeTracker.ID));
             }
             if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger was nowhere to be found to activate the Time Machine!", GetObjectByID(timeTracker.ID));
             }
         }
         else
@@ -673,7 +677,7 @@ public class GameController : MonoBehaviour
         if (AnimateRewind)
         {
             Player.gameObject.SetActive(false);
-            AnimateFrame -= TIME_TRAVEL_REWIND_MULT;
+            AnimateFrame -= Mathf.Max(RewindFrameRate, TIME_TRAVEL_REWIND_MULT);
             AnimateFrame = Math.Max(AnimateFrame, TimeStep);  
             LoadSnapshotFull(AnimateFrame, true, forceLoad:true);
             Physics2D.Simulate(Time.fixedDeltaTime); // needed to update rigidbodies after loading
@@ -728,6 +732,7 @@ public class GameController : MonoBehaviour
             }
             catch (TimeAnomalyException e)
             {
+                Instantiate(indicator, e.Cause.gameObject.transform.position, e.Cause.gameObject.transform.rotation);
                 SetPause(true);
                 ShowRetryPopup(e);
             }
@@ -892,7 +897,7 @@ public class GameController : MonoBehaviour
 
         if (Player.FlagDestroy)
         {
-            throw new TimeAnomalyException("Oh no!", "You died!");
+            throw new TimeAnomalyException("Oh no!", "You died!", GetObjectByID(Player.ID));
         }
 
         int thisTimeStep = TimeStep;
@@ -1287,7 +1292,7 @@ public class GameController : MonoBehaviour
             Vector2 historyPosition = GetSnapshotValue(p, TimeStep, p.Position.HistoryName, Vector2.positiveInfinity);
             if (Vector2.Distance(historyPosition, p.transform.position) > POSITION_ANOMALY_ERROR)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger was unable to follow his previous path of motion!", GetObjectByID(p.ID));
             }
         }
     }
@@ -1304,11 +1309,11 @@ public class GameController : MonoBehaviour
             
             if (currentActivated && historyCountdown != -1)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating an already active Time Machine!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating an already active Time Machine!", GetObjectByID(timeMachine.ID));
             }
             if (historyCountdown != -1 && currentCountdown != -1 && currentCountdown != historyCountdown)
             {
-                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!");
+                throw new TimeAnomalyException(symmetryBrokenTitle, "Doppelganger tried activating a Time Machine in count-down!", GetObjectByID(timeMachine.ID));
             }
         }
     }
@@ -1343,6 +1348,7 @@ public class GameController : MonoBehaviour
         AnimateFrame = TimeStep;
         TimeStep = timeTravelStep;
         OccupiedTimeMachine = timeMachine;
+        RewindFrameRate = (AnimateFrame - TimeStep) / 60;
 
         this.Player.PlayerInput.enabled = false;
         

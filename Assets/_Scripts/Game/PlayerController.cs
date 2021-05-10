@@ -316,7 +316,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
                 {
                     gameController.LogError($"Player {ID} could not grab {timeEvent.TargetID}");
                     throw new TimeAnomalyException("Time Anomaly!",
-                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}");
+                        $"Doppelganger could not grab the {gameController.GetUserFriendlyName(timeEvent.TargetID)}",
+                        gameController.GetObjectByID(ID));
                 }
             }
         } // end PLAYER_GRAB
@@ -337,7 +338,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not use the Time Machine!", gameController.GetObjectByID(ID));
             }
         } // end TIME_TRAVEL
         else if (timeEvent.Type == TimeEvent.EventType.ACTIVATE_TIME_MACHINE)
@@ -346,7 +347,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
             if (timeMachine == null || !timeMachine.IsTouching(gameObject))
             {
-                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!");
+                throw new TimeAnomalyException("Time Anomaly!", "Doppelganger could not activate the Time Machine!", gameController.GetObjectByID(ID));
             }
         } // end ACTIVATE_TIME_MACHINE
     }
