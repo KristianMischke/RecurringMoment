@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GrabCollider: {fileID: 5323333000555512028}
-  maxHorizontalSpeed: 15
+  maxHorizontalSpeed: 12
   _jumpVelocityChange: 13
   _jumpAcceleration: 20
   movementMultiplier: 40
