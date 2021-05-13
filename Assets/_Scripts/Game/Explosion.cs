@@ -14,6 +14,8 @@ public class Explosion : BasicTimeTracker
 	public CircleCollider2D explosionArea;
 	
 	private LineRenderer _lineRenderer;
+	public Material fire;
+	public Material smoke; 
 
 	public LineRenderer LineRenderer
 	{
@@ -75,6 +77,21 @@ public class Explosion : BasicTimeTracker
 		base.GameUpdate();
 
 		// shrink radius on time
+		var currParticle = blastZone.GetComponent<ParticleSystemRenderer>(); 
+		float timeLeft = destroyStep - (float)gameController.TimeStep; 
+		if ( timeLeft < (lifetime / 2))
+		{
+			currParticle.material = smoke; 
+			Debug.Log("Smoke - Time left is : " + timeLeft); 
+		}
+		else
+		{
+			currParticle.material = fire; 
+			Debug.Log("FIRE - Time left is : " + timeLeft); 
+		
+			
+		}
+		
 		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
 		
 

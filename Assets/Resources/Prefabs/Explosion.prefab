@@ -47,12 +47,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a472f8b2dd285d42b4810b84db0ca9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prevFlagDestroy: 0
   _shouldPoolObject: 1
   _isItemable: 0
   radius: 3.33
   lifetime: 20
   blastZone: {fileID: 0}
   explosionArea: {fileID: 0}
+  fire: {fileID: 2100000, guid: 1eadbcadaa6c8b6488f82099ae5e9e4e, type: 2}
+  smoke: {fileID: 2100000, guid: fdbe0a2c4b428654fa086e80c8abf075, type: 2}
   destroyStep: -1
 --- !u!120 &-8763915034760376143
 LineRenderer:
@@ -342,7 +345,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.5566038, g: 0.06086865, b: 0.023629395, a: 1}
+      maxColor: {r: 0.9433962, g: 0.88980013, b: 0.88554645, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 0.55344284, b: 0, a: 1}
@@ -850,7 +853,7 @@ ParticleSystem:
     m_Mesh: {fileID: 0}
     m_MeshRenderer: {fileID: 0}
     m_SkinnedMeshRenderer: {fileID: 0}
-    m_Sprite: {fileID: 0}
+    m_Sprite: {fileID: 21300000, guid: 64d27548508547d4ca0b254a58240f72, type: 3}
     m_SpriteRenderer: {fileID: 0}
     m_UseMeshMaterialIndex: 0
     m_UseMeshColors: 1
@@ -1415,7 +1418,7 @@ ParticleSystem:
         m_RotationOrder: 4
     separateAxes: 0
   ColorModule:
-    enabled: 1
+    enabled: 0
     gradient:
       serializedVersion: 2
       minMaxState: 1
@@ -4886,7 +4889,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: fdbe0a2c4b428654fa086e80c8abf075, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4920,7 +4923,7 @@ ParticleSystemRenderer:
   m_RenderAlignment: 0
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
-  m_UseCustomVertexStreams: 0
+  m_UseCustomVertexStreams: 1
   m_EnableGPUInstancing: 1
   m_ApplyActiveColorSpace: 1
   m_AllowRoll: 1
