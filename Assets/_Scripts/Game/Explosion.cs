@@ -53,7 +53,9 @@ public class Explosion : BasicTimeTracker
 		 ); 
 		 
 		 **/
-		
+		var currParticle = blastZone.textureSheetAnimation;
+		currParticle.startFrame = 1;
+		currParticle.rowIndex = 1;
 		
 		
 		LineRenderer.startColor = Color.red;
@@ -77,7 +79,14 @@ public class Explosion : BasicTimeTracker
 		base.GameUpdate();
 
 		// shrink radius on time
-		var currParticle = blastZone.GetComponent<ParticleSystemRenderer>(); 
+		var currParticle = blastZone.textureSheetAnimation;
+		//currParticle.startFrame = 1; // for the smoke
+		float timeLeft = destroyStep - (float)gameController.TimeStep; 
+		if ( timeLeft < (lifetime / 2))
+		{
+			currParticle.rowIndex = 0; 
+		}
+		/**var currParticle = blastZone.GetComponent<ParticleSystemRenderer>(); 
 		float timeLeft = destroyStep - (float)gameController.TimeStep; 
 		if ( timeLeft < (lifetime / 2))
 		{
@@ -91,6 +100,7 @@ public class Explosion : BasicTimeTracker
 		
 			
 		}
+		**/
 		
 		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
 		
