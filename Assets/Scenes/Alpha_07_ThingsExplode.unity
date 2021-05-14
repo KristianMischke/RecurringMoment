@@ -659,7 +659,7 @@ PrefabInstance:
     - target: {fileID: 1921221333070053915, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: f4945dbde12dc4de49cd9e88d95631ec, type: 3}
+      objectReference: {fileID: 21300000, guid: cf86c42f9cc3c41a5805fff01fdeaaee, type: 3}
     - target: {fileID: 1921221333070053915, guid: 1caad679b2fe80c4b9b422a98f374bce, type: 3}
       propertyPath: m_DrawMode
       value: 2
