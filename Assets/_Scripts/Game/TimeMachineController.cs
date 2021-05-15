@@ -90,6 +90,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     //TODO: need way to handle TimeMachine folding before coming item!
     public bool SetItemState(bool state)
     {
+        if (IsAnimatingFold || IsAnimatingUnfold) // can't pick up while animating
+            return false;
+        
         if (state) // trying to turn into an item
         {
             // time machine is occupied or activated (or not foldable), cannot move it
@@ -112,8 +115,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
                 if (hitObject == gameObject || hitTimeTracker is PlayerController || hitTimeTracker == this) continue;
 
-                // cannot place time machine ontop of ITimeTracker
+                // cannot place time machine on top of ITimeTracker
                 if (hitTimeTracker != null)
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+
+                // cannot place time machine on top of button 
+                if (hitObject.GetComponent<ButtonController>() != null)
                 {
                     gameObject.SetActive(false);
                     return false;
