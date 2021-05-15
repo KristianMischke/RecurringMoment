@@ -366,22 +366,23 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
+        
+        Color indicatorColor = Color.yellow;
         if (Occupied.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(0f, 1f, 0f));
+            indicatorColor = new Color(0f, 1f, 0f);
         }
         else if (Activated.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0f, 0f));
+            indicatorColor = new Color(1f, 0f, 0f);
         }
         else if (displayCountdown >= 0)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0.7f, 0f));
+            indicatorColor = new Color(1f, 0.7f, 0f);
         }
-        else
-        {
-            propertyBlock.SetColor(MainColor, new Color(1f, 1f, 0f));
-        }
+
+        timeText.color = indicatorColor;
+        propertyBlock.SetColor(MainColor, indicatorColor);
         renderer.SetPropertyBlock(propertyBlock);
     }
 
