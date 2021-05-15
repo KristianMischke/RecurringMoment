@@ -37,26 +37,9 @@ public class Explosion : BasicTimeTracker
 	public void DrawExplosion()
 	{
 		// stting up the particle system instead 
-		 blastZone = GetComponent<ParticleSystem>();
-		 explosionArea = GetComponent<CircleCollider2D>(); 
-		 explosionArea.radius = radius; 
-		 
-		 /**
-		 var em = blastZone.emission;
-		 em.enabled = true;
-		 em.type = ParticleSystemEmissionType.Time;
-		 em.SetBursts(
-		 new ParticleSystem.Burst[]{
-			 new ParticleSystem.Burst(0.0f, 500),
-			 //new ParticleSystem.Burst(0.00005f, 500)
-		 }
-		 ); 
-		 
-		 **/
-		var currParticle = blastZone.textureSheetAnimation;
-		currParticle.startFrame = 1;
-		currParticle.rowIndex = 1;
-		
+		blastZone = GetComponent<ParticleSystem>();
+		explosionArea = GetComponent<CircleCollider2D>();
+		explosionArea.radius = radius;
 		
 		LineRenderer.startColor = Color.red;
 		LineRenderer.endColor = Color.red;
@@ -79,32 +62,8 @@ public class Explosion : BasicTimeTracker
 		base.GameUpdate();
 
 		// shrink radius on time
-		var currParticle = blastZone.textureSheetAnimation;
-		//currParticle.startFrame = 1; // for the smoke
-		float timeLeft = destroyStep - (float)gameController.TimeStep; 
-		if ( timeLeft < (lifetime / 2))
-		{
-			currParticle.rowIndex = 0; 
-		}
-		/**var currParticle = blastZone.GetComponent<ParticleSystemRenderer>(); 
-		float timeLeft = destroyStep - (float)gameController.TimeStep; 
-		if ( timeLeft < (lifetime / 2))
-		{
-			currParticle.material = smoke; 
-			Debug.Log("Smoke - Time left is : " + timeLeft); 
-		}
-		else
-		{
-			currParticle.material = fire; 
-			Debug.Log("FIRE - Time left is : " + timeLeft); 
-		
-			
-		}
-		**/
-		
 		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
 		
-
 		// if the game is past or at the frame we disappear, destroy us 
 		if (gameController.TimeStep >= destroyStep)
 		{
