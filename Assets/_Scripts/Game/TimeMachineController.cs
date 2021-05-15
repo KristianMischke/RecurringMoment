@@ -381,7 +381,6 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             indicatorColor = new Color(1f, 0.7f, 0f);
         }
 
-        timeText.color = indicatorColor;
         propertyBlock.SetColor(MainColor, indicatorColor);
         renderer.SetPropertyBlock(propertyBlock);
     }
