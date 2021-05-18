@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[ExecuteInEditMode]
 public class SelectSceneTimeMachine : MonoBehaviour
 {
     private PlayerController touchingPlayer;
@@ -23,6 +24,9 @@ public class SelectSceneTimeMachine : MonoBehaviour
 	//public int currLevel = 0; 
 	public string writeStuffHereToShow;
 
+	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
+	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+	
     void Start()
     {
         int numPlays = PlayerPrefs.GetInt($"{MyScene}", defaultValue:GameController.SCENE_LOCKED);
@@ -30,32 +34,33 @@ public class SelectSceneTimeMachine : MonoBehaviour
         _didCompleteScene = numPlays > 0;
         _bestTime = PlayerPrefs.GetFloat($"{MyScene}_time", defaultValue:float.PositiveInfinity);
         
-		
-		
-		
-		levelShow = GetComponentInChildren<Canvas>().GetComponentInChildren<BoxCollider2D>().GetComponentInChildren<TMP_Text>();
-		
-	
 		levelShow.text = writeStuffHereToShow; 
-		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false); 
-		
+		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false);
+
+		Color indicatorColor;
         if (!_sceneIsUnlocked) // occupied color when locked
         {
-            renderer.color = new Color(0.8f, 0.8f, 1f);
+	        indicatorColor = new Color(1f, 0f, 0f);
             timeText.text = "LOCKED";
         }
         else if (!_didCompleteScene) // unlocked, not completed, so active color 
         {
-            renderer.color = new Color(1f, 1f, 0.8f);
+	        indicatorColor = Color.yellow;
             timeText.text = "READY";
         }
         else
         {
-            renderer.color = new Color(1f, 1f, 1f); // completed, so normal (TODO: we should rethink these in beta)
+	        indicatorColor = new Color(0f, 1f, 0f);
             TimeSpan timeSpan = TimeSpan.FromSeconds(_bestTime);
             timeText.text = timeSpan.ToString(@"mm\:ss\.ff");
         }
-		
+        
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
+        
+        timeText.color = indicatorColor;
+        propertyBlock.SetColor(MainColor, indicatorColor);
+        renderer.SetPropertyBlock(propertyBlock);
     }
 
     public void Update()

@@ -1105,15 +1105,23 @@ public class GameController : MonoBehaviour
                 break;
             }
 
-            timeTracker.Position.Current = dropPos;
+            Vector2 prevPosition = timeTracker.Position.Current;
+            timeTracker.Position.Current = dropPos; // move item to drop position
 
-            // copy player velocity when dropping
-            if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX || GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+            if (timeTracker.SetItemState(false))
             {
-                timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+                // copy player velocity when dropping
+                if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX ||
+                    GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+                {
+                    timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+                }
+
+                return true;
             }
             
-            return timeTracker.SetItemState(false);
+            timeTracker.Position.Current = prevPosition; // restore position if fail to drop
+            return false;
         }
         else
         {
