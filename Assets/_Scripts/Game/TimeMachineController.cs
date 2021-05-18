@@ -270,7 +270,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             if (playerID.Current != -1 || playerID.History != -1) // keep player on TimeMachine
             {
-                bool isAnimating = animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+                bool isAnimating = isFoldable
+                                    ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
+                                    : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
                 PlayerController player = gameController.GetObjectByID(playerID.Current == -1 ? playerID.History : playerID.Current) as PlayerController;
                 player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
                 player.Velocity.Current = Vector2.zero;
@@ -282,7 +284,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         if (doneTimeTravelPlayerID != -1) // correct sorting order for player at beginning of replaying
         {
-            bool isAnimating = animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+            bool isAnimating = isFoldable
+                                ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
+                                : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
             PlayerController player = gameController.GetObjectByID(doneTimeTravelPlayerID) as PlayerController;
             player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
             player.Velocity.Current = Vector2.zero;

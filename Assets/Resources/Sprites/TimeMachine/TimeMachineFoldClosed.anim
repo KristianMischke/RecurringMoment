@@ -29,6 +29,15 @@ AnimationClip:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -48,6 +57,15 @@ AnimationClip:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -55,9 +73,39 @@ AnimationClip:
     path: Art/Color
     classID: 1
     script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_IsActive
+    path: Art/TimeMachine_Door
+    classID: 1
+    script: {fileID: 0}
   m_PPtrCurves:
   - curve:
     - time: 0
+      value: {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
+    - time: 0.016666668
       value: {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
     attribute: m_Sprite
     path: Art/Color
@@ -65,9 +113,20 @@ AnimationClip:
     script: {fileID: 0}
   - curve:
     - time: 0
-      value: {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
+      value: {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
+    - time: 0.016666668
+      value: {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
     attribute: m_Sprite
     path: Art/TimeMachineTemp
+    classID: 212
+    script: {fileID: 0}
+  - curve:
+    - time: 0
+      value: {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    - time: 0.016666668
+      value: {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    attribute: m_Sprite
+    path: Art/TimeMachine_Door
     classID: 212
     script: {fileID: 0}
   m_SampleRate: 60
@@ -92,6 +151,13 @@ AnimationClip:
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
+      path: 1714923734
+      attribute: 2086281974
+      script: {fileID: 0}
+      typeID: 1
+      customType: 0
+      isPPtrCurve: 0
+    - serializedVersion: 2
       path: 1325221420
       attribute: 0
       script: {fileID: 0}
@@ -105,15 +171,26 @@ AnimationClip:
       typeID: 212
       customType: 23
       isPPtrCurve: 1
+    - serializedVersion: 2
+      path: 1714923734
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
     pptrCurveMapping:
     - {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
-    - {fileID: 21300000, guid: fd54652800dfe874995720da2d705f3c, type: 3}
+    - {fileID: 21300000, guid: d2eedb5b83c94074e81b66c18b64e883, type: 3}
+    - {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
+    - {fileID: 21300000, guid: 5e5221ee51dd08d4886cc629404ae0fe, type: 3}
+    - {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
+    - {fileID: 21300000, guid: 21ed67173291e394aa59f027573c2c19, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.016666668
+    m_StopTime: 0.033333335
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -141,6 +218,15 @@ AnimationClip:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -160,11 +246,48 @@ AnimationClip:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_IsActive
     path: Art/Color
+    classID: 1
+    script: {fileID: 0}
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.016666668
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_IsActive
+    path: Art/TimeMachine_Door
     classID: 1
     script: {fileID: 0}
   m_EulerEditorCurves: []

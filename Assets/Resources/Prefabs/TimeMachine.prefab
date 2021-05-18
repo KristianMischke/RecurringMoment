@@ -418,7 +418,7 @@ MonoBehaviour:
   IsAnimatingOpenClose: 0
   IsAnimatingFold: 0
   IsAnimatingUnfold: 0
-  playerID: -1
+  doneTimeTravelPlayerID: -1
   isFoldable: 0
 --- !u!114 &2188584014909302519
 MonoBehaviour:
