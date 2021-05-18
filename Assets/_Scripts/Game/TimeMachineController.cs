@@ -73,7 +73,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             Position.Copy(otherTM.Position);
             ItemForm = otherTM.ItemForm;
 
-            playerID = otherTM.playerID;
+            playerID.Copy(otherTM.playerID);
             doneTimeTravelPlayerID = otherTM.doneTimeTravelPlayerID;
             IsAnimatingOpenClose = otherTM.IsAnimatingOpenClose;
             IsAnimatingFold = otherTM.IsAnimatingFold;
@@ -218,6 +218,8 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     {
         if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
             return false;
+        if (IsAnimatingFold || IsAnimatingUnfold) // don't allow activation while folding
+            return false;
 
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
@@ -303,7 +305,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             player.isSpriteOrderForced = true;
             bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
             player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
-            if (IsAnimClosedState && gameController.TimeStep > ActivatedTimeStep.History + 5)
+            if (!isBeginning && gameController.TimeStep > ActivatedTimeStep.History + 5)
             {
                 doneTimeTravelPlayerID = -1;
                 player.isSpriteOrderForced = false;
@@ -322,6 +324,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             IsAnimatingFold = false;
             animator.SetBool(AnimateFolding, false);
         }
+
+        if (Countdown.Current == -1) Countdown.Current = Countdown.History;
+        if (ActivatedTimeStep.Current == -1) ActivatedTimeStep.Current = Countdown.History;
         
         if (Countdown.Current > 0)
         {

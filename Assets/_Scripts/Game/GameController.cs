@@ -1466,6 +1466,7 @@ public class GameController : MonoBehaviour
             otherTimeMachine.ActivatedTimeStep.Current = -1;
             otherTimeMachine.Activated.Current = false;
             otherTimeMachine.Occupied.Current = false;
+            otherTimeMachine.playerID.Current = -1;
             SaveSnapshot(timeTravelStep, otherTimeMachine, force:true);
         }
 
