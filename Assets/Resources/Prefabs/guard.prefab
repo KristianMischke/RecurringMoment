@@ -258,13 +258,13 @@ MonoBehaviour:
   moveSpeed: 3.5
   movingRight: 0
   bullet: {fileID: 7669242284398269772, guid: 68bc889f5993ce943b4a238132b08bcf, type: 3}
-  fireRateSeconds: 2
   range: 8
   bulletLife: 0.2
   mainUIcanvas: {fileID: 0}
   retryPopupPrefab: {fileID: 2968607187856570530, guid: a9538156ed164644cbdc02a4981576c8, type: 3}
   _blastSound: {fileID: 8300000, guid: 0933a7b0c5595b5468393cf6dc0022d2, type: 3}
   _alertSound: {fileID: 8300000, guid: aadf1e1fb211ce9438e9ee23531b235d, type: 3}
+  fireRateSeconds: 1.5
 --- !u!82 &-2296756079291348057
 AudioSource:
   m_ObjectHideFlags: 0
