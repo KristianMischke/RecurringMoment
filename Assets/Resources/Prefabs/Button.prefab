@@ -337,6 +337,7 @@ MonoBehaviour:
   NormalArt: {fileID: 978344198901258342}
   HalfPressArt: {fileID: 1288530035}
   collisionCount: 1
+  _buttonClick: {fileID: 8300000, guid: 3eb66bcfb6c535843a53ed211c923563, type: 3}
 --- !u!114 &4124366473047098373
 MonoBehaviour:
   m_ObjectHideFlags: 0

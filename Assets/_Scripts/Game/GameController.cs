@@ -913,6 +913,7 @@ public class GameController : MonoBehaviour
 
         if (Player.FlagDestroy)
         {
+	    this.Player.Animator.Play("Base Layer.Player_Death", 0, 0);
             throw new TimeAnomalyException("Oh no!", "You died!", Player);
         }
 
@@ -968,7 +969,7 @@ public class GameController : MonoBehaviour
                 && timeTracker != null
                 && !timeTracker.ShouldPoolObject)
             {
-                // FLAG_DESTORY is false this timeStep AND this object is not pooled
+                // FLAG_DESTROY is false this timeStep AND this object is not pooled
                 timeTracker.FlagDestroy = false; // reset current FlagDestroy value
                 timeTracker.gameObject.SetActive(true);
             }

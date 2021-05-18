@@ -16,30 +16,25 @@ public class DoorController : MonoBehaviour
 
     [SerializeField] GameObject OpenObject;
     [SerializeField] GameObject ClosedObject;
-    
 
     private void Start()
     {
-        originalPos = transform.position;
+        originalPos = gameObject.transform.Find("Art/MovingDoor").position;
     }
 
     void Update()
     {
         if (AllActivated())
         {
-            OpenObject.SetActive(true); //TODO: animate door instead of this
-            ClosedObject.SetActive(false);
             timer += Time.deltaTime;
         }
         else
         {
-            OpenObject.SetActive(false); //TODO: animate door instead of this
-            ClosedObject.SetActive(true);
             timer -= Time.deltaTime;
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
 
-        transform.position = Vector3.Lerp(originalPos, originalPos + Vector2.up * (offset * (slideUp ? 1 : -1)), timer/slideTime);
+        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * (offset * (slideUp ? 1 : -1)), timer/slideTime);
     }
 
     private bool AllActivated()

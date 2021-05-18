@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5902393177812046686}
   - component: {fileID: 5323333000555512028}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: GrabTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4713130455693827866}
   - component: {fileID: 4713130455693827865}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PlayerTemp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -118,12 +118,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: c969398a59591ac4c8f3fa6c00fef679, type: 3}
+  m_Sprite: {fileID: 21300000, guid: da2545c04e5b34d4391151c9ea8d7ec7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.66, y: 3.35}
+  m_Size: {x: 19.2, y: 10.8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -225,6 +225,7 @@ MonoBehaviour:
   ItemID: -1
   facingRight: 1
   isSpriteOrderForced: 0
+  _grabAudio: {fileID: 8300000, guid: d933cdf6870742245b2310b32eb3c28d, type: 3}
 --- !u!114 &4052834050897800091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,7 +284,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4713130457110670756}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Art
   m_TagString: Untagged
   m_Icon: {fileID: 0}
