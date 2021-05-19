@@ -1207,12 +1207,16 @@ public class GameController : MonoBehaviour
 
     public void RetryLevel()
     {
+        if(userPause) Resume();
+        
         Debug.Log("---Retry---");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 
     public void RespawnLatest()
     {
+        if(userPause) Resume();
+        
         if (spawnState == null)
         {
             RetryLevel();
