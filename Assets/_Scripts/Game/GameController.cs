@@ -620,6 +620,27 @@ public class GameController : MonoBehaviour
             TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
             timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
+
+#if DEBUG
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            SceneManager.LoadScene(LevelEnd.levels[9]);
+        }
+        for (int i = 0; i <= 8; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && i+10 < LevelEnd.levels.Count)
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i+10]);
+                }
+                else
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i]);   
+                }
+            }
+        }
+#endif
     }
 
 
