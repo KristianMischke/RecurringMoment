@@ -184,7 +184,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1206121752218666647, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1464306616608368156, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1464306616608368156, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1464306616608368156, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3495908650747976827, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3495908650747976827, guid: 56f2419c429d05046b658a329d90d274, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4646922767513888001, guid: 56f2419c429d05046b658a329d90d274, type: 3}
       propertyPath: m_AnchorMax.y
@@ -2276,11 +2296,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5
+      value: 5.0001755
       objectReference: {fileID: 0}
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2500005
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580099, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Name
@@ -2336,11 +2356,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5
+      value: 5.0001755
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2500005
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
