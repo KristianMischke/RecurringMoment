@@ -384,7 +384,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         jump = false;
         isActivating = false;
         historyActivating = false;
-        ItemID = ItemID = -1;
+        ItemID = -1;
         DidTimeTravel = false;
         isSpriteOrderForced = false;
 
@@ -555,6 +555,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        int prevItemID = ItemID;
+        ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
+        if (prevItemID != -1 && ItemID == -1)
+        {
+            ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+        }
+        
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -575,7 +582,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        int prevItemID = ItemID;
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
+        if (prevItemID != -1 && ItemID == -1)
+        {
+            ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+        }
+        
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
