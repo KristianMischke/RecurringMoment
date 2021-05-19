@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
-public class DoorController : MonoBehaviour
+public class DoorController : BasicTimeTracker
 {
     public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 
@@ -22,25 +23,28 @@ public class DoorController : MonoBehaviour
     private void Start()
     {
         originalPos = gameObject.transform.Find("Art/MovingDoor").position;
-	collider = GetComponentInChildren<BoxCollider2D>();
-	_colliderDefaults = collider.size;
+	    collider = GetComponentInChildren<BoxCollider2D>();
+	    _colliderDefaults = collider.size;
     }
 
     void Update()
     {
+        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * offset, timer/slideTime);
+	    collider.size = Vector2.Lerp(_colliderDefaults, new Vector2(_colliderDefaults.x, 0), timer/slideTime);
+	    collider.offset = Vector2.Lerp(Vector2.zero, Vector2.down * offset / 2, timer/slideTime);
+    }
+
+    public override void GameUpdate()
+    {
         if (AllActivated())
         {
-            timer += Time.deltaTime;
+            timer += Time.fixedDeltaTime;
         }
         else
         {
-            timer -= Time.deltaTime;
+            timer -= Time.fixedDeltaTime;
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
-
-        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * offset, timer/slideTime);
-	collider.size = Vector2.Lerp(_colliderDefaults, new Vector2(_colliderDefaults.x, 0), timer/slideTime);
-	collider.offset = Vector2.Lerp(Vector2.zero, Vector2.down * offset / 2, timer/slideTime);
     }
 
     private bool AllActivated()
@@ -53,7 +57,24 @@ public class DoorController : MonoBehaviour
 
         return valid;
     }
+
+    public override bool ShouldPoolObject => false;
     
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force = false)
+    {
+        snapshotDictionary.Set(nameof(timer), timer, force:force, clearFuture:true);
+    }
+
+    public override void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        timer = snapshotDictionary.Get<float>(nameof(timer));
+    }
+
+    public override void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        timer = snapshotDictionary.Get<float>(nameof(timer));
+    }
+
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
