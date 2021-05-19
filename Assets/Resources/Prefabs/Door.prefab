@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 8877231957068217834}
   - component: {fileID: 8877231957068217623}
   - component: {fileID: 8877231957068217832}
-  m_Layer: 10
+  m_Layer: 8
   m_Name: MovingDoor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
