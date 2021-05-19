@@ -398,6 +398,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (!isSpriteOrderForced)
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+        }
+        else
+        {
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
     }
 

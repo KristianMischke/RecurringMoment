@@ -11,7 +11,9 @@ public class SelectSceneTimeMachine : MonoBehaviour
 {
     private PlayerController touchingPlayer;
 
-    public string MyScene;
+    public static List<string> levels = null;
+    public static List<string> levelTitles = null;
+    public int MySceneIndex = -1;
 
     private bool _didCompleteScene;
     private bool _sceneIsUnlocked;
@@ -21,20 +23,35 @@ public class SelectSceneTimeMachine : MonoBehaviour
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 	public TMP_Text levelShow;
-	//public int currLevel = 0; 
-	public string writeStuffHereToShow;
 
 	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
 	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
-	
-    void Start()
+
+	private void Awake()
+	{
+		if (levels == null)
+		{
+			TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
+			List<string> levelPairs = new List<string>(levelOrderText.text.Split(new char[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+			levels = new List<string>();
+			levelTitles = new List<string>();
+			foreach (string pair in levelPairs)
+			{
+				string[] split = pair.Split(';');
+				levels.Add(split[0]);
+				levelTitles.Add(split[1]);
+			}
+		}
+	}
+
+	void Start()
     {
-        int numPlays = PlayerPrefs.GetInt($"{MyScene}", defaultValue:GameController.SCENE_LOCKED);
+        int numPlays = PlayerPrefs.GetInt($"{levels[MySceneIndex]}", defaultValue:GameController.SCENE_LOCKED);
         _sceneIsUnlocked = numPlays != GameController.SCENE_LOCKED;
         _didCompleteScene = numPlays > 0;
-        _bestTime = PlayerPrefs.GetFloat($"{MyScene}_time", defaultValue:float.PositiveInfinity);
+        _bestTime = PlayerPrefs.GetFloat($"{levels[MySceneIndex]}_time", defaultValue:float.PositiveInfinity);
         
-		levelShow.text = writeStuffHereToShow; 
+		levelShow.text = levelTitles[MySceneIndex]; 
 		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false);
 
 		Color indicatorColor;
@@ -67,7 +84,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
     {
         if (_sceneIsUnlocked && touchingPlayer != null && touchingPlayer.IsActivating)
         {
-            SceneManager.LoadScene(MyScene);
+            SceneManager.LoadScene(levels[MySceneIndex]);
         }
 		if(touchingPlayer)
 		{

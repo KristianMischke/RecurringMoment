@@ -75,7 +75,7 @@ public class GameController : MonoBehaviour
     private AnomalyIndicator instantiatedIndicator;
     private int RewindFrameRate = -1;
 
-    [SerializeField] private string sceneName;
+    private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -342,6 +342,15 @@ public class GameController : MonoBehaviour
     
     void Start()
     {
+        int sceneNumStarts = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}_starts", defaultValue:0);
+        PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}_starts", ++sceneNumStarts);
+
+        int sceneIndex = LevelEnd.levels?.IndexOf(SceneManager.GetActiveScene().name) ?? -1;
+        if (sceneIndex >= 0 && sceneIndex < LevelEnd.levels.Count)
+        {
+            sceneName = LevelEnd.levelTitles[sceneIndex];
+        }
+
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
         timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");
@@ -617,6 +626,27 @@ public class GameController : MonoBehaviour
             TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
             timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
+
+#if DEBUG
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            SceneManager.LoadScene(LevelEnd.levels[9]);
+        }
+        for (int i = 0; i <= 8; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && i+10 < LevelEnd.levels.Count)
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i+10]);
+                }
+                else
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i]);   
+                }
+            }
+        }
+#endif
     }
 
 
@@ -1177,12 +1207,16 @@ public class GameController : MonoBehaviour
 
     public void RetryLevel()
     {
+        if(userPause) Resume();
+        
         Debug.Log("---Retry---");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 
     public void RespawnLatest()
     {
+        if(userPause) Resume();
+        
         if (spawnState == null)
         {
             RetryLevel();
