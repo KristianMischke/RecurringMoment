@@ -342,6 +342,9 @@ public class GameController : MonoBehaviour
     
     void Start()
     {
+        int sceneNumStarts = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}_starts", defaultValue:0);
+        PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}_starts", ++sceneNumStarts);
+    
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
         timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");

@@ -11,7 +11,8 @@ public class SelectSceneTimeMachine : MonoBehaviour
 {
     private PlayerController touchingPlayer;
 
-    public string MyScene;
+    public static List<string> levels;
+    public int MySceneIndex = -1;
 
     private bool _didCompleteScene;
     private bool _sceneIsUnlocked;
@@ -26,13 +27,19 @@ public class SelectSceneTimeMachine : MonoBehaviour
 
 	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
 	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
-	
-    void Start()
+
+	private void Awake()
+	{
+		TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
+		levels = new List<string>(levelOrderText.text.Split(new char[]{'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+	}
+
+	void Start()
     {
-        int numPlays = PlayerPrefs.GetInt($"{MyScene}", defaultValue:GameController.SCENE_LOCKED);
+        int numPlays = PlayerPrefs.GetInt($"{levels[MySceneIndex]}", defaultValue:GameController.SCENE_LOCKED);
         _sceneIsUnlocked = numPlays != GameController.SCENE_LOCKED;
         _didCompleteScene = numPlays > 0;
-        _bestTime = PlayerPrefs.GetFloat($"{MyScene}_time", defaultValue:float.PositiveInfinity);
+        _bestTime = PlayerPrefs.GetFloat($"{levels[MySceneIndex]}_time", defaultValue:float.PositiveInfinity);
         
 		levelShow.text = writeStuffHereToShow; 
 		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false);
@@ -67,7 +74,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
     {
         if (_sceneIsUnlocked && touchingPlayer != null && touchingPlayer.IsActivating)
         {
-            SceneManager.LoadScene(MyScene);
+            SceneManager.LoadScene(levels[MySceneIndex]);
         }
 		if(touchingPlayer)
 		{

@@ -3269,7 +3269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: TransitionToLevel
-      value: Alpha_00_MainMenu
+      value: Final_00_MainMenu
       objectReference: {fileID: 0}
     - target: {fileID: 298136408167728742, guid: 45711726b25185849a4b800edf7e2bcc, type: 3}
       propertyPath: gizmoColor.r
