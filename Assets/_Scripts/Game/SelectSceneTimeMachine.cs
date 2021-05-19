@@ -6,11 +6,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[ExecuteInEditMode]
 public class SelectSceneTimeMachine : MonoBehaviour
 {
     private PlayerController touchingPlayer;
 
-    public string MyScene;
+    public static List<string> levels = null;
+    public static List<string> levelTitles = null;
+    public int MySceneIndex = -1;
 
     private bool _didCompleteScene;
     private bool _sceneIsUnlocked;
@@ -20,49 +23,91 @@ public class SelectSceneTimeMachine : MonoBehaviour
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 	public TMP_Text levelShow;
-	//public int currLevel = 0; 
-	public string writeStuffHereToShow;
+	
+	[SerializeField] private Light lightLeft, lightRight;
+	private float _timer = 0;
+	//Used to control the pulse effect of the time machine lighting (3 seconds default)
+	private float _pulseTime = 2;
+	private bool _countUp = true;
 
-    void Start()
+	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
+	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+
+	private void Awake()
+	{
+		if (levels == null)
+		{
+			TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
+			List<string> levelPairs = new List<string>(levelOrderText.text.Split(new char[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+			levels = new List<string>();
+			levelTitles = new List<string>();
+			foreach (string pair in levelPairs)
+			{
+				string[] split = pair.Split(';');
+				levels.Add(split[0]);
+				levelTitles.Add(split[1]);
+			}
+		}
+	}
+
+	void Start()
     {
-        int numPlays = PlayerPrefs.GetInt($"{MyScene}", defaultValue:GameController.SCENE_LOCKED);
+        int numPlays = PlayerPrefs.GetInt($"{levels[MySceneIndex]}", defaultValue:GameController.SCENE_LOCKED);
         _sceneIsUnlocked = numPlays != GameController.SCENE_LOCKED;
         _didCompleteScene = numPlays > 0;
-        _bestTime = PlayerPrefs.GetFloat($"{MyScene}_time", defaultValue:float.PositiveInfinity);
+        _bestTime = PlayerPrefs.GetFloat($"{levels[MySceneIndex]}_time", defaultValue:float.PositiveInfinity);
         
-		
-		
-		
-		levelShow = GetComponentInChildren<Canvas>().GetComponentInChildren<BoxCollider2D>().GetComponentInChildren<TMP_Text>();
-		
-	
-		levelShow.text = writeStuffHereToShow; 
-		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false); 
-		
+		levelShow.text = levelTitles[MySceneIndex]; 
+		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false);
+
+		Color indicatorColor;
         if (!_sceneIsUnlocked) // occupied color when locked
         {
-            renderer.color = new Color(0.8f, 0.8f, 1f);
+	        indicatorColor = new Color(1f, 0f, 0f);
             timeText.text = "LOCKED";
         }
         else if (!_didCompleteScene) // unlocked, not completed, so active color 
         {
-            renderer.color = new Color(1f, 1f, 0.8f);
+	        indicatorColor = Color.yellow;
             timeText.text = "READY";
         }
         else
         {
-            renderer.color = new Color(1f, 1f, 1f); // completed, so normal (TODO: we should rethink these in beta)
+	        indicatorColor = new Color(0f, 1f, 0f);
             TimeSpan timeSpan = TimeSpan.FromSeconds(_bestTime);
             timeText.text = timeSpan.ToString(@"mm\:ss\.ff");
         }
-		
+        
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
+        
+        timeText.color = indicatorColor;
+        propertyBlock.SetColor(MainColor, indicatorColor);
+        renderer.SetPropertyBlock(propertyBlock);
+        
+        lightLeft.color = indicatorColor;
+        lightRight.color = indicatorColor;
+        if(_countUp)
+        {
+	        _timer += Time.deltaTime;
+	        _countUp = _timer <= _pulseTime;
+        }
+        else
+        {
+	        _timer -= Time.deltaTime;
+	        _countUp = _timer <= 0;
+        }
+        lightLeft.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+        lightRight.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+		lightLeft.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
+		lightRight.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
     }
 
     public void Update()
     {
         if (_sceneIsUnlocked && touchingPlayer != null && touchingPlayer.IsActivating)
         {
-            SceneManager.LoadScene(MyScene);
+            SceneManager.LoadScene(levels[MySceneIndex]);
         }
 		if(touchingPlayer)
 		{

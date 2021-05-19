@@ -15,6 +15,9 @@ public class ButtonController : ActivatableBehaviour
 
     public override bool IsActivated => triggeringObjects.Count >= collisionCount;
 
+    [SerializeField] private AudioClip _buttonClick;
+    private bool _clickReady = true;
+
     public void UpdateArt()
     {
         PressedArt.SetActive(IsActivated);
@@ -28,6 +31,11 @@ public class ButtonController : ActivatableBehaviour
         {
             triggeringObjects.Add(collision.gameObject);
         }
+	if(IsActivated && _clickReady)
+	{
+	    AudioSource.PlayClipAtPoint(_buttonClick, Camera.main.transform.position, 0.6f);
+	    _clickReady = false;
+	}
         UpdateArt();
     }
     void OnTriggerExit2D(Collider2D collision)
@@ -36,6 +44,10 @@ public class ButtonController : ActivatableBehaviour
         {
             triggeringObjects.Remove(collision.gameObject);
         }
+	if(!IsActivated)
+	{
+	    _clickReady = true;
+	}
         UpdateArt();
     }
 }

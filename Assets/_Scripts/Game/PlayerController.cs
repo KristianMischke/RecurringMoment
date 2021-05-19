@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private float _startJumpTime = 0;
 
+    private int prevItemID = -1;
     public int ItemID = -1;
     
     //apply in fixed update
@@ -214,6 +215,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	
     //------
 
+    [SerializeField] private AudioClip _grabAudio;
+
     private void DoGrab()
     {
         if (gameController.CurrentPlayerID != ID) return; // only current player can initiate grab with this method
@@ -224,6 +227,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
+		        AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
                 gameController.SetItemInUI(-1);
                 ItemID = -1;
@@ -257,6 +261,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             // this is when he grabs a object and it shows up in the screen 
             if(isFound == true)
             {
+		        AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
 				gameController.SetItemInUI(ItemID);
 		    }
@@ -380,7 +385,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         jump = false;
         isActivating = false;
         historyActivating = false;
-        ItemID = ItemID = -1;
+        ItemID = -1;
+        prevItemID = -1;
         DidTimeTravel = false;
         isSpriteOrderForced = false;
 
@@ -398,6 +404,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (!isSpriteOrderForced)
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+        }
+        else
+        {
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
     }
 
@@ -435,7 +446,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        if (Mathf.Abs(Rigidbody.velocity.x) > 0.001f)
+        if (Mathf.Abs(Rigidbody.velocity.x) > 2.5f)
         {
             facingRight = Rigidbody.velocity.x > 0;
         }
@@ -532,7 +543,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         Position.SaveSnapshot(snapshotDictionary, force);
         Velocity.SaveSnapshot(snapshotDictionary, force);
-        snapshotDictionary.Set(nameof(ItemID), ItemID, force, clearFuture:true);
+        snapshotDictionary.Set(nameof(ItemID), prevItemID == -2 ? -1 : ItemID, force, clearFuture:true);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
@@ -546,6 +557,14 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        prevItemID = ItemID;
+        ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
+        if (prevItemID != -1 && ItemID == -1)
+        {
+            ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+            prevItemID = -2; //-2 to indicate it was removed this frame, so we don't re-save the value
+        }
+        
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -559,13 +578,21 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
+        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }
 
     public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
+        prevItemID = ItemID;
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
+        if (prevItemID != -1 && ItemID == -1)
+        {
+            ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+            prevItemID = -2; //-2 to indicate it was removed this frame, so we don't re-save the value
+        }
+        
         Position.LoadSnapshot(snapshotDictionary);
         Velocity.LoadSnapshot(snapshotDictionary);
 
@@ -591,6 +618,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
 	    this._material.SetFloat("_StaticOpacity", 0.0f);
 	    this._material.SetFloat("_DistortIntensity", 0.0f);
+    }
+
+    [SerializeField] private AudioClip[] _stepSounds;
+
+    private void PlayStep()
+    {
+	AudioSource.PlayClipAtPoint(_stepSounds[UnityEngine.Random.Range(0,_stepSounds.Length)], Camera.main.transform.position, 0.2f);
     }
 
     void Awake()

@@ -84,60 +84,70 @@ public class ExplodeBox : BasicTimeTracker
         if (AllActivated())
         {
 
-		AudioSource.PlayClipAtPoint(_clip, Camera.main.transform.position, 1f);
+			AudioSource.PlayClipAtPoint(_clip, Camera.main.transform.position, 1f);
 	        bool isInPlayerInv = false;
 	        Vector2 loc = transform.position;
 			Debug.Log("The location is : " + loc.x + "and "+ loc.y);
 
-			// changed it so that it goes through the whole circle so that it hits everything hopefully
-			for (int angle = 0; angle < 360; angle++)
+			if (!ItemForm)
 			{
-				List<RaycastHit2D> hits = new List<RaycastHit2D>();
-				hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
-				Debug.DrawRay(loc, GetDirectionVector2D(angle), Color.white);
-				
-				foreach(var hit in hits)
-                {
-                    if (hit.collider.gameObject == this.gameObject) continue; // skip if we hit our own collider
-                    
-                    // block the explosion if it hits a platform
-                    bool blockExplosion = hit.collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms");
-
-                    // get the time tracker from the object or its parent(s)
-                    ITimeTracker timeTracker = GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents:true);
-
-                    bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
-                                      timeTracker.gameObject.CompareTag("ExplodeWall") ||
-                                      timeTracker is Guard_AI); 
-                    
-                    if (canDestroy)
-                    {
-                	    timeTracker.FlagDestroy = true;
-                    }
-                    else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
-                    {
-                	    hit.collider.gameObject.SetActive(false);
-                	    Debug.LogWarning($"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
-                    }
-
-                    if (blockExplosion) // break the hits loop if we encountered a platform, this works because hits are in order of ray projection
-                    {
-                	    break;
-                    }
-                }
-			}
-			
-			foreach(var player in gameController.AllPlayers)
-			{
-				if(player.ItemID == ID)
+				// changed it so that it goes through the whole circle so that it hits everything hopefully
+				for (int angle = 0; angle < 360; angle++)
 				{
-					Debug.Log($"Player {player.ID} is currently holding a item that is a explodeBox");
-					isInPlayerInv = true; // sets the location of the explosion at the player's location rather than the last loc of the box
-					loc = player.transform.position;
-					player.FlagDestroy = true;
+					List<RaycastHit2D> hits = new List<RaycastHit2D>();
+					hits.AddRange(Physics2D.RaycastAll(loc, GetDirectionVector2D(angle), distance));
+					Debug.DrawRay(loc, GetDirectionVector2D(angle), Color.white);
+
+					foreach (var hit in hits)
+					{
+						if (hit.collider.gameObject == this.gameObject) continue; // skip if we hit our own collider
+
+						// block the explosion if it hits a platform
+						bool blockExplosion = hit.collider.gameObject.layer == LayerMask.NameToLayer("LevelPlatforms");
+
+						// get the time tracker from the object or its parent(s)
+						ITimeTracker timeTracker =
+							GameController.GetTimeTrackerComponent(hit.collider.gameObject, checkParents: true);
+
+						bool canDestroy = timeTracker != null && (timeTracker is PlayerController ||
+						                                          timeTracker.gameObject.CompareTag("ExplodeWall") ||
+						                                          timeTracker is Guard_AI);
+
+						if (canDestroy)
+						{
+							timeTracker.FlagDestroy = true;
+						}
+						else if (hit.collider.gameObject.CompareTag("ExplodeWall"))
+						{
+							hit.collider.gameObject.SetActive(false);
+							Debug.LogWarning(
+								$"[ExploadBox] Warning: setting {hit.collider.gameObject.name} to inactive, but this object has no {nameof(ITimeTracker)} so it won't be recorded in time");
+						}
+
+						if (
+							blockExplosion) // break the hits loop if we encountered a platform, this works because hits are in order of ray projection
+						{
+							break;
+						}
+					}
 				}
 			}
-			
+
+			if (ItemForm)
+			{
+				foreach (var player in gameController.AllPlayers)
+				{
+					if (player.ItemID == ID)
+					{
+						Debug.Log($"Player {player.ID} is currently holding a item that is a explodeBox");
+						isInPlayerInv =
+							true; // sets the location of the explosion at the player's location rather than the last loc of the box
+						loc = player.transform.position;
+						player.FlagDestroy = true;
+					}
+				}
+			}
+
 			gameController.CreateExplosion(loc, distance); // tell the game controller to create an explosion
 			
 			FlagDestroy = true; // mark object for destruction in time

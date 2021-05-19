@@ -20,8 +20,8 @@ public class ResetLevelProgress : MonoBehaviour
         {
             foreach (var selectTimeMachine in SelectSceneTimeMachines)
             {
-                PlayerPrefs.DeleteKey(selectTimeMachine.MyScene);
-                PlayerPrefs.DeleteKey($"{selectTimeMachine.MyScene}_time");
+                PlayerPrefs.DeleteKey(SelectSceneTimeMachine.levels[selectTimeMachine.MySceneIndex]);
+                PlayerPrefs.DeleteKey($"{SelectSceneTimeMachine.levels[selectTimeMachine.MySceneIndex]}_time");
             }
 
             SceneManager.LoadScene(MenuScene);

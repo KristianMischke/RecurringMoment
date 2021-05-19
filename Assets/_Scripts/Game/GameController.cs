@@ -18,10 +18,12 @@ using Vector2 = UnityEngine.Vector2;
 public class TimeAnomalyException : Exception
 {
     public string Title;
+    public string Body;
     public ICustomObject Cause;
     public TimeAnomalyException(string title, string reason, ICustomObject cause) : base($"Time Anomaly: {reason}")
     {
         Title = title;
+        Body = reason;
         Cause = cause;
     }
 }
@@ -75,7 +77,7 @@ public class GameController : MonoBehaviour
     private AnomalyIndicator instantiatedIndicator;
     private int RewindFrameRate = -1;
 
-    [SerializeField] private string sceneName;
+    private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -342,6 +344,15 @@ public class GameController : MonoBehaviour
     
     void Start()
     {
+        int sceneNumStarts = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}_starts", defaultValue:0);
+        PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}_starts", ++sceneNumStarts);
+
+        int sceneIndex = LevelEnd.levels?.IndexOf(SceneManager.GetActiveScene().name) ?? -1;
+        if (sceneIndex >= 0 && sceneIndex < LevelEnd.levels.Count)
+        {
+            sceneName = LevelEnd.levelTitles[sceneIndex];
+        }
+
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
         timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");
@@ -617,6 +628,27 @@ public class GameController : MonoBehaviour
             TimeSpan span = new TimeSpan(0, 0, (int)(TimeStep * Time.fixedDeltaTime));
             timerText.text = $"{sceneName}\n{span.Minutes:00}:{span.Seconds:00}";
         }
+
+#if DEBUG
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            SceneManager.LoadScene(LevelEnd.levels[9]);
+        }
+        for (int i = 0; i <= 8; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && i+10 < LevelEnd.levels.Count)
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i+10]);
+                }
+                else
+                {
+                    SceneManager.LoadScene(LevelEnd.levels[i]);   
+                }
+            }
+        }
+#endif
     }
 
 
@@ -913,6 +945,7 @@ public class GameController : MonoBehaviour
 
         if (Player.FlagDestroy)
         {
+	    this.Player.Animator.Play("Base Layer.Player_Death", 0, 0);
             throw new TimeAnomalyException("Oh no!", "You died!", Player);
         }
 
@@ -968,7 +1001,7 @@ public class GameController : MonoBehaviour
                 && timeTracker != null
                 && !timeTracker.ShouldPoolObject)
             {
-                // FLAG_DESTORY is false this timeStep AND this object is not pooled
+                // FLAG_DESTROY is false this timeStep AND this object is not pooled
                 timeTracker.FlagDestroy = false; // reset current FlagDestroy value
                 timeTracker.gameObject.SetActive(true);
             }
@@ -1105,15 +1138,23 @@ public class GameController : MonoBehaviour
                 break;
             }
 
-            timeTracker.Position.Current = dropPos;
+            Vector2 prevPosition = timeTracker.Position.Current;
+            timeTracker.Position.Current = dropPos; // move item to drop position
 
-            // copy player velocity when dropping
-            if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX || GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+            if (timeTracker.SetItemState(false))
             {
-                timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+                // copy player velocity when dropping
+                if (GetObjectTypeByID(timeTracker.ID) == TYPE_BOX ||
+                    GetObjectTypeByID(timeTracker.ID) == TYPE_EXPLOAD_BOX)
+                {
+                    timeTracker.gameObject.GetComponent<Rigidbody2D>().velocity = droppingPlayer.Velocity.Current;
+                }
+
+                return true;
             }
             
-            return timeTracker.SetItemState(false);
+            timeTracker.Position.Current = prevPosition; // restore position if fail to drop
+            return false;
         }
         else
         {
@@ -1169,12 +1210,16 @@ public class GameController : MonoBehaviour
 
     public void RetryLevel()
     {
+        if(userPause) Resume();
+        
         Debug.Log("---Retry---");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 
     public void RespawnLatest()
     {
+        if(userPause) Resume();
+        
         if (spawnState == null)
         {
             RetryLevel();
@@ -1248,7 +1293,7 @@ public class GameController : MonoBehaviour
     public void ShowRetryPopup(TimeAnomalyException e)
     {
         var popup = Instantiate(retryPopupPrefab, mainUICanvas.transform);
-        popup.Init(e.Title, e.Message, RetryLevel, RespawnLatest);
+        popup.Init(e.Title, e.Body, RetryLevel, RespawnLatest);
     }
 
     public void ExportHistory()
@@ -1458,6 +1503,7 @@ public class GameController : MonoBehaviour
             otherTimeMachine.ActivatedTimeStep.Current = -1;
             otherTimeMachine.Activated.Current = false;
             otherTimeMachine.Occupied.Current = false;
+            otherTimeMachine.playerID.Current = -1;
             SaveSnapshot(timeTravelStep, otherTimeMachine, force:true);
         }
 

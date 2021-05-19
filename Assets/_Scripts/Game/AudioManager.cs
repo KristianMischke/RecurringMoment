@@ -8,7 +8,8 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip stageMusic;
     [SerializeField] private AudioClip guardMusic;
 
-    [SerializeField] private AudioSource source;
+    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private AudioSource ambientSource;
 
     private void Awake()
     {
@@ -28,11 +29,11 @@ public class AudioManager : MonoBehaviour
     {
         if (instance != null)
         {
-            if (instance.source != null)
+            if (instance.musicSource != null)
             {
-                instance.source.Stop();
-                instance.source.clip = instance.menuMusic;
-                instance.source.Play();
+                instance.musicSource.Stop();
+                instance.musicSource.clip = instance.menuMusic;
+                instance.musicSource.Play();
             }
         }
     }
@@ -41,11 +42,11 @@ public class AudioManager : MonoBehaviour
     {
         if (instance != null)
         {
-            if (instance.source != null)
+            if (instance.musicSource != null)
             {
-                instance.source.Stop();
-                instance.source.clip = instance.stageMusic;
-                instance.source.Play();
+                instance.musicSource.Stop();
+                instance.musicSource.clip = instance.stageMusic;
+                instance.musicSource.Play();
             }
         }
     }
@@ -54,11 +55,11 @@ public class AudioManager : MonoBehaviour
     {
         if (instance != null)
         {
-            if (instance.source != null)
+            if (instance.musicSource != null)
             {
-                instance.source.Stop();
-                instance.source.clip = instance.guardMusic;
-                instance.source.Play();
+                instance.musicSource.Stop();
+                instance.musicSource.clip = instance.guardMusic;
+                instance.musicSource.Play();
             }
         }
     }
@@ -67,12 +68,29 @@ public class AudioManager : MonoBehaviour
     {
         if (instance != null)
         {
-            if (instance.source != null && instance.source.clip != clip)
+            if (instance.musicSource != null && instance.musicSource.clip != clip)
             {
-                instance.source.Stop();
-                instance.source.clip = clip;
-                instance.source.Play();
+                instance.musicSource.Stop();
+                instance.musicSource.clip = clip;
+                instance.musicSource.Play();
             }
         }
+    }
+
+    [SerializeField] private AudioClip[] _ambientSounds;
+    private float _timer = 0, _ambientTrigger = 40;
+
+    void Update()
+    {
+	if(instance._timer >= instance._ambientTrigger)
+	{
+	    instance._timer = 0;
+	    instance._ambientTrigger = UnityEngine.Random.Range(60, 90);
+	    instance.ambientSource.Stop();
+	    instance.ambientSource.clip = _ambientSounds[UnityEngine.Random.Range(0, _ambientSounds.Length)];
+	    instance.ambientSource.Play();
+	}
+	
+	instance._timer += Time.deltaTime;
     }
 }

@@ -16,8 +16,13 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     [SerializeField] private AudioClip _timeTravelSound;
     [SerializeField] private AudioClip _startupSound;
     [SerializeField] private AudioClip _activeSound;
+    [SerializeField] private AudioClip _machineError;
 
     private AudioSource _source;
+
+    private float _timer = 0;
+
+    [SerializeField] private Light lightLeft, lightRight;
 
     // art related
     public SpriteRenderer renderer;
@@ -73,7 +78,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             Position.Copy(otherTM.Position);
             ItemForm = otherTM.ItemForm;
 
-            playerID = otherTM.playerID;
+            playerID.Copy(otherTM.playerID);
             doneTimeTravelPlayerID = otherTM.doneTimeTravelPlayerID;
             IsAnimatingOpenClose = otherTM.IsAnimatingOpenClose;
             IsAnimatingFold = otherTM.IsAnimatingFold;
@@ -90,11 +95,17 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     //TODO: need way to handle TimeMachine folding before coming item!
     public bool SetItemState(bool state)
     {
+        if (IsAnimatingFold || IsAnimatingUnfold) // can't pick up while animating
+            return false;
+        
         if (state) // trying to turn into an item
         {
             // time machine is occupied or activated (or not foldable), cannot move it
             if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0)
+	    {
+		AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
                 return false;
+	    }
 
             IsAnimatingFold = true;
             animator.SetBool(AnimateFolding, true);
@@ -112,8 +123,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
                 if (hitObject == gameObject || hitTimeTracker is PlayerController || hitTimeTracker == this) continue;
 
-                // cannot place time machine ontop of ITimeTracker
+                // cannot place time machine on top of ITimeTracker
                 if (hitTimeTracker != null)
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+
+                // cannot place time machine on top of button 
+                if (hitObject.GetComponent<ButtonController>() != null)
                 {
                     gameObject.SetActive(false);
                     return false;
@@ -207,7 +225,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool Activate(PlayerController playerController)
     {
         if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
+	     {
+	         AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
             return false;
+	     }
+
+        if (IsAnimatingFold || IsAnimatingUnfold) // don't allow activation while folding
+        {
+            return false;
+        }
 
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
@@ -249,36 +275,37 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         animator.SetBool(AnimIsFoldable, isFoldable);
         animator.SetBool(AnimIsItem, ItemForm && !IsAnimatingFold);
         
-        if (IsAnimatingOpenClose && IsAnimClosedState)
-        {
-            // stop animation, could be present or past TimeMachine
-            IsAnimatingOpenClose = false;
-            animator.SetBool(AnimateOpen, false);
-
-            if (playerID.Current != -1) // execute time travel bc we have a playerID
-            {
-                int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
-                ActivatedTimeStep.Current = -1;
-                Activated.Current = false;
-                gameController.QueueTimeTravel(new TimeEvent(playerID.Current, TimeEvent.EventType.TIME_TRAVEL, ID,
-                    timeTravelDestStep.ToString()));
-                AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
-                _source.Stop();
-            }
-        }
-        else if (IsAnimatingOpenClose)
+        if (IsAnimatingOpenClose)
         {
             if (playerID.Current != -1 || playerID.History != -1) // keep player on TimeMachine
             {
                 bool isAnimating = isFoldable
-                                    ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
-                                    : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+                    ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
+                    : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
                 PlayerController player = gameController.GetObjectByID(playerID.Current == -1 ? playerID.History : playerID.Current) as PlayerController;
                 player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
                 player.Velocity.Current = Vector2.zero;
                 player.isSpriteOrderForced = true;
                 bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
                 player.SpriteRenderer.sortingOrder = isBeginning ? 7 : 2;
+            }
+            
+            if (IsAnimClosedState)
+            {
+                // stop animation, could be present or past TimeMachine
+                IsAnimatingOpenClose = false;
+                animator.SetBool(AnimateOpen, false);
+
+                if (playerID.Current != -1) // execute time travel bc we have a playerID
+                {
+                    int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
+                    ActivatedTimeStep.Current = -1;
+                    Activated.Current = false;
+                    gameController.QueueTimeTravel(new TimeEvent(playerID.Current, TimeEvent.EventType.TIME_TRAVEL, ID,
+                        timeTravelDestStep.ToString()));
+                    AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
+                    _source.Stop();
+                }
             }
         }
         
@@ -293,7 +320,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             player.isSpriteOrderForced = true;
             bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
             player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
-            if (IsAnimClosedState && gameController.TimeStep > ActivatedTimeStep.History + 5)
+            if (gameController.TimeStep > ActivatedTimeStep.History + 20)
             {
                 doneTimeTravelPlayerID = -1;
                 player.isSpriteOrderForced = false;
@@ -312,6 +339,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             IsAnimatingFold = false;
             animator.SetBool(AnimateFolding, false);
         }
+
+        if (Countdown.Current == -1) Countdown.Current = Countdown.History;
+        if (ActivatedTimeStep.Current == -1) ActivatedTimeStep.Current = Countdown.History;
         
         if (Countdown.Current > 0)
         {
@@ -355,8 +385,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void Start()
     {
-	    _source = GetComponent<AudioSource>();
+	_source = GetComponent<AudioSource>();
+	_timer = UnityEngine.Random.Range(0,3);
     }
+
+    //Used to control the pulse effect of the time machine lighting (3 seconds default)
+    private float _pulseTime = 2;
+    private bool _countUp = true;
+
     public void Update()
     {
         TextBubbleHint.SetActive(isFoldable);
@@ -366,22 +402,46 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
+        
+        Color indicatorColor = Color.yellow;
         if (Occupied.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(0f, 1f, 0f));
+            indicatorColor = new Color(0f, 1f, 0f);
         }
         else if (Activated.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0f, 0f));
+            indicatorColor = new Color(1f, 0f, 0f);
         }
         else if (displayCountdown >= 0)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0.7f, 0f));
+            indicatorColor = new Color(1f, 0.7f, 0f);
         }
-        else
-        {
-            propertyBlock.SetColor(MainColor, new Color(1f, 1f, 0f));
-        }
+
+        propertyBlock.SetColor(MainColor, indicatorColor);
+	lightLeft.color = indicatorColor;
+	lightRight.color = indicatorColor;
+	if(_countUp)
+	{
+	    _timer += Time.deltaTime;
+	    _countUp = _timer <= _pulseTime;
+	}
+	else
+	{
+	    _timer -= Time.deltaTime;
+	    _countUp = _timer <= 0;
+	}
+	if(IsAnimatingFold || IsAnimatingUnfold)
+	{
+	    lightLeft.intensity = 0;
+	    lightRight.intensity = 0;
+	}
+	else
+	{
+	    lightLeft.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+	    lightRight.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+	}
+	lightLeft.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
+	lightRight.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
         renderer.SetPropertyBlock(propertyBlock);
     }
 
@@ -447,7 +507,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         animator.SetBool(AnimateFolding, IsAnimatingFold);
         IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
+
+        int prevDoneTimeTravelPlayerID = doneTimeTravelPlayerID; 
         doneTimeTravelPlayerID = snapshotDictionary.Get<int>(nameof(doneTimeTravelPlayerID));
+        if (prevDoneTimeTravelPlayerID != -1 && doneTimeTravelPlayerID == -1) 
+        {
+            // persist this value one frame locally so that player sprite order etc are updated in GameUpdate()
+            doneTimeTravelPlayerID = prevDoneTimeTravelPlayerID;
+        }
         
         Occupied.Current &= Activated.History;
     }

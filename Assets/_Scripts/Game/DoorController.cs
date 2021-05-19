@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
-public class DoorController : MonoBehaviour
+public class DoorController : BasicTimeTracker
 {
     public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 
-    [SerializeField] bool slideUp;
     [SerializeField] float slideTime;
     [SerializeField] float offset;
 
@@ -16,30 +16,35 @@ public class DoorController : MonoBehaviour
 
     [SerializeField] GameObject OpenObject;
     [SerializeField] GameObject ClosedObject;
-    
+
+    private BoxCollider2D collider;
+    private Vector2 _colliderDefaults;
 
     private void Start()
     {
-        originalPos = transform.position;
+        originalPos = gameObject.transform.Find("Art/MovingDoor").position;
+	    collider = GetComponentInChildren<BoxCollider2D>();
+	    _colliderDefaults = collider.size;
     }
 
     void Update()
     {
+        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * offset, timer/slideTime);
+	    collider.size = Vector2.Lerp(_colliderDefaults, new Vector2(_colliderDefaults.x, 0), timer/slideTime);
+	    collider.offset = Vector2.Lerp(Vector2.zero, Vector2.down * offset / 2, timer/slideTime);
+    }
+
+    public override void GameUpdate()
+    {
         if (AllActivated())
         {
-            OpenObject.SetActive(true); //TODO: animate door instead of this
-            ClosedObject.SetActive(false);
-            timer += Time.deltaTime;
+            timer += Time.fixedDeltaTime;
         }
         else
         {
-            OpenObject.SetActive(false); //TODO: animate door instead of this
-            ClosedObject.SetActive(true);
-            timer -= Time.deltaTime;
+            timer -= Time.fixedDeltaTime;
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
-
-        transform.position = Vector3.Lerp(originalPos, originalPos + Vector2.up * (offset * (slideUp ? 1 : -1)), timer/slideTime);
     }
 
     private bool AllActivated()
@@ -52,7 +57,24 @@ public class DoorController : MonoBehaviour
 
         return valid;
     }
+
+    public override bool ShouldPoolObject => false;
     
+    public override void SaveSnapshot(TimeDict.TimeSlice snapshotDictionary, bool force = false)
+    {
+        snapshotDictionary.Set(nameof(timer), timer, force:force, clearFuture:true);
+    }
+
+    public override void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        timer = snapshotDictionary.Get<float>(nameof(timer));
+    }
+
+    public override void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
+    {
+        timer = snapshotDictionary.Get<float>(nameof(timer));
+    }
+
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
