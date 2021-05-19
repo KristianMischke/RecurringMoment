@@ -226,7 +226,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
-		AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
+		        AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
                 gameController.SetItemInUI(-1);
                 ItemID = -1;
@@ -260,7 +260,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             // this is when he grabs a object and it shows up in the screen 
             if(isFound == true)
             {
-		AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
+		        AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
 				gameController.SetItemInUI(ItemID);
 		    }
@@ -568,6 +568,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         historyActivating = snapshotDictionary.Get<bool>(nameof(isActivating));
         DidTimeTravel = snapshotDictionary.Get<bool>(nameof(DidTimeTravel));
         facingRight = snapshotDictionary.Get<bool>(nameof(facingRight));
+        isSpriteOrderForced = snapshotDictionary.Get<bool>(nameof(isSpriteOrderForced));
 
         FlagDestroy = snapshotDictionary.Get<bool>(GameController.FLAG_DESTROY);
     }

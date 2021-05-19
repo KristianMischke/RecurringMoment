@@ -268,36 +268,37 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         animator.SetBool(AnimIsFoldable, isFoldable);
         animator.SetBool(AnimIsItem, ItemForm && !IsAnimatingFold);
         
-        if (IsAnimatingOpenClose && IsAnimClosedState)
-        {
-            // stop animation, could be present or past TimeMachine
-            IsAnimatingOpenClose = false;
-            animator.SetBool(AnimateOpen, false);
-
-            if (playerID.Current != -1) // execute time travel bc we have a playerID
-            {
-                int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
-                ActivatedTimeStep.Current = -1;
-                Activated.Current = false;
-                gameController.QueueTimeTravel(new TimeEvent(playerID.Current, TimeEvent.EventType.TIME_TRAVEL, ID,
-                    timeTravelDestStep.ToString()));
-                AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
-                _source.Stop();
-            }
-        }
-        else if (IsAnimatingOpenClose)
+        if (IsAnimatingOpenClose)
         {
             if (playerID.Current != -1 || playerID.History != -1) // keep player on TimeMachine
             {
                 bool isAnimating = isFoldable
-                                    ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
-                                    : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
+                    ? animator.GetCurrentAnimatorStateInfo(0).IsName("TimeMachineFoldDoorOpenAnim")
+                    : animator.GetCurrentAnimatorStateInfo(0).IsName("Animating");
                 PlayerController player = gameController.GetObjectByID(playerID.Current == -1 ? playerID.History : playerID.Current) as PlayerController;
                 player.Position.Current = new Vector2(Position.Current.x, player.Position.Current.y);
                 player.Velocity.Current = Vector2.zero;
                 player.isSpriteOrderForced = true;
                 bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
                 player.SpriteRenderer.sortingOrder = isBeginning ? 7 : 2;
+            }
+            
+            if (IsAnimClosedState)
+            {
+                // stop animation, could be present or past TimeMachine
+                IsAnimatingOpenClose = false;
+                animator.SetBool(AnimateOpen, false);
+
+                if (playerID.Current != -1) // execute time travel bc we have a playerID
+                {
+                    int timeTravelDestStep = Activated.Current ? ActivatedTimeStep.Current : ActivatedTimeStep.History;
+                    ActivatedTimeStep.Current = -1;
+                    Activated.Current = false;
+                    gameController.QueueTimeTravel(new TimeEvent(playerID.Current, TimeEvent.EventType.TIME_TRAVEL, ID,
+                        timeTravelDestStep.ToString()));
+                    AudioSource.PlayClipAtPoint(_timeTravelSound, Camera.main.transform.position, 0.6f);
+                    _source.Stop();
+                }
             }
         }
         
@@ -312,7 +313,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             player.isSpriteOrderForced = true;
             bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
             player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
-            if (!isBeginning && gameController.TimeStep > ActivatedTimeStep.History + 5)
+            if (gameController.TimeStep > ActivatedTimeStep.History + 20)
             {
                 doneTimeTravelPlayerID = -1;
                 player.isSpriteOrderForced = false;
@@ -469,7 +470,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         animator.SetBool(AnimateFolding, IsAnimatingFold);
         IsAnimatingUnfold = snapshotDictionary.Get<bool>(nameof(IsAnimatingUnfold));
         animator.SetBool(AnimateUnfolding, IsAnimatingUnfold);
+
+        int prevDoneTimeTravelPlayerID = doneTimeTravelPlayerID; 
         doneTimeTravelPlayerID = snapshotDictionary.Get<int>(nameof(doneTimeTravelPlayerID));
+        if (prevDoneTimeTravelPlayerID != -1 && doneTimeTravelPlayerID == -1) 
+        {
+            // persist this value one frame locally so that player sprite order etc are updated in GameUpdate()
+            doneTimeTravelPlayerID = prevDoneTimeTravelPlayerID;
+        }
         
         Occupied.Current &= Activated.History;
     }
