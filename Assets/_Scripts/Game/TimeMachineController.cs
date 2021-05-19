@@ -20,6 +20,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     private AudioSource _source;
 
+    private float _timer = 0;
+
+    [SerializeField] private Light lightLeft, lightRight;
+
     // art related
     public SpriteRenderer renderer;
     public TMP_Text timeText;
@@ -98,7 +102,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         {
             // time machine is occupied or activated (or not foldable), cannot move it
             if (!isFoldable || IsActivatedOrOccupied || Countdown.Current >= 0 || Countdown.History >= 0)
+	    {
+		AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
                 return false;
+	    }
 
             IsAnimatingFold = true;
             animator.SetBool(AnimateFolding, true);
@@ -378,8 +385,14 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
 
     public void Start()
     {
-	    _source = GetComponent<AudioSource>();
+	_source = GetComponent<AudioSource>();
+	_timer = UnityEngine.Random.Range(0,3);
     }
+
+    //Used to control the pulse effect of the time machine lighting (3 seconds default)
+    private float _pulseTime = 2;
+    private bool _countUp = true;
+
     public void Update()
     {
         TextBubbleHint.SetActive(isFoldable);
@@ -405,6 +418,30 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         }
 
         propertyBlock.SetColor(MainColor, indicatorColor);
+	lightLeft.color = indicatorColor;
+	lightRight.color = indicatorColor;
+	if(_countUp)
+	{
+	    _timer += Time.deltaTime;
+	    _countUp = _timer <= _pulseTime;
+	}
+	else
+	{
+	    _timer -= Time.deltaTime;
+	    _countUp = _timer <= 0;
+	}
+	if(IsAnimatingFold || IsAnimatingUnfold)
+	{
+	    lightLeft.intensity = 0;
+	    lightRight.intensity = 0;
+	}
+	else
+	{
+	    lightLeft.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+	    lightRight.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+	}
+	lightLeft.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
+	lightRight.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
         renderer.SetPropertyBlock(propertyBlock);
     }
 
