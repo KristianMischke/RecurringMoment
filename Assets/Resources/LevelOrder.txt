@@ -1,17 +1,17 @@
-Final_01_Intro
-Final_02_BoxesAndGates
-Final_03_DoubleButton
-Final_04_Retrieval
-Final_05_Gatekeeper
-Final_06_DoorLogic
-Final_07_Duplication
-Final_08_ThingsExplode
-Final_09_AndAttack
-Final_10_Decimation
-Final_11_FriendlyHelper
-Final_12_OldTrick
-Final_13_DeJaVu
-Final_14_Duplisplode
-Final_15_MissionImpossible
-Final_16_GoBackAgain
-Final_00_MainMenu
+Final_01_Intro;01 - Intro
+Final_02_BoxesAndGates;02 - Boxes and Gates
+Final_03_DoubleButton;03 - Double Button
+Final_04_Retrieval;04 - Retrieval
+Final_05_Gatekeeper;05 - Gatekeeper
+Final_06_DoorLogic;06 - Door Logic
+Final_07_Duplication;07 - Duplication
+Final_08_ThingsExplode;08 - Things Explode
+Final_09_AndAttack;09 - And Attack
+Final_10_Decimation;10 - Decimation
+Final_11_FriendlyHelper;11 - Friendly Helper
+Final_12_OldTrick;12 - Old Trick
+Final_13_DeJaVu;13 - De Ja Vu
+Final_14_Duplisplode;14 - Duplisplode
+Final_15_MissionImpossible;15 - Mission Impossible
+Final_16_GoBackAgain;16 - Go Back Again
+Final_00_MainMenu;

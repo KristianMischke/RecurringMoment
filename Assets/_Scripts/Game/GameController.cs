@@ -75,7 +75,7 @@ public class GameController : MonoBehaviour
     private AnomalyIndicator instantiatedIndicator;
     private int RewindFrameRate = -1;
 
-    [SerializeField] private string sceneName;
+    private string sceneName;
 	
     public IEnumerable<PlayerController> PastPlayers
     {
@@ -344,7 +344,13 @@ public class GameController : MonoBehaviour
     {
         int sceneNumStarts = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}_starts", defaultValue:0);
         PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}_starts", ++sceneNumStarts);
-    
+
+        int sceneIndex = LevelEnd.levels?.IndexOf(SceneManager.GetActiveScene().name) ?? -1;
+        if (sceneIndex >= 0 && sceneIndex < LevelEnd.levels.Count)
+        {
+            sceneName = LevelEnd.levelTitles[sceneIndex];
+        }
+
         //--- Setup object prefabs and pools
         timeTrackerPrefabs[TYPE_BOX] = Resources.Load<GameObject>("Prefabs/MoveableBox");
         timeTrackerPrefabs[TYPE_EXPLOAD_BOX] = Resources.Load<GameObject>("Prefabs/ExplodingBox");

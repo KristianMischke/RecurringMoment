@@ -11,6 +11,7 @@ public class LevelEnd : InvisibleObject
     public bool inferTransition;
 
     public static List<string> levels = null;
+    public static List<string> levelTitles = null;
     
     private void Awake()
     {
@@ -19,7 +20,15 @@ public class LevelEnd : InvisibleObject
             if (levels == null)
             {
                 TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
-                levels = new List<string>(levelOrderText.text.Split(new char[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+                List<string> levelPairs = new List<string>(levelOrderText.text.Split(new char[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+                levels = new List<string>();
+                levelTitles = new List<string>();
+                foreach (string pair in levelPairs)
+                {
+                    string[] split = pair.Split(';');
+                    levels.Add(split[0]);
+                    levelTitles.Add(split[1]);
+                }
             }
 
             int index = levels.IndexOf(SceneManager.GetActiveScene().name);

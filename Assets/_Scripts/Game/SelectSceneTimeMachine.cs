@@ -11,7 +11,8 @@ public class SelectSceneTimeMachine : MonoBehaviour
 {
     private PlayerController touchingPlayer;
 
-    public static List<string> levels;
+    public static List<string> levels = null;
+    public static List<string> levelTitles = null;
     public int MySceneIndex = -1;
 
     private bool _didCompleteScene;
@@ -22,16 +23,25 @@ public class SelectSceneTimeMachine : MonoBehaviour
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 	public TMP_Text levelShow;
-	//public int currLevel = 0; 
-	public string writeStuffHereToShow;
 
 	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
 	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
 
 	private void Awake()
 	{
-		TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
-		levels = new List<string>(levelOrderText.text.Split(new char[]{'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+		if (levels == null)
+		{
+			TextAsset levelOrderText = Resources.Load<TextAsset>("LevelOrder");
+			List<string> levelPairs = new List<string>(levelOrderText.text.Split(new char[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
+			levels = new List<string>();
+			levelTitles = new List<string>();
+			foreach (string pair in levelPairs)
+			{
+				string[] split = pair.Split(';');
+				levels.Add(split[0]);
+				levelTitles.Add(split[1]);
+			}
+		}
 	}
 
 	void Start()
@@ -41,7 +51,7 @@ public class SelectSceneTimeMachine : MonoBehaviour
         _didCompleteScene = numPlays > 0;
         _bestTime = PlayerPrefs.GetFloat($"{levels[MySceneIndex]}_time", defaultValue:float.PositiveInfinity);
         
-		levelShow.text = writeStuffHereToShow; 
+		levelShow.text = levelTitles[MySceneIndex]; 
 		levelShow.rectTransform.parent.transform.parent.gameObject.SetActive(false);
 
 		Color indicatorColor;
