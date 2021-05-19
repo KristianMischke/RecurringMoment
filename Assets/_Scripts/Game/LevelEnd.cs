@@ -10,12 +10,12 @@ public class LevelEnd : InvisibleObject
     public string TransitionToLevel;
     public bool inferTransition;
 
-    public static List<string> levels = null;
+    private static List<string> levels = null;
     public static List<string> levelTitles = null;
-    
-    private void Awake()
+
+    public static List<string> Levels
     {
-        if (inferTransition)
+        get
         {
             if (levels == null)
             {
@@ -31,10 +31,20 @@ public class LevelEnd : InvisibleObject
                 }
             }
 
-            int index = levels.IndexOf(SceneManager.GetActiveScene().name);
-            if (index >= 0 && index < levels.Count)
+            return levels;
+        }
+    }
+    
+    private void Awake()
+    {
+        if (inferTransition)
+        {
+            
+
+            int index = Levels.IndexOf(SceneManager.GetActiveScene().name);
+            if (index >= 0 && index < Levels.Count)
             {
-                TransitionToLevel = levels[index + 1];
+                TransitionToLevel = Levels[index + 1];
             }
             else
             {

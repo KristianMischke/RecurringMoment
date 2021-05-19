@@ -347,8 +347,8 @@ public class GameController : MonoBehaviour
         int sceneNumStarts = PlayerPrefs.GetInt($"{SceneManager.GetActiveScene().name}_starts", defaultValue:0);
         PlayerPrefs.SetInt($"{SceneManager.GetActiveScene().name}_starts", ++sceneNumStarts);
 
-        int sceneIndex = LevelEnd.levels?.IndexOf(SceneManager.GetActiveScene().name) ?? -1;
-        if (sceneIndex >= 0 && sceneIndex < LevelEnd.levels.Count)
+        int sceneIndex = LevelEnd.Levels?.IndexOf(SceneManager.GetActiveScene().name) ?? -1;
+        if (sceneIndex >= 0 && sceneIndex < LevelEnd.Levels.Count)
         {
             sceneName = LevelEnd.levelTitles[sceneIndex];
         }
@@ -632,19 +632,19 @@ public class GameController : MonoBehaviour
 #if DEBUG
         if (Input.GetKeyDown(KeyCode.Alpha0))
         {
-            SceneManager.LoadScene(LevelEnd.levels[9]);
+            SceneManager.LoadScene(LevelEnd.Levels[9]);
         }
         for (int i = 0; i <= 8; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
-                if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && i+10 < LevelEnd.levels.Count)
+                if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && i+10 < LevelEnd.Levels.Count)
                 {
-                    SceneManager.LoadScene(LevelEnd.levels[i+10]);
+                    SceneManager.LoadScene(LevelEnd.Levels[i+10]);
                 }
                 else
                 {
-                    SceneManager.LoadScene(LevelEnd.levels[i]);   
+                    SceneManager.LoadScene(LevelEnd.Levels[i]);   
                 }
             }
         }
