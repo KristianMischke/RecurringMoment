@@ -226,6 +226,11 @@ MonoBehaviour:
   facingRight: 1
   isSpriteOrderForced: 0
   _grabAudio: {fileID: 8300000, guid: d933cdf6870742245b2310b32eb3c28d, type: 3}
+  _stepSounds:
+  - {fileID: 8300000, guid: f0027ad28b80b4c4baf7674dd44bbe48, type: 3}
+  - {fileID: 8300000, guid: a34c89e68e829bc438aa62052af08d83, type: 3}
+  - {fileID: 8300000, guid: 9f34037a7bf2d3644b81cc1ef8670a60, type: 3}
+  - {fileID: 8300000, guid: 412c6ac87c02cbf47ad7e09e5c261650, type: 3}
 --- !u!114 &4052834050897800091
 MonoBehaviour:
   m_ObjectHideFlags: 0

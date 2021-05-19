@@ -16,6 +16,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     [SerializeField] private AudioClip _timeTravelSound;
     [SerializeField] private AudioClip _startupSound;
     [SerializeField] private AudioClip _activeSound;
+    [SerializeField] private AudioClip _machineError;
 
     private AudioSource _source;
 
@@ -207,7 +208,10 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool Activate(PlayerController playerController)
     {
         if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
+	{
+	    AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
             return false;
+	}
 
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {

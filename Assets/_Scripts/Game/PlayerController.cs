@@ -597,6 +597,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	    this._material.SetFloat("_DistortIntensity", 0.0f);
     }
 
+    [SerializeField] private AudioClip[] _stepSounds;
+
+    private void PlayStep()
+    {
+	AudioSource.PlayClipAtPoint(_stepSounds[UnityEngine.Random.Range(0,_stepSounds.Length)], Camera.main.transform.position, 0.2f);
+    }
+
     void Awake()
     {
 	    _material = GetComponentInChildren<SpriteRenderer>().material;
