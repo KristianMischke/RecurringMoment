@@ -210,11 +210,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5.000015
+      value: 5.1201468
       objectReference: {fileID: 0}
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2504005
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580099, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Name
@@ -270,11 +270,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5.000015
+      value: 5.1201468
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2504005
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
@@ -354,6 +354,10 @@ PrefabInstance:
       propertyPath: requiredActivatables.Array.data[0]
       value: 
       objectReference: {fileID: 978344199354846059}
+    - target: {fileID: 1507192835, guid: 78d64218a242b2f4db89578afa07459b, type: 3}
+      propertyPath: distance
+      value: 3.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1954012280130790977, guid: 78d64218a242b2f4db89578afa07459b, type: 3}
       propertyPath: m_Name
       value: ExplodingBox
@@ -2241,11 +2245,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5.000015
+      value: 19.404385
       objectReference: {fileID: 0}
     - target: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2980146
       objectReference: {fileID: 0}
     - target: {fileID: 4711500497337580099, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Name
@@ -2301,11 +2305,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Intensity
-      value: 5.000015
+      value: 19.404385
       objectReference: {fileID: 0}
     - target: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
       propertyPath: m_Range
-      value: 2.25
+      value: 2.2980146
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 805446960b71b5d4a86981cf395032ff, type: 3}

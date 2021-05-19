@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     private float _startJumpTime = 0;
 
+    private int prevItemID = -1;
     public int ItemID = -1;
     
     //apply in fixed update
@@ -385,6 +386,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         isActivating = false;
         historyActivating = false;
         ItemID = -1;
+        prevItemID = -1;
         DidTimeTravel = false;
         isSpriteOrderForced = false;
 
@@ -541,7 +543,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
         Position.SaveSnapshot(snapshotDictionary, force);
         Velocity.SaveSnapshot(snapshotDictionary, force);
-        snapshotDictionary.Set(nameof(ItemID), ItemID, force, clearFuture:true);
+        snapshotDictionary.Set(nameof(ItemID), prevItemID == -2 ? -1 : ItemID, force, clearFuture:true);
         snapshotDictionary.Set(nameof(Rigidbody.rotation), Rigidbody.rotation, force);
         snapshotDictionary.Set(nameof(isActivating), isActivating, force);
         snapshotDictionary.Set(nameof(DidTimeTravel), DidTimeTravel, force);
@@ -555,11 +557,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     // TODO: add fixed frame # associated with snapshot? and Lerp in update loop?!
     public void PreUpdateLoadSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        int prevItemID = ItemID;
+        prevItemID = ItemID;
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         if (prevItemID != -1 && ItemID == -1)
         {
             ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+            prevItemID = -2; //-2 to indicate it was removed this frame, so we don't re-save the value
         }
         
         Position.LoadSnapshot(snapshotDictionary);
@@ -582,11 +585,12 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void ForceRestoreSnapshot(TimeDict.TimeSlice snapshotDictionary)
     {
-        int prevItemID = ItemID;
+        prevItemID = ItemID;
         ItemID = snapshotDictionary.Get<int>(nameof(ItemID));
         if (prevItemID != -1 && ItemID == -1)
         {
             ItemID = prevItemID; // keep previous item id locally if it was dropped this frame
+            prevItemID = -2; //-2 to indicate it was removed this frame, so we don't re-save the value
         }
         
         Position.LoadSnapshot(snapshotDictionary);
