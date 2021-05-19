@@ -6,7 +6,6 @@ public class DoorController : MonoBehaviour
 {
     public List<ActivatableBehaviour> requiredActivatables = new List<ActivatableBehaviour>();
 
-    [SerializeField] bool slideUp;
     [SerializeField] float slideTime;
     [SerializeField] float offset;
 
@@ -17,9 +16,14 @@ public class DoorController : MonoBehaviour
     [SerializeField] GameObject OpenObject;
     [SerializeField] GameObject ClosedObject;
 
+    private BoxCollider2D collider;
+    private Vector2 _colliderDefaults;
+
     private void Start()
     {
         originalPos = gameObject.transform.Find("Art/MovingDoor").position;
+	collider = GetComponentInChildren<BoxCollider2D>();
+	_colliderDefaults = collider.size;
     }
 
     void Update()
@@ -34,7 +38,9 @@ public class DoorController : MonoBehaviour
         }
         timer = Mathf.Clamp(timer, 0, slideTime);
 
-        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * (offset * (slideUp ? 1 : -1)), timer/slideTime);
+        gameObject.transform.Find("Art/MovingDoor").position = Vector3.Lerp(originalPos, originalPos + Vector2.up * offset, timer/slideTime);
+	collider.size = Vector2.Lerp(_colliderDefaults, new Vector2(_colliderDefaults.x, 0), timer/slideTime);
+	collider.offset = Vector2.Lerp(Vector2.zero, Vector2.down * offset / 2, timer/slideTime);
     }
 
     private bool AllActivated()
