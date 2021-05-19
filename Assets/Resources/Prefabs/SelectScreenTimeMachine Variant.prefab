@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66bef1c85591234428bf0f4ec2fe72df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MyScene: Alpha_03_BoxesAndGates
+  MySceneIndex: -1
   renderer: {fileID: 9151017993416290919}
   timeText: {fileID: 2589893206573383668}
   levelShow: {fileID: 4786175307868629994}
-  writeStuffHereToShow: Stage #1
+  lightLeft: {fileID: 6750475272193154772}
+  lightRight: {fileID: 1798660066197850949}
 --- !u!1001 &2622418751938845707
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -157,6 +158,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!108 &1798660066197850949 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 4364740350171158350, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+  m_PrefabInstance: {fileID: 2622418751938845707}
+  m_PrefabAsset: {fileID: 0}
+--- !u!108 &6750475272193154772 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 8775882398236852959, guid: 805446960b71b5d4a86981cf395032ff, type: 3}
+  m_PrefabInstance: {fileID: 2622418751938845707}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3734334862333777025
 PrefabInstance:
   m_ObjectHideFlags: 0

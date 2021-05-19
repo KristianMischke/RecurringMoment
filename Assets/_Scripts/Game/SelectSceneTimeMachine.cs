@@ -23,6 +23,12 @@ public class SelectSceneTimeMachine : MonoBehaviour
     public SpriteRenderer renderer;
     public TMP_Text timeText;
 	public TMP_Text levelShow;
+	
+	[SerializeField] private Light lightLeft, lightRight;
+	private float _timer = 0;
+	//Used to control the pulse effect of the time machine lighting (3 seconds default)
+	private float _pulseTime = 2;
+	private bool _countUp = true;
 
 	private static readonly int MainTex = Shader.PropertyToID("_MainTex");
 	private static readonly int MainColor = Shader.PropertyToID("_MainColor");
@@ -78,6 +84,23 @@ public class SelectSceneTimeMachine : MonoBehaviour
         timeText.color = indicatorColor;
         propertyBlock.SetColor(MainColor, indicatorColor);
         renderer.SetPropertyBlock(propertyBlock);
+        
+        lightLeft.color = indicatorColor;
+        lightRight.color = indicatorColor;
+        if(_countUp)
+        {
+	        _timer += Time.deltaTime;
+	        _countUp = _timer <= _pulseTime;
+        }
+        else
+        {
+	        _timer -= Time.deltaTime;
+	        _countUp = _timer <= 0;
+        }
+        lightLeft.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+        lightRight.intensity = Mathf.Lerp(5f, 20f, Mathf.Pow(_timer/_pulseTime, 3f));
+		lightLeft.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
+		lightRight.range = Mathf.Lerp(2.25f, 2.3f, Mathf.Pow(_timer/_pulseTime, 3f));
     }
 
     public void Update()
