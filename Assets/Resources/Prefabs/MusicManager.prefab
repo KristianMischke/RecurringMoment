@@ -143,4 +143,8 @@ MonoBehaviour:
   menuMusic: {fileID: 8300000, guid: 9ec6911a0ceb6c74ebaab02915382e3d, type: 3}
   stageMusic: {fileID: 8300000, guid: f8b9a58dfc6018e48b9fb84436edf3ca, type: 3}
   guardMusic: {fileID: 8300000, guid: c181046b75dcb8b419578b4e52994e07, type: 3}
-  source: {fileID: 1014865727966373692}
+  musicSource: {fileID: 0}
+  ambientSource: {fileID: 0}
+  _ambientSounds:
+  - {fileID: 8300000, guid: 93cac3e8aec512e4a8258414a7510adb, type: 3}
+  - {fileID: 8300000, guid: 00d8885f0d555cb4aa7458d46b6ff790, type: 3}

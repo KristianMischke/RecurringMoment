@@ -14,6 +14,8 @@ public class Explosion : BasicTimeTracker
 	public CircleCollider2D explosionArea;
 	
 	private LineRenderer _lineRenderer;
+	public Material fire;
+	public Material smoke; 
 
 	public LineRenderer LineRenderer
 	{
@@ -35,24 +37,9 @@ public class Explosion : BasicTimeTracker
 	public void DrawExplosion()
 	{
 		// stting up the particle system instead 
-		 blastZone = GetComponent<ParticleSystem>();
-		 explosionArea = GetComponent<CircleCollider2D>(); 
-		 explosionArea.radius = radius; 
-		 
-		 /**
-		 var em = blastZone.emission;
-		 em.enabled = true;
-		 em.type = ParticleSystemEmissionType.Time;
-		 em.SetBursts(
-		 new ParticleSystem.Burst[]{
-			 new ParticleSystem.Burst(0.0f, 500),
-			 //new ParticleSystem.Burst(0.00005f, 500)
-		 }
-		 ); 
-		 
-		 **/
-		
-		
+		blastZone = GetComponent<ParticleSystem>();
+		explosionArea = GetComponent<CircleCollider2D>();
+		explosionArea.radius = radius;
 		
 		LineRenderer.startColor = Color.red;
 		LineRenderer.endColor = Color.red;
@@ -77,7 +64,6 @@ public class Explosion : BasicTimeTracker
 		// shrink radius on time
 		explosionArea.radius = Mathf.Lerp(0, radius, (destroyStep - (float)gameController.TimeStep) / lifetime);
 		
-
 		// if the game is past or at the frame we disappear, destroy us 
 		if (gameController.TimeStep >= destroyStep)
 		{

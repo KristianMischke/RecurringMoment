@@ -214,6 +214,8 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 	
     //------
 
+    [SerializeField] private AudioClip _grabAudio;
+
     private void DoGrab()
     {
         if (gameController.CurrentPlayerID != ID) return; // only current player can initiate grab with this method
@@ -224,6 +226,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         {
             if (gameController.DropItem(this, ItemID)) // check to see if we successfully drop the item
             {
+		AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_DROP, ItemID);
                 gameController.SetItemInUI(-1);
                 ItemID = -1;
@@ -257,6 +260,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
             // this is when he grabs a object and it shows up in the screen 
             if(isFound == true)
             {
+		AudioSource.PlayClipAtPoint(_grabAudio, Camera.main.transform.position, 1f);
                 gameController.AddEvent(ID, TimeEvent.EventType.PLAYER_GRAB, ItemID);
 				gameController.SetItemInUI(ItemID);
 		    }
@@ -398,6 +402,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (!isSpriteOrderForced)
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+        }
+        else
+        {
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
     }
 
@@ -591,6 +600,13 @@ public class PlayerController : MonoBehaviour, ITimeTracker
     {
 	    this._material.SetFloat("_StaticOpacity", 0.0f);
 	    this._material.SetFloat("_DistortIntensity", 0.0f);
+    }
+
+    [SerializeField] private AudioClip[] _stepSounds;
+
+    private void PlayStep()
+    {
+	AudioSource.PlayClipAtPoint(_stepSounds[UnityEngine.Random.Range(0,_stepSounds.Length)], Camera.main.transform.position, 0.2f);
     }
 
     void Awake()
