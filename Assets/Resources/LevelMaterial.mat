@@ -23,7 +23,7 @@ Material:
   m_Name: LevelMaterial
   m_Shader: {fileID: -6465566751694194690, guid: 4751d2cfcf8216f44b1e1c766b549295, type: 3}
   m_ShaderKeywords: ETC1_EXTERNAL_ALPHA
-  m_LightmapFlags: 4
+  m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
