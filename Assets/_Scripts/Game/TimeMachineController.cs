@@ -74,7 +74,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             Position.Copy(otherTM.Position);
             ItemForm = otherTM.ItemForm;
 
-            playerID = otherTM.playerID;
+            playerID.Copy(otherTM.playerID);
             doneTimeTravelPlayerID = otherTM.doneTimeTravelPlayerID;
             IsAnimatingOpenClose = otherTM.IsAnimatingOpenClose;
             IsAnimatingFold = otherTM.IsAnimatingFold;
@@ -91,6 +91,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     //TODO: need way to handle TimeMachine folding before coming item!
     public bool SetItemState(bool state)
     {
+        if (IsAnimatingFold || IsAnimatingUnfold) // can't pick up while animating
+            return false;
+        
         if (state) // trying to turn into an item
         {
             // time machine is occupied or activated (or not foldable), cannot move it
@@ -113,8 +116,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
                 ITimeTracker hitTimeTracker = GameController.GetTimeTrackerComponent(hitObject, true);
                 if (hitObject == gameObject || hitTimeTracker is PlayerController || hitTimeTracker == this) continue;
 
-                // cannot place time machine ontop of ITimeTracker
+                // cannot place time machine on top of ITimeTracker
                 if (hitTimeTracker != null)
+                {
+                    gameObject.SetActive(false);
+                    return false;
+                }
+
+                // cannot place time machine on top of button 
+                if (hitObject.GetComponent<ButtonController>() != null)
                 {
                     gameObject.SetActive(false);
                     return false;
@@ -208,10 +218,15 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
     public bool Activate(PlayerController playerController)
     {
         if (Occupied.AnyTrue || Countdown.Current >= 0 || Countdown.History >= 0) // time machine is occupied, cannot use it
-	{
-	    AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
+	     {
+	         AudioSource.PlayClipAtPoint(_machineError, Camera.main.transform.position, 1f);
             return false;
-	}
+	     }
+
+        if (IsAnimatingFold || IsAnimatingUnfold) // don't allow activation while folding
+        {
+            return false;
+        }
 
         if (Activated.AnyTrue) // time machine is active, so  get ready to timetravel
         {
@@ -297,7 +312,7 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             player.isSpriteOrderForced = true;
             bool isBeginning = !isAnimating || animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f;
             player.SpriteRenderer.sortingOrder = isBeginning ? 2 : 7;
-            if (IsAnimClosedState && gameController.TimeStep > ActivatedTimeStep.History + 5)
+            if (!isBeginning && gameController.TimeStep > ActivatedTimeStep.History + 5)
             {
                 doneTimeTravelPlayerID = -1;
                 player.isSpriteOrderForced = false;
@@ -316,6 +331,9 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
             IsAnimatingFold = false;
             animator.SetBool(AnimateFolding, false);
         }
+
+        if (Countdown.Current == -1) Countdown.Current = Countdown.History;
+        if (ActivatedTimeStep.Current == -1) ActivatedTimeStep.Current = Countdown.History;
         
         if (Countdown.Current > 0)
         {
@@ -370,22 +388,22 @@ public class TimeMachineController : MonoBehaviour, ITimeTracker
         
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         propertyBlock.SetTexture(MainTex, renderer.sprite.texture);
+        
+        Color indicatorColor = Color.yellow;
         if (Occupied.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(0f, 1f, 0f));
+            indicatorColor = new Color(0f, 1f, 0f);
         }
         else if (Activated.AnyTrue)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0f, 0f));
+            indicatorColor = new Color(1f, 0f, 0f);
         }
         else if (displayCountdown >= 0)
         {
-            propertyBlock.SetColor(MainColor, new Color(1f, 0.7f, 0f));
+            indicatorColor = new Color(1f, 0.7f, 0f);
         }
-        else
-        {
-            propertyBlock.SetColor(MainColor, new Color(1f, 1f, 0f));
-        }
+
+        propertyBlock.SetColor(MainColor, indicatorColor);
         renderer.SetPropertyBlock(propertyBlock);
     }
 

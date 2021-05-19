@@ -13,7 +13,7 @@ public class Guard_AI : BasicTimeTracker
     public float distLeft = 1f, distRight = 1f, moveSpeed = 1f;
     public bool movingRight = false;
     public GameObject bullet;
-    public float fireRateSeconds = 3f, shotSpeed = 1f, range = 5f, bulletLife = 1f;
+    public float range = 8f, bulletLife = 1f;
     public Canvas mainUIcanvas;
     public RetryPopup retryPopupPrefab;
     Vector2 startPos;
@@ -24,6 +24,7 @@ public class Guard_AI : BasicTimeTracker
     
     [SerializeField] private AudioClip _blastSound;
     [SerializeField] private AudioClip _alertSound;
+    [SerializeField] private float fireRateSeconds = 2f;
 
     private SpriteRenderer _spriteRenderer;
 
@@ -111,18 +112,21 @@ public class Guard_AI : BasicTimeTracker
         minDist = Mathf.Infinity;
         float angle = 0f;
         Vector3 direc = Vector3.zero;
-        //RaycastHit2D hit = new RaycastHit2D();
         foreach (var p in gameController.GetComponent<GameController>().AllPlayers)
         {
             dist = Mathf.Abs(Vector2.Distance(gameObject.transform.position, p.transform.position));
             direc = p.transform.position - gameObject.transform.position;
             angle = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
+            RaycastHit2D sight = Physics2D.Raycast(gameObject.transform.position, direc);
 
-            if (dist < minDist && ((Mathf.Abs(angle) <= 45 && movingRight) || (Mathf.Abs(angle) >= 135 && !movingRight)))
+            if (sight.collider.gameObject.CompareTag("Player"))
             {
-                minDist = dist;
-                closest = p.gameObject;
-                shotAngle = angle;
+                if (dist < minDist && ((Mathf.Abs(angle) <= 45 && movingRight) || (Mathf.Abs(angle) >= 135 && !movingRight)))
+                {
+                    minDist = dist;
+                    closest = p.gameObject;
+                    shotAngle = angle;
+                }
             }
         }
         
@@ -137,10 +141,21 @@ public class Guard_AI : BasicTimeTracker
 
     IEnumerator Alerted()
     {
+        bool first = true, second = true;
 	    AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
         transform.GetChild(0).gameObject.SetActive(true);
         for (float i = 0; i < fireRateSeconds; i = i + Time.deltaTime)
         {
+            if(i >= (fireRateSeconds / 3) && first)
+            {
+                AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
+                first = false;
+            }
+            if(i >= (2 * fireRateSeconds / 3) && second)
+            {
+                AudioSource.PlayClipAtPoint(_alertSound, Camera.main.transform.position, 0.2f);
+                second = false;
+            }
             yield return null;
         }
         transform.GetChild(0).gameObject.SetActive(false);

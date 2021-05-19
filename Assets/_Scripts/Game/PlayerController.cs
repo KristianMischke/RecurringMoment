@@ -402,6 +402,11 @@ public class PlayerController : MonoBehaviour, ITimeTracker
         if (!isSpriteOrderForced)
         {
             SpriteRenderer.sortingOrder = gameController.CurrentPlayerID == ID ? 7 : 6; // current player on higher layer than past player
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+        }
+        else
+        {
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
     }
 
@@ -439,7 +444,7 @@ public class PlayerController : MonoBehaviour, ITimeTracker
 
     public void GameUpdate()
     {
-        if (Mathf.Abs(Rigidbody.velocity.x) > 0.001f)
+        if (Mathf.Abs(Rigidbody.velocity.x) > 2.5f)
         {
             facingRight = Rigidbody.velocity.x > 0;
         }
