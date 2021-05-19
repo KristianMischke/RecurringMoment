@@ -574,6 +574,7 @@ MonoBehaviour:
   _timeTravelSound: {fileID: 8300000, guid: ac7883a689a2b3f47a860658326c880e, type: 3}
   _startupSound: {fileID: 8300000, guid: 5beb0cd577365094bbf0bd3ec8b6dd8c, type: 3}
   _activeSound: {fileID: 8300000, guid: 6f141b4514e6c4b4894a3f566ed5b2dc, type: 3}
+  _machineError: {fileID: 8300000, guid: 1af30ce1bb3b5444b863bf0781865b97, type: 3}
   renderer: {fileID: 6528602716144037484}
   timeText: {fileID: 546507666380530687}
   TextBubbleHint: {fileID: 5834820164530720931}
