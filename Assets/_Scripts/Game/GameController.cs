@@ -18,10 +18,12 @@ using Vector2 = UnityEngine.Vector2;
 public class TimeAnomalyException : Exception
 {
     public string Title;
+    public string Body;
     public ICustomObject Cause;
     public TimeAnomalyException(string title, string reason, ICustomObject cause) : base($"Time Anomaly: {reason}")
     {
         Title = title;
+        Body = reason;
         Cause = cause;
     }
 }
@@ -1291,7 +1293,7 @@ public class GameController : MonoBehaviour
     public void ShowRetryPopup(TimeAnomalyException e)
     {
         var popup = Instantiate(retryPopupPrefab, mainUICanvas.transform);
-        popup.Init(e.Title, e.Message, RetryLevel, RespawnLatest);
+        popup.Init(e.Title, e.Body, RetryLevel, RespawnLatest);
     }
 
     public void ExportHistory()
